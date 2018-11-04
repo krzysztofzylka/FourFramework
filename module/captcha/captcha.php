@@ -9,6 +9,8 @@ class captcha{
 	public $fonts = 'arial.ttf';
 	//zmienna z folderem z czcionkami
 	private $fonts_dir = null;
+	//zmienna z konfiguracją
+	private $config;
 	//znaki wyświetlane w captcha
 	private $letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
 	public function __construct($obj, $config){
@@ -16,6 +18,8 @@ class captcha{
 		$this->temp_dir = $config['path']."tmp/";
 		//tworzenie ścieżki do danych tymczasowych
 		$this->fonts_dir = $config['path']."fonts/";
+		//pobieranie konfiguracji
+		$this->config = $config;
 	}
 	//generowanie captcha
 	public function captcha($lettercount=6){
@@ -76,5 +80,12 @@ class captcha{
 			if($time >= 50) unlink($fname);
 		}
 	}
+	//funkcja debugująca
+	public function __debugInfo() {
+        return [
+			'version' => $this->config['version'],
+			'donts' => $this->fonts
+		];
+    }
 }
 ?>

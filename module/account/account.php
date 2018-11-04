@@ -218,5 +218,16 @@ class account{
 			//użytkownik nie istnieje
 		}else return false;
 	}
+	//funkcja debugująca
+	public function __debugInfo() {
+        return [
+			'version' => $this->config['version'],
+			'sessionName' => $this->sessionName,
+			'logoutLink' => $this->logoutLink,
+			'user' => is_array($this->user)==false?'***':$this->user,
+			'getUserID' => isset($_SESSION[$this->sessionName])==false?'***':$this->getUserID(),
+			'hash_type' => $this->hash_type
+		];
+    }
 }
 ?>

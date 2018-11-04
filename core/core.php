@@ -3,7 +3,7 @@ class core{
 	//konfiguracja
 	public $config;
 	//wersja rdzenia frameworka
-	public $version = '0.0.4 Alpha';
+	public $version = '0.0.4a Alpha';
 	//zmienne dla modułów
 	public $module;
 	public $module_list = Array();
@@ -26,7 +26,11 @@ class core{
 	public function __construct(){
 		$this->config = include('config.php');
 		//jeżeli logi włączone to ich wyświetlenie
-		if($this->config['error'] == true) ini_set('error_reporting', E_ALL);
+		if($this->config['error'] == true){
+			error_reporting(E_ALL);
+			ini_set('display_errors', 1);
+			ini_set('default_enable', 1);
+		}
 		//automatyczne tworzenie ścieżki dla zmiennej reversion
 		for($i=0; $i<=100; $i++){
 			// sprawdzanie czy plik istnieje
@@ -40,7 +44,7 @@ class core{
 		//tworzenie ścieżki
 		$path = $dir.$name.'.php';
 		//jeżeli plik nie istnieje
-		if(!file_exists($path)) $this->_fatalError('Error loading view file on path: '.$path.' (core)');
+		if(!is_file($path)) $this->_fatalError('Error loading view file on path: '.$path.' (core)');
 		//dodanie logu do pliku
 		$this->log_message('Success loading view file on path: '.$path.' (core.php)');
 		//wczytywanie pliku
@@ -55,7 +59,7 @@ class core{
 			//ścieżka do konfiguracji
 			$path_config = $path."config.php";
 			//sprawdzanie czy plik z konfiguracją istnieje
-			if(!file_exists($path_config)) $this->_fatalError('Error loading module '.$name.' on path: '.$path.' (core)');
+			if(!is_file($path_config)) $this->_fatalError('Error loading module '.$name.' on path: '.$path.' (core)');
 			//ładowanie konfiguracji
 			$config = include($path_config);
 			//wczytywanie konfiguracji modułu do tablicy
@@ -68,10 +72,10 @@ class core{
 			//ścieżka do głównego pliku z klasą
 			$path_mainFile = $path.$config['main_file'];
 			//sprawdzanie czy plik z klasą istnieje
-			if(file_exists($path_mainFile)){
+			if(is_file($path_mainFile)){
 				//wczytywanie klasy
 				include($path_mainFile);
-				//dodawanie modułu do tablicy
+				//dodawanie modułu do tablicy ($1 -> $core, $2 -> config)
 				$this->module[$name] = new $config['main_class_name']($this, $this->module_config[$name]);
 			};
 			//dodawanie modułu do listy modułów
@@ -103,7 +107,7 @@ class core{
 			//generowanie ścieżki do pliku
 			$path = $dir.$name.'.php';
 			//jeżli plik nie istnieje
-			if(!file_exists($path)) $this->_fatalError('Error loading model file on path: '.$path.' (core)');
+			if(!is_file($path)) $this->_fatalError('Error loading model file on path: '.$path.' (core)');
 			//log o pozytywnym załadowaniu modelu
 			$this->log_message('Success loading model file on path: '.$path.' (core.php)');
 			//wczytywanie pliku modeli
@@ -122,7 +126,7 @@ class core{
 		//tworzenie ścieżki do pliku
 		$path = $dir.$name.'.php';
 		//jeżeli plik nie istnieje
-		if(!file_exists($path)) $this->_fatalError('Error loading controller file on path: '.$path.' (core)');
+		if(!is_file($path)) $this->_fatalError('Error loading controller file on path: '.$path.' (core)');
 		//log o pozytywnym załadowaniu modelu
 		$this->log_message('Success loading controller file on path: '.$path.' (core.php)');
 		//wczytywanie pliki
@@ -139,13 +143,11 @@ class core{
 		//tworzenie ścieżki do pliku
 		$path = $dir.$file.$ext;
 		//jeżeli plik nie istnieje
-		if(!file_exists($path)) $this->_fatalError('Error loading template file on path: '.$path.' (core)');
+		if(!is_file($path)) $this->_fatalError('Error loading template file on path: '.$path.' (core)');
 		//pobieranie treści pliku do zmiennej
 		$data = file_get_contents($path);
 		//konwersja danych szablonu
-		foreach($this->config['array_template'] as $text => $content){
-			$data = str_replace("{\$".$text."\$}", $content, $data);
-		}
+		foreach($this->config['array_template'] as $text => $content) $data = str_replace("{\$".$text."\$}", $content, $data);
 		//konwersja danych których nie ma na liście
 		$data = preg_replace('({\$(.*?)\$})', "", $data);
 		//dodanie logu
@@ -172,7 +174,7 @@ class core{
 		//ścieżka do folderu z logami
 		$path = $this->reversion.$this->config['log_dir'];
 		//sprawdzenie czy plik logu już istnieje
-		if(!file_exists($path)) mkdir($path, 0644, true);
+		if(!is_file($path)) mkdir($path, 0644, true);
 		//tworzenie ścieżki do pliku logu
 		$path = $path.$this->config['log_file'];
 		//tablica z ciągem do zmiany
@@ -216,4 +218,30 @@ class core{
 		//zwracanie false jeżeli błąd
 		return false;
 	}
+	//funkcja debugująca
+	public function __debugInfo() {
+        return [
+			'version' => $this->version,
+			'reversion' => $this->reversion==''?'***none***':$this->reversion,
+			'module' => Array(
+				'count' => count($this->module_list),
+				'list' => empty($this->module_list)==true?'***empty***':$this->module_list,
+			),
+			'model' => Array(
+				'count' => count($this->model_list),
+				'list' => empty($this->model_list)==true?'***empty***':$this->model_list,
+			),
+			'template' => Array(
+				'dir' => $this->template_dir,
+				'extension' => $this->template_extension,
+			),
+			'log' => Array(
+				'save' => $this->log_save==true?'true':'false',
+				'save_type' => Array(
+					'message' => $this->log_show['message']==true?'true':'false',
+					'error' => $this->log_show['error']==true?'true':'false',
+				),
+			),
+		];
+    }
 }

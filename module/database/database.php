@@ -1,4 +1,4 @@
- <?php
+<?php
 //moduł operujący na bazie danych
 class database{
 	//połączenie z bazą danych
@@ -25,10 +25,13 @@ class database{
 	private $config;
 	//zmienna z numerem portu
 	public $port;
+	//konfiguracja modułu
+	private $db_config;
 	//funkcja główna
 	public function __construct($obj, $config){
 		$this->core = $obj;
 		$this->path = $config['path'];
+		$this->db_config = $config;
 	}
 	//łączenie z bazą danych
 	public function connect(){
@@ -116,5 +119,27 @@ class database{
 			if($log == true) $this->core->log_error("SQL Error: ".$error[2]);
 		}
 	}
+	//funkcja debugująca
+	public function __debugInfo() {
+        return [
+			'version' => $this->db_config['version'],
+			'is_connect' => is_object($this->connect),
+			'connect' => array(
+				'type' => $this->type,
+				'host' => $this->host,
+				'name' => $this->name,
+				'login' => $this->login,
+				'password' => $this->password == '' ? '' : '***hidden***',
+				'sqlite' => $this->sqlite,
+				'port' => $this->port
+			),
+			'config' => array(
+				'charset' => $this->charset
+			),
+			'function' => array(
+				'connect', 'loadConfig', 'lastInsertID', 'checkError'
+			)
+		];
+    }
 }
 ?>

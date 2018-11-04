@@ -3,6 +3,6 @@ return array(
 	'include' => array(),
 	'main_file' => 'email.php',
 	'main_class_name' => 'email',
-	'version' => '0.1',
+	'version' => '0.2',
 	'description' => 'Zarządzanie wysyłaniem adresów e-mail'
 );
