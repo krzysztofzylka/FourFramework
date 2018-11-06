@@ -1,0 +1,153 @@
+﻿0.0.4a Alpha
+- Zmiana funkcji file_exists na is_file w wymienionch funkcjach wewnętrz core: loadView, loadModule, loadModel, loadController, Template, writelog
+- Skrócenie funkcji Template
+- Poprawiono funkcję wymuszającą wyświetlanie błędów
+- Funkcja debugująca
+- [Moduł database] Dodano funkcję debudującą
+- [Moduł module_manager] Poprawiono zaznaczanie uruchomionych modułów
+- [Moduł module_manager] Dodano wyświetlenie debugowania
+- [Moduł zlecenie] Dodano funkcję debugującą
+- [Moduł protokol] Dodano funkcję debugującą
+
+0.0.4 Alpha
+- Poprawiono błąd w logach który nie dodawał przez godziną zera wiodącego
+- Funkcja loadModule zwraca do załadowanego modułu dodatkową zmienną z konfiguracją
+- Plik htaccess dla folderu model
+- Usprawniono kod dodający zero wiądące do godziny w funkcji writelog
+- Usunięto zmienną $cln z funkcji writelog, log_error, log_message
+- Zmieniono funkcję wenętrzną w funkcji _include z require na include
+- Poprawiono sprawdzanie pliku w funkcji _include z file_exists na is_file
+- [Moduł database] Usunięto zmienną moduleconfig
+- [Moduł database] Poprawiono błąd fatalny w funkcji checkError
+- [Moduł database] Możliwość łączenia z bazą danych Oracle
+- [Moduł account] zmieniono funkcję check, od teraz jeżeli użytkownik nie jest zalgoowany, zwraca wartość false
+- [Moduł account] dodano zmienną logout (bool) która jest pobierana przez funkcję check, jeżeli wartość to true, to wylogowywuje użytkownika jeżeli nie jest zalogowany
+- [Moduł account] Dodano funkcję register która pozwala na zrejestrowanie konta
+- [Moduł account] Dodano funkcję registerForm wyświetlającą formularz rejestracji
+- [Moduł loading] Usunięto moduł
+- [Moduł secure] Usunięto moduł
+- [Moduł setting] Usunięto moduł
+- [Moduł module_manager] Usunięto moduł
+
+0.0.3 Alpha
+- Osobny plik z konfiguracją rdzenia
+- Usunięte zmienne z rdzenia: array_template, log_backdir, module_backkdir, log_dir, error
+- Dodano zmienną reversion z powrotami do rdzenia
+- Usunięto funkcję autosearch_dir i przeniesiono kod do _construct
+- Usunięto z głównej funkcji generowanie nazwy pliku logu, przeniesiono go do zmiennej konfiguracyjnej
+- Zamiana w funkcji _include funkcji wczytywania z include na require
+- Poprawiono w funkcji writelog chmod tworzonego pliku logu z 0777 na 0644
+- [Moduł database] Dodano funkcję checkError wyświetlającą błąd (jeżeli występuje) w zapytaniach
+- [Moduł setting] Dodano sprawdzanie poprawności zapytań do bazy danych
+- [Moduł account] Poprawiono zabezpieczenie zapytań do bazy danych w funkcjach getUserData, changePassword
+- [Moduł account] Poprawiono wczytywanie ID sesji w funkcji changePassword
+- [Moduł account] Zmieniono typ zmiennej connect z public na private
+- [Moduł account] Poprawiono błąd w funkcji getUserData
+- [Moduł account] Dodano sprawdzanie poprawności zapytań do bazy danych
+- [Moduł captcha] Dodano komentarze do kodu
+- [Moduł captcha] Zmieniono chmod tworzenia folderu logów z 777 na 644
+
+0.0.2a Alpha
+- [Moduł account] Sprawdzanie czy moduł bazy danych jest skonfigurowany
+- [Moduł account] Poprawiono logowanie w funkcji login
+- [Moduł account] Funkcja check, jeżeli użytkownik jest poprawny wykonuje funkcje getUserData
+- [Moduł loading] Poprawiono ładowanie plików (zezwolenia w pliku .htaccess)
+- [Moduł loading] Zmieniono nazwy zmiennych i poprawiono generowanie ścieżek
+- [Moduł captcha] Dodano wyjątek w htaccess dla czcionki
+
+0.0.2 Alpha
+- Optymalizacja funkcji checkModule, loadModule, unloadModule
+- Poprawiono wczytywanie konfiguracji modułu w funkcji loadModule
+- Usunięto w funkcji loadModule dodawanie logu o poprawnym wczytaniu dodatkowych plików wpisanych w pliku config.php (array->include)
+- Poprawiono w funkcji loadModule automatyczne nadanie konfiguracji name, jeżeli jest ona pusta
+- Możliwość kontrolowania jakie dane mają być zapisywane do logów
+- [Moduł account] Optymalizacja zapytań do bazy danych
+- [Moduł account] Dodano funkcję hashpass oraz autpmatyczne kodowanie haseł w module
+- [Moduł account] Zmodyfikowano wszystkie zmienne do połączenia z bazą danych do jednej tablicy
+- [Moduł account] Dodano funkcję permission_check sprawdzającą czy użytkownik ma uprawnienia do poglądu strony/wykonania funkcji
+- [Moduł account] dodano funkcję getUserID zwracającą ID użytkownika
+- [Moduł database] Możliwość połączenia z bazą PostgreSQL
+- [Moduł database] Poprawiono wczytywanie ścieżki do modułu
+- [Moduł database] Plik SQL z tabelami użytkownika
+- [Moduł setting] Optymalizacja zapytań do bazy danych
+- [Moduł captcha] Dodano automatyczne tworzenie ścieżek do folderu tmp oraz fonts
+- [Moduł setting] Dodano funkcje del usuwającą ustawienie
+- [Moduł email] Poprawiono zwracane dane w funkcji send_email
+- [Moduł module_manager] Wyświetlanie kolejki uruchamiania modułów
+
+0.0.1c Alpha
+- Usunięto zbędne zmienne
+- Poprawiono wyświetlanie błędów krytycznych
+- Podczas wczytywania modułu w konfiguracji tworzą się dane "path" ze ścieżką do wczytanego modułu
+- Przeniesiono ładowanie konfiguracji nad ładowaniem modułu
+- [Moduł cookie] Funkcja od teraz sprawdza czy ciasteczko istnieje za pomocą własnej funkcji check
+- [Moduł cookie] Funkcja set od teraz poprawnie dodaje ciasteczko o czasie oczekiwania w skundach
+- [Moduł database] Zmiana wartości domyślnej zmiennej $dir z "default" na -1 w funkcji loadConfig
+- [Moduł cookie] Od teraz w funkcji set jeżeli ciasteczko istnieje to tylko podmienia jego treść
+- [Moduł cookie] Poprawiono błąd krytyczny w funkcji read
+- [Moduł email] Dodano funkcję disposable_check sprawdzającą czy e-mail nie należy do bazy poczt jednorazwych/tymczasowych
+- [Moduł module_manager] Całkowicie zmieniono zwracane dane w funkcjach site_manager oraz site_adminpanel
+- [Moduł account] Dodano funkcję loginForm która dodaje pole logowania
+
+0.0.1b Alpha
+- Poprawiono zmienne
+- Poprawiono funkcję writelog
+- Dodano zabezpieczenia .htaccess
+- Dodano zmienną $template_dir
+- Dodano zmienną $template_extension
+- Całkowicie przebudowano system błędów krytycznych
+- Dodano funkcję _fatalError
+- Zmieniono nazwę zmiennej z $roz na $ext w funkcji Template
+- [Moduł database] przerobiono wczytywanie konfiguracji z klasy na tablicę
+- [Moduł cookie] dodano funkcję check
+- [Moduł module_manager] poprawiono funkcję generate_link
+- [Moduł module_manager] zmieniono nazwę funkcji list na mlist
+- [Moduł account] Zmieniono wartość domyślną zmiennej $user na null
+
+0.0.1a Alpha
+- Zmiana typu zmiennej module_backdir na publiczną
+- Zmiana domyślnej wartości zmiennej $edit w funkcji templateSet z 1 na true
+- Zmiana nazwy zmiennej z loadTemplate na Template
+- Poprawa szablonu
+- Dodano moduł module_manager
+- Usunięto zmienną log_file
+- Poprawiono funkcję writelog
+- Poprawiono funkcję auto wyszukiwania folderów
+- [Moduł setting] sprawdzanie czy moduł database jest uruchomiony
+- [Moduł database] poprawiono generowanie ścieżki do modułu
+- [Moduł secure] zmiana nazwy zmiennej z text na protectText
+- [Moduł cookie] zmiana nazwy funkcji z unset na del
+
+0.0.1 Alpha
+- Poprawiono główne zmienne
+- Poprawiono wczytywanie pliku w funkcji loadModel
+- System szablonów
+- Dodano moduł captcha
+- Dodano zmienną $log_dir
+- Dodano funkcję writelog, log_error, log_message, log_setbackdir
+- Dodano logi do całego jądra oraz modułów
+- Możliwość "usunięcia" wczytanego modułu
+- Dodano moduł loading
+- Poprawiono funkcje warunkowe
+- Zakomentowanie całego kodu
+- Całkowite przerobienie modułów
+- Usunięto moduł notification i zastąpiono go funkcjami wewnątrz jądra
+- Dodano moduł account
+- Poprawiono "demo"
+- Dodano moduł setting
+- [Moduł cookie] dodano odczytywanie ciasteczka
+- [Moduł database] dodano kodowanie bazy danych
+- [Moduł database] dodano możliwość połączenia się z bazą SQLite
+- [Moduł database] poprawiono ładowanie konfiguracji
+- [Moduł database] dodano funkcje lastInsertID oraz execute
+- [Moduł database] przeniesiene konfiguracj z pliku database.php do config.php
+- [Moduł database] poprawiono funkcję connect
+- [Moduł database] zmienne z danymi tabel w bazie danych
+- [Moduł notification] poprawiono zmienne
+- [Moduł notification] dodano funkcję getLastXDataLine, loadConfig, topInfoViewer, topLogViewer, createArchiveLog
+- [Moduł secure] zmeniono nazwę funkcji wewnętrznych
+- [Moduł email] zmieniono nazwę funkcji uruchom_email na start
+- [Moduł email] dodano funkcje setCharset
+- [Moduł email] dodano zmienną replayTo
+- [Moduł email] poprawiono funkcję start
+- [Moduł email] dodanie nagłówka X-Mailer
