@@ -47,7 +47,7 @@ class account{
 			//tworzenie zapytania
 			$prepare = $this->connect->prepare("SELECT * FROM ".$this->account['tableName']." WHERE id=:id");
 			//dodawnie do zapytania danych
-			$prepare->bindParam(":id", $uid);
+			$prepare->bindParam(":id", $uid, PDO::PARAM_INT);
 			//wykonywanie zapytania
 			$prepare->execute();
 			//sprawdzanie czy wysyłanie zapytania do bazy danych przebiegło pomyślnie
@@ -64,10 +64,10 @@ class account{
 		//wywoływanie zapytania
 		$prepare = $this->connect->prepare("SELECT count(id) as count, id FROM ".$this->account['tableName']." WHERE ".$this->account['login']."=:login and ".$this->account['password']."=:haslo ".$addional." LIMIT 1");
 		//login
-		$prepare->bindParam(":login", $login);
+		$prepare->bindParam(":login", $login, PDO::PARAM_STR);
 		//hasło
 		$haslo = $this->hashpass($password);
-		$prepare->bindParam(":haslo", $haslo);
+		$prepare->bindParam(":haslo", $haslo, PDO::PARAM_STR);
 		//wykonywanie zapytania
 		$prepare->execute();
 		//sprawdzanie czy wysyłanie zapytania do bazy danych przebiegło pomyślnie
@@ -124,8 +124,8 @@ class account{
 			//hasło
 			$password = $this->hashpass($password); //kodowanie w MD5
 			//podmiana danych
-			$prepare->bindParam(":haslo", $password);
-			$prepare->bindParam(":id", $int);
+			$prepare->bindParam(":haslo", $password, PDO::PARAM_STR);
+			$prepare->bindParam(":id", $int, PDO::PARAM_INT);
 			//wykonywanie hasła
 			$prepare->execute();
 			//sprawdzanie czy wysyłanie zapytania do bazy danych przebiegło pomyślnie
@@ -139,7 +139,7 @@ class account{
 		include($path."/form/login.php");
 	}
 	//funkcja kodująca hasło
-	private function hashpass($password){
+	public function hashpass($password){
 		//typ kodowania hasła
 		switch($this->hash_type){
 			//brak kodowania
@@ -162,9 +162,9 @@ class account{
 		//tworzenie zapytania
 		$prepare = $this->connect->prepare("SELECT count(*) as count, pozwolenie FROM ".$this->perm['tableName']." WHERE uprawnienie=:nazwa AND uzytkownik=:uid")->fetch(PDO::FETCH_ASSOC);
 		//id uzytkownika
-		$prepare->bindParam(":uid", $user_id);
+		$prepare->bindParam(":uid", $user_id, PDO::PARAM_INT);
 		//nazwa uprawnienia
-		$prepare->bindParam(":nazwa", $name);
+		$prepare->bindParam(":nazwa", $name, PDO::PARAM_STR);
 		//wykonanie zapytania
 		$prepare->execute();
 		//sprawdzanie czy wysyłanie zapytania do bazy danych przebiegło pomyślnie
@@ -202,10 +202,10 @@ class account{
 		//wywoływanie zapytania
 		$prepare = $this->connect->prepare("INSERT INTO ".$this->account['tableName']."(login, haslo) VALUES (:login, :haslo)");
 		//login
-		$prepare->bindParam(":login", $login);
+		$prepare->bindParam(":login", $login, PDO::PARAM_STR);
 		//hasło
 		$haslo = $this->hashpass($password);
-		$prepare->bindParam(":haslo", $haslo);
+		$prepare->bindParam(":haslo", $haslo, PDO::PARAM_STR);
 		//wykonywanie zapytania
 		$prepare->execute();
 		//sprawdzanie czy wysyłanie zapytania do bazy danych przebiegło pomyślnie
@@ -226,7 +226,8 @@ class account{
 			'logoutLink' => $this->logoutLink,
 			'user' => is_array($this->user)==false?'***':$this->user,
 			'getUserID' => isset($_SESSION[$this->sessionName])==false?'***':$this->getUserID(),
-			'hash_type' => $this->hash_type
+			'hash_type' => $this->hash_type,
+			'function' => array('getUserData', 'login', 'logout', 'check', 'changePassword', 'loginForm', 'permission_check', 'getUserID', 'registerForm', 'register'),
 		];
     }
 }

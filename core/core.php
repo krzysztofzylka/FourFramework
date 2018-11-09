@@ -3,7 +3,7 @@ class core{
 	//konfiguracja
 	public $config;
 	//wersja rdzenia frameworka
-	public $version = '0.0.4a Alpha';
+	public $version = '0.0.5 Alpha';
 	//zmienne dla modułów
 	public $module;
 	public $module_list = Array();
@@ -18,7 +18,8 @@ class core{
 	public $log_save = true;
 	public $log_show = Array(
 		'message' => false, //wyświetlenie informacji w logach
-		'error' => true //wyświetlanie błędów w logach
+		'error' => true, //wyświetlanie błędów w logach
+		'info' => true //wyświetlanie błędów w logach
 	);
 	//powroty (../) do folderu głównego
 	public $reversion = '';
@@ -30,6 +31,11 @@ class core{
 			error_reporting(E_ALL);
 			ini_set('display_errors', 1);
 			ini_set('default_enable', 1);
+		}
+		//jeżeli logi błędów php mają być zapisywane do pliku
+		if($this->config['php_error'] == true){
+			$dir = $this->reversion.$this->config['log_dir'].$this->config['php_error_dir'];
+			ini_set("error_log", $dir);
 		}
 		//automatyczne tworzenie ścieżki dla zmiennej reversion
 		for($i=0; $i<=100; $i++){
@@ -168,13 +174,13 @@ class core{
 		}
 	}
 	//funkcja wypisująca logi
-	private function writelog($string, $type){
+	public function writelog($string, $type){
 		//sprawdzenie czy logi są uruchomione
 		if($this->log_save == false) return false;
 		//ścieżka do folderu z logami
 		$path = $this->reversion.$this->config['log_dir'];
 		//sprawdzenie czy plik logu już istnieje
-		if(!is_file($path)) mkdir($path, 0644, true);
+		if(!file_exists($path)) mkdir($path, 0644, true);
 		//tworzenie ścieżki do pliku logu
 		$path = $path.$this->config['log_file'];
 		//tablica z ciągem do zmiany
@@ -204,6 +210,13 @@ class core{
 		//wpisanie logu do pliku
 		return $this->writelog($string, 'message');
 	}
+	//log z informacją
+	public function log_info($string){
+		//sprawdzanie czy wpisywanie logów informacji jest uruchomione
+		if($this->log_show['info'] == false) return false;
+		//wpisanie logu do pliku
+		return $this->writelog($string, 'info');
+	}
 	//w przypadku błędów krytycznych
 	public function _fatalError($string){
 		//wpisanie logu błędu do pliku
@@ -212,7 +225,7 @@ class core{
 		die('<b>Fatal error:</b><br /><i>'.$string.'</i>');
 	}
 	//wczytywanie pliku jeżeli istnieje
-	private function _include($path){
+	public function _include($path){
 		//sprawdzanie czy plik istnieje i jeżeli tak to wczytywanie go
 		if(is_file($path)) return include($path);
 		//zwracanie false jeżeli błąd
@@ -220,12 +233,21 @@ class core{
 	}
 	//funkcja debugująca
 	public function __debugInfo() {
+		$mlist = Array();
+		foreach($this->module_list as $module){
+			array_push($mlist, $module);
+		}
         return [
 			'version' => $this->version,
 			'reversion' => $this->reversion==''?'***none***':$this->reversion,
+			'error' => [
+				'show_error' => $this->config['error']==true?'true':'false',
+				'php_error' => $this->config['php_error']==true?'true':'false',
+				'php_error_dir' => $this->config['php_error_dir'],
+			],
 			'module' => Array(
-				'count' => count($this->module_list),
-				'list' => empty($this->module_list)==true?'***empty***':$this->module_list,
+				'count' => count($mlist),
+				'list' => empty($mlist)==true?'***empty***':$mlist,
 			),
 			'model' => Array(
 				'count' => count($this->model_list),
@@ -237,9 +259,11 @@ class core{
 			),
 			'log' => Array(
 				'save' => $this->log_save==true?'true':'false',
+				'dir' => $this->config['log_dir'],
 				'save_type' => Array(
 					'message' => $this->log_show['message']==true?'true':'false',
 					'error' => $this->log_show['error']==true?'true':'false',
+					'info' => $this->log_show['info']==true?'true':'false',
 				),
 			),
 		];

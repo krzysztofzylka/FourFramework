@@ -8,6 +8,7 @@ return Array(
 	'log_dir' => 'log/',
 	'log_string' => "{year}-{month}-{day} {hour}:{min}:{sec} [{type}] {string}\r\n",
 	'log_file' => 'logs_'.date('Y').'_'.date('m').'.log',
-	//zmienna do wyświetlania błędów
 	'error' => true,
+	'php_error' => true,
+	'php_error_dir' => 'log_php-error_'.date('Y').'_'.date('m').".log"
 );

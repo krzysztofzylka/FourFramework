@@ -123,7 +123,7 @@ class database{
 	public function __debugInfo() {
         return [
 			'version' => $this->db_config['version'],
-			'is_connect' => is_object($this->connect),
+			'is_connect' => is_object($this->connect)?'true':'false',
 			'connect' => array(
 				'type' => $this->type,
 				'host' => $this->host,

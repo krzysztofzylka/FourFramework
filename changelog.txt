@@ -1,4 +1,15 @@
-﻿0.0.4a Alpha
+0.0.5 Alpha
+- Dodano dane do funkcji debugującej
+- zmiana is_file na file_exists w funkcji writelog
+- Zmieniono typ funkcji writelog na public
+- Możliwość zapisywania błędów PHP do logów
+- Dodano funkcję log_info
+- Zmieniono typ funkcji _include na public 
+- [Moduł account] Poprawiono wykonywanie funkcji bindParam
+- [Moduł cookie] Dodano kodowanie/dekodowanie ciasteczek (treść oraz nazwa)
+- [Moduł database] Poprawiono wyświetlanie w funkcji debugującej danych is_connect
+
+0.0.4a Alpha
 - Zmiana funkcji file_exists na is_file w wymienionch funkcjach wewnętrz core: loadView, loadModule, loadModel, loadController, Template, writelog
 - Skrócenie funkcji Template
 - Poprawiono funkcję wymuszającą wyświetlanie błędów

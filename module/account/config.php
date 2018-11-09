@@ -4,7 +4,7 @@ return array(
 	'main_file' => 'account.php',
 	'main_class_name' => 'account',
 	'description' => 'Moduł zarządzania użytkownikami',
-	'version' => '0.0.6 Alpha',
+	'version' => '0.0.7a Alpha',
 	'language' => '',
 	'module_include' => array('database')
 );
