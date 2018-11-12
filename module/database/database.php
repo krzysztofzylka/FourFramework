@@ -119,6 +119,19 @@ class database{
 			if($log == true) $this->core->log_error("SQL Error: ".$error[2]);
 		}
 	}
+	//zwrócenie listy tabel w bazie danych
+	public function tableList(){
+		//wykonywanie zapytania
+		$query = $this->connect->query('SHOW TABLES');
+		//sprawdzanie czy nie nastąpił błąd
+		$this->checkError($query);
+		//zmienna tymczasowa
+		$temp = [];
+		//pętla wczytująca nazwy tabel
+		foreach($query as $name) array_push($temp, $name[0]);
+		//zwracanie listy tabel
+		return $temp;
+	}
 	//funkcja debugująca
 	public function __debugInfo() {
         return [
@@ -136,8 +149,11 @@ class database{
 			'config' => array(
 				'charset' => $this->charset
 			),
+			'database' => array(
+				'tableList' => is_object($this->connect)?$this->tableList():'***not connect***',
+			),
 			'function' => array(
-				'connect', 'loadConfig', 'lastInsertID', 'checkError'
+				'connect', 'loadConfig', 'lastInsertID', 'checkError', 'tableList'
 			)
 		];
     }

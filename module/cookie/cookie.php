@@ -1,7 +1,7 @@
 <?php
 //moduł operujący na ciasteczkach
 class cookie{
-	public $hash_name = true;
+	public $hash_name = false;
 	private $core;
 	private $config;
 	private $hash;

@@ -118,11 +118,11 @@ class account{
 		//sprawdzenie czy użytkownik istnieje
 		if($this->check() == true){
 			//pobieranie ID użytkownika
-			$int = getUserID();
+			$int = $this->getUserID();
 			//wywoływanie zapytania
-			$prepare = $this->connect->prepare("UPDATE ".$this->account['tableName']." SET ".$this->account['password']."=:haslo WHERE id=:id")->fetch(PDO::FETCH_ASSOC);
+			$prepare = $this->connect->prepare("UPDATE ".$this->account['tableName']." SET ".$this->account['password']."=:haslo WHERE id=:id");
 			//hasło
-			$password = $this->hashpass($password); //kodowanie w MD5
+			$password = $this->hashpass($password); //kodowanie
 			//podmiana danych
 			$prepare->bindParam(":haslo", $password, PDO::PARAM_STR);
 			$prepare->bindParam(":id", $int, PDO::PARAM_INT);
@@ -220,14 +220,20 @@ class account{
 	}
 	//funkcja debugująca
 	public function __debugInfo() {
+		$user_data = '***';
+		if(is_array($this->user)){
+			$user_data = $this->user;
+			$user_data[$this->account['password']] = '*** hidden ***';
+		}
         return [
 			'version' => $this->config['version'],
 			'sessionName' => $this->sessionName,
 			'logoutLink' => $this->logoutLink,
-			'user' => is_array($this->user)==false?'***':$this->user,
+			'requireModule' => $this->config['module_include'],
+			'user' => $user_data,
 			'getUserID' => isset($_SESSION[$this->sessionName])==false?'***':$this->getUserID(),
 			'hash_type' => $this->hash_type,
-			'function' => array('getUserData', 'login', 'logout', 'check', 'changePassword', 'loginForm', 'permission_check', 'getUserID', 'registerForm', 'register'),
+			'function' => array('getUserData', 'login', 'logout', 'check', 'changePassword', 'loginForm', 'permission_check', 'getUserID', 'registerForm', 'register', 'hashpass'),
 		];
     }
 }

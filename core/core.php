@@ -1,9 +1,9 @@
-﻿<?php
+<?php
 class core{
 	//konfiguracja
 	public $config;
 	//wersja rdzenia frameworka
-	public $version = '0.0.5 Alpha';
+	public $version = '0.0.6 Alpha';
 	//zmienne dla modułów
 	public $module;
 	public $module_list = Array();
@@ -48,7 +48,7 @@ class core{
 	//Ładowanie pliku widoku (folder view/)
 	public function loadView($name, $dir = "view/"){
 		//tworzenie ścieżki
-		$path = $dir.$name.'.php';
+		$path = $this->reversion.$dir.$name.'.php';
 		//jeżeli plik nie istnieje
 		if(!is_file($path)) $this->_fatalError('Error loading view file on path: '.$path.' (core)');
 		//dodanie logu do pliku
@@ -73,12 +73,24 @@ class core{
 			$this->module_config[$name]['path'] = $path;
 			//sprawdzenie czy w konfiguracji modułu są dane 'name'
 			if(!isset($config['name'])) $this->module_config[$name]['name'] = $name;
+			//sprawdzanie czy moduł wymaga dodatkowych modułów
+			if(isset($config['module_include'])){
+				//pętla sprawdzająca
+				foreach($config['module_include'] as $requiremodule){
+					//jeżeli moduł nie jest załadowany
+					if(!in_array($requiremodule, $this->module_list)){
+						$this->_fatalError('Error loading module '.$name.', you must include and configurate other module: '.$requiremodule.' (core)');
+					}
+				}
+			}
 			//wczytywanie wybranych plików
-			foreach($config['include'] as $file) $this->_include($path.$file);
+			foreach($config['include'] as $file) require_once($path.$file);
 			//ścieżka do głównego pliku z klasą
 			$path_mainFile = $path.$config['main_file'];
 			//sprawdzanie czy plik z klasą istnieje
 			if(is_file($path_mainFile)){
+				//sprawdzanie czy klasa o takiej samej nazwie nie jest już wcztana
+				if(in_array($config['main_class_name'], get_declared_classes())) $this->_fatalError('Error loading module '.$name.' on path: '.$path_mainFile.', this class name it\'s already exists (core)');
 				//wczytywanie klasy
 				include($path_mainFile);
 				//dodawanie modułu do tablicy ($1 -> $core, $2 -> config)
@@ -89,6 +101,7 @@ class core{
 			//informacja o poprawnie załadowanym module
 			$this->log_message('Success loading module '.$name.' on path: '.$path.' (core.php)');
 			return true;
+		//jeżeli moduł nie został wczytany
 		}else return false;
 	}
 	//Usunięcie załadowanego modułu
@@ -96,7 +109,7 @@ class core{
 		//sprawdzanie czy modół istnieje
 		if(!$this->checkModule($name)) return false;
 		//wyszukiwanie modułu w liście modułów
-		$id = array_search($name,  $this->model_list);
+		$id = array_search($name, $this->model_list);
 		//usuwanie modułu z tablic i list 
 		unset($this->module_list[$id], $this->module_config[$name], $this->module[$name]);
 		return true;
@@ -111,7 +124,7 @@ class core{
 		//sprawdzanie czy model nie jest już wczytany
 		if(!in_array($name, $this->model_list)){
 			//generowanie ścieżki do pliku
-			$path = $dir.$name.'.php';
+			$path = $this->reversion.$dir.$name.'.php';
 			//jeżli plik nie istnieje
 			if(!is_file($path)) $this->_fatalError('Error loading model file on path: '.$path.' (core)');
 			//log o pozytywnym załadowaniu modelu
@@ -130,7 +143,7 @@ class core{
 	//Ładowanie kontrolera (folder controller/)
 	public function loadController($name, $dir = "controller/"){
 		//tworzenie ścieżki do pliku
-		$path = $dir.$name.'.php';
+		$path = $this->reversion.$dir.$name.'.php';
 		//jeżeli plik nie istnieje
 		if(!is_file($path)) $this->_fatalError('Error loading controller file on path: '.$path.' (core)');
 		//log o pozytywnym załadowaniu modelu
@@ -144,10 +157,9 @@ class core{
 	public function Template($file, $dir = -1, $ext = -1){
 		//przybranie wartości domyślnych
 		if($dir == -1) $dir = $this->template_dir;
-		//przybranie wartości domyślnych
 		if($ext == -1) $ext = $this->template_extension;
 		//tworzenie ścieżki do pliku
-		$path = $dir.$file.$ext;
+		$path = $this->reversion.$dir.$file.$ext;
 		//jeżeli plik nie istnieje
 		if(!is_file($path)) $this->_fatalError('Error loading template file on path: '.$path.' (core)');
 		//pobieranie treści pliku do zmiennej
@@ -233,21 +245,20 @@ class core{
 	}
 	//funkcja debugująca
 	public function __debugInfo() {
-		$mlist = Array();
-		foreach($this->module_list as $module){
-			array_push($mlist, $module);
-		}
         return [
 			'version' => $this->version,
 			'reversion' => $this->reversion==''?'***none***':$this->reversion,
 			'error' => [
 				'show_error' => $this->config['error']==true?'true':'false',
-				'php_error' => $this->config['php_error']==true?'true':'false',
-				'php_error_dir' => $this->config['php_error_dir'],
+				'php_error' => [
+					'active' => $this->config['php_error']==true?'true':'false',
+					'dir' => $this->config['php_error_dir'],
+					'full_path' => $this->reversion.$this->config['log_dir'].$this->config['php_error_dir'],
+				],
 			],
 			'module' => Array(
-				'count' => count($mlist),
-				'list' => empty($mlist)==true?'***empty***':$mlist,
+				'count' => count($this->module_list),
+				'list' => empty($this->module_list)==true?'***empty***':$this->module_list,
 			),
 			'model' => Array(
 				'count' => count($this->model_list),
