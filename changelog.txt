@@ -1,3 +1,11 @@
+0.1.0 Alpha
+- Zast¹piono wszystkie funkcje logów (writelog, log_*) na funkcjê wlog
+- Poprawiono funkcjê loadModule
+- Funkcja loadModule, loadModel, loadController automatycznie wyszukuje oraz wczytuje klase
+- Modu³y
+	* Modu³y nie wymagaj¹ w konfiguracji danych main_class_name
+	* Nazwa klasy modu³u powinna byæ unikatowa
+
 0.0.6 Alpha
 - Poprawiono generowanie œcie¿ki do wczytywanego pliku w funkcji Template, loadView, loadModel, loadController
 - Zmiana metody wczytywania modu³u w funkcji loadModule na require_once

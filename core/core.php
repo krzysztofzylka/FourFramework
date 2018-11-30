@@ -1,40 +1,20 @@
 <?php
 class core{
-	//konfiguracja
-	public $config;
-	//wersja rdzenia frameworka
-	public $version = '0.0.6 Alpha';
-	//zmienne dla modułów
-	public $module;
-	public $module_list = Array();
-	public $module_config = Array();
-	//zmienne dla modeli
-	public $model;
-	public $model_list = Array();
-	//zmienne dla template
-	public $template_dir = 'template/';
-	public $template_extension = '.inc.tpl';
-	//zmienne dla logów
-	public $log_save = true;
-	public $log_show = Array(
-		'message' => false, //wyświetlenie informacji w logach
-		'error' => true, //wyświetlanie błędów w logach
-		'info' => true //wyświetlanie błędów w logach
-	);
-	//powroty (../) do folderu głównego
-	public $reversion = '';
+	//wersja programu
+	public $version = '0.1.0 Alpha';
 	//Funkcja główna
 	public function __construct(){
-		$this->config = include('config.php');
+		// $this->config = include('config.php');
+		include('variable.php');
 		//jeżeli logi włączone to ich wyświetlenie
-		if($this->config['error'] == true){
+		if($this->error == true){
 			error_reporting(E_ALL);
 			ini_set('display_errors', 1);
 			ini_set('default_enable', 1);
 		}
 		//jeżeli logi błędów php mają być zapisywane do pliku
-		if($this->config['php_error'] == true){
-			$dir = $this->reversion.$this->config['log_dir'].$this->config['php_error_dir'];
+		if($this->php_error == true){
+			$dir = $this->php_error_dir.$this->php_error_file;
 			ini_set("error_log", $dir);
 		}
 		//automatyczne tworzenie ścieżki dla zmiennej reversion
@@ -50,59 +30,40 @@ class core{
 		//tworzenie ścieżki
 		$path = $this->reversion.$dir.$name.'.php';
 		//jeżeli plik nie istnieje
-		if(!is_file($path)) $this->_fatalError('Error loading view file on path: '.$path.' (core)');
+		if(!is_file($path)) return $this->wlog('Error loading view file on path: '.$path, 'core', 'error');
 		//dodanie logu do pliku
-		$this->log_message('Success loading view file on path: '.$path.' (core.php)');
+		$this->wlog('Success loading view file on path: '.$path, 'core', 'message');
 		//wczytywanie pliku
 		require($path);
 	}
 	//Ładowanie pliku modułu (folder module/)
 	public function loadModule($name){
-		//tworznie scieżki do folderu modułu
-		$path = $this->reversion.'module/'.$name.'/';
-		//sprawdzenie czy moduł jest już załadowany
-		if(!$this->checkModule($name)){
-			//ścieżka do konfiguracji
-			$path_config = $path."config.php";
-			//sprawdzanie czy plik z konfiguracją istnieje
-			if(!is_file($path_config)) $this->_fatalError('Error loading module '.$name.' on path: '.$path.' (core)');
-			//ładowanie konfiguracji
-			$config = include($path_config);
-			//wczytywanie konfiguracji modułu do tablicy
-			$this->module_config[$name] = $config;
-			$this->module_config[$name]['path'] = $path;
-			//sprawdzenie czy w konfiguracji modułu są dane 'name'
-			if(!isset($config['name'])) $this->module_config[$name]['name'] = $name;
-			//sprawdzanie czy moduł wymaga dodatkowych modułów
-			if(isset($config['module_include'])){
-				//pętla sprawdzająca
-				foreach($config['module_include'] as $requiremodule){
-					//jeżeli moduł nie jest załadowany
-					if(!in_array($requiremodule, $this->module_list)){
-						$this->_fatalError('Error loading module '.$name.', you must include and configurate other module: '.$requiremodule.' (core)');
-					}
-				}
-			}
-			//wczytywanie wybranych plików
-			foreach($config['include'] as $file) require_once($path.$file);
-			//ścieżka do głównego pliku z klasą
-			$path_mainFile = $path.$config['main_file'];
-			//sprawdzanie czy plik z klasą istnieje
-			if(is_file($path_mainFile)){
-				//sprawdzanie czy klasa o takiej samej nazwie nie jest już wcztana
-				if(in_array($config['main_class_name'], get_declared_classes())) $this->_fatalError('Error loading module '.$name.' on path: '.$path_mainFile.', this class name it\'s already exists (core)');
-				//wczytywanie klasy
-				include($path_mainFile);
-				//dodawanie modułu do tablicy ($1 -> $core, $2 -> config)
-				$this->module[$name] = new $config['main_class_name']($this, $this->module_config[$name]);
-			};
-			//dodawanie modułu do listy modułów
-			array_push($this->module_list, $name);
-			//informacja o poprawnie załadowanym module
-			$this->log_message('Success loading module '.$name.' on path: '.$path.' (core.php)');
-			return true;
-		//jeżeli moduł nie został wczytany
-		}else return false;
+		$path = $this->reversion.'module/'.$name.'/'; //ścieżka do modułu
+		$path_config = $path."config.php"; //ścieżka do konfiguracji
+		//błąd jeżeli moduł jest już zalogowany
+		if($this->checkModule($name))
+			return wlog('module \''.$name.'\' is alerty exists', 'core', 'error');
+		if(!is_file($path_config))
+			$this->wlog('error loading module '.$name.' on path: '.$path, 'core', 'error');
+		//ładowanie konfiguracji do tablicy
+		$config = include($path_config);
+		$config['path'] = $path;
+		$this->module_config[$name] = $config;
+		//sprawdzanie czy moduł wymaga dodatkowych modułów
+		if(isset($config['module_include']))
+			foreach($config['module_include'] as $requiremodule)
+				if(!in_array($requiremodule, $this->module_list))
+					return $this->wlog('Error loading module '.$name.', you must include and configurate other module: '.$requiremodule, 'core', 'error');
+		//wczytywanie wybranych plików
+		foreach($config['include'] as $file) require_once($path.$file);
+		//pobieranie klasy
+		$className = $this->_loadClassFromFile($path.$config['main_file']);
+		$this->module[$name] = new $className($this, $config);
+		//dodawanie modułu do listy modułów
+		array_push($this->module_list, $name);
+		//informacja o poprawnie załadowanym module
+		$this->wlog('Success loading module '.$name.' on path: '.$path, 'config', 'message');
+		return true;
 	}
 	//Usunięcie załadowanego modułu
 	public function unloadModule($name){
@@ -126,17 +87,14 @@ class core{
 			//generowanie ścieżki do pliku
 			$path = $this->reversion.$dir.$name.'.php';
 			//jeżli plik nie istnieje
-			if(!is_file($path)) $this->_fatalError('Error loading model file on path: '.$path.' (core)');
-			//log o pozytywnym załadowaniu modelu
-			$this->log_message('Success loading model file on path: '.$path.' (core.php)');
-			//wczytywanie pliku modeli
-			$this->_include($path);
-			//tworzenie nazwy dla klasy
-			$modelName = $name."Model";
-			//dodawanie modeli do tablicy
-			$this->model[$name] = new $modelName($this);
+			if(!is_file($path)) return $this->wlog('Error loading model file on path: '.$path, 'core', 'message');
+			//ładowanie klasy
+			$className = $this->_loadClassFromFile($path);
+			$this->model[$name] = new $className($this, $config);
 			//dodawanie nazwy modeli do listy
 			array_push($this->model_list, $name);
+			//informacja o sukcesie
+			$this->wlog('Success loading model file on path: '.$path, 'core', 'message');
 			return true;
 		}else return false;
 	}
@@ -146,10 +104,11 @@ class core{
 		$path = $this->reversion.$dir.$name.'.php';
 		//jeżeli plik nie istnieje
 		if(!is_file($path)) $this->_fatalError('Error loading controller file on path: '.$path.' (core)');
+		//ładowanie klasy
+		$className = $this->_loadClassFromFile($path);
+		new $className($this, $config);
 		//log o pozytywnym załadowaniu modelu
-		$this->log_message('Success loading controller file on path: '.$path.' (core.php)');
-		//wczytywanie pliki
-		$this->_include($path);
+		$this->wlog('Success loading controller file on path: '.$path, 'core', 'message');
 		//wykonanie kontrolera
 		new $name($this);
 	}
@@ -161,22 +120,24 @@ class core{
 		//tworzenie ścieżki do pliku
 		$path = $this->reversion.$dir.$file.$ext;
 		//jeżeli plik nie istnieje
-		if(!is_file($path)) $this->_fatalError('Error loading template file on path: '.$path.' (core)');
+		if(!is_file($path)) $this->wlog('Error loading template file on path: '.$path, 'core', 'error');
 		//pobieranie treści pliku do zmiennej
 		$data = file_get_contents($path);
 		//konwersja danych szablonu
-		foreach($this->config['array_template'] as $text => $content) $data = str_replace("{\$".$text."\$}", $content, $data);
+		foreach($this->config['array_template'] as $text => $content)
+			$data = str_replace("{\$".$text."\$}", $content, $data);
 		//konwersja danych których nie ma na liście
 		$data = preg_replace('({\$(.*?)\$})', "", $data);
 		//dodanie logu
-		$this->log_message('Success loading template file on path: '.$path.' (core.php)');
+		$this->wlog('Success loading template file on path: '.$path, 'core', 'message');
 		//wyświetlenie szablonu
 		echo $data;
 	}
 	//Ładowanie danych do szablonu np.
 	public function templateSet($name, $value, $edit=true){
 		//jeżeli $edit==1 oraz dane już istnieją
-		if(in_array($name, $this->config['array_template_list']) and $edit==true) $this->config['array_template'][$name] .= $value;
+		if(in_array($name, $this->config['array_template_list']) and $edit==true)
+			$this->config['array_template'][$name] .= $value;
 		//tworzenie nowych danych
 		else{
 			//aktualizacja danych
@@ -184,57 +145,6 @@ class core{
 			//dodanie danych do tablicy
 			array_push($this->config['array_template_list'], $name);
 		}
-	}
-	//funkcja wypisująca logi
-	public function writelog($string, $type){
-		//sprawdzenie czy logi są uruchomione
-		if($this->log_save == false) return false;
-		//ścieżka do folderu z logami
-		$path = $this->reversion.$this->config['log_dir'];
-		//sprawdzenie czy plik logu już istnieje
-		if(!file_exists($path)) mkdir($path, 0644, true);
-		//tworzenie ścieżki do pliku logu
-		$path = $path.$this->config['log_file'];
-		//tablica z ciągem do zmiany
-		$replace = Array('year' => date('Y'), 'month' => date('m'), 'day' => date('d'), 'hour' => sprintf('%02d', date('G')), 'min' => date('i'), 'sec' => date('s'), 'type' => $type, 'string' => $string);
-		//tekst który będzie w lini
-		$write = $this->config['log_string'];
-		//otwarcie pliku
-		$open = fopen($path, "a+") or die('<p>error open file '.$path.'</p>');
-		//zamiana danych zapisywanych do zmiennej
-		foreach($replace as $data => $string) $write = str_replace("{".$data."}", $string, $write);
-		//wpisanie danych do pliku
-		fwrite($open, $write);
-		//zamykanie plików
-		fclose($open);
-	}
-	//log z błędem
-	public function log_error($string){
-		//sprawdzanie czy wpisywanie logów błędów jest uruchomione
-		if($this->log_show['error'] == false) return false;
-		//wpisanie logu do pliku
-		return $this->writelog($string, 'error');
-	}
-	//log z wiadomością
-	public function log_message($string){
-		//sprawdzanie czy wpisywanie logów informacji jest uruchomione
-		if($this->log_show['message'] == false) return false;
-		//wpisanie logu do pliku
-		return $this->writelog($string, 'message');
-	}
-	//log z informacją
-	public function log_info($string){
-		//sprawdzanie czy wpisywanie logów informacji jest uruchomione
-		if($this->log_show['info'] == false) return false;
-		//wpisanie logu do pliku
-		return $this->writelog($string, 'info');
-	}
-	//w przypadku błędów krytycznych
-	public function _fatalError($string){
-		//wpisanie logu błędu do pliku
-		$this->log_error($string);
-		//zakończenie ładowania strony i wyświetlenie błędu
-		die('<b>Fatal error:</b><br /><i>'.$string.'</i>');
 	}
 	//wczytywanie pliku jeżeli istnieje
 	public function _include($path){
@@ -249,11 +159,10 @@ class core{
 			'version' => $this->version,
 			'reversion' => $this->reversion==''?'***none***':$this->reversion,
 			'error' => [
-				'show_error' => $this->config['error']==true?'true':'false',
+				'show_error' => $this->error==true?'true':'false',
 				'php_error' => [
-					'active' => $this->config['php_error']==true?'true':'false',
-					'dir' => $this->config['php_error_dir'],
-					'full_path' => $this->reversion.$this->config['log_dir'].$this->config['php_error_dir'],
+					'active' => $this->php_error==true?'true':'false',
+					'dir' => $this->php_error_dir,
 				],
 			],
 			'module' => Array(
@@ -270,13 +179,34 @@ class core{
 			),
 			'log' => Array(
 				'save' => $this->log_save==true?'true':'false',
-				'dir' => $this->config['log_dir'],
-				'save_type' => Array(
-					'message' => $this->log_show['message']==true?'true':'false',
-					'error' => $this->log_show['error']==true?'true':'false',
-					'info' => $this->log_show['info']==true?'true':'false',
-				),
+				'dir' => $this->log_dir,
 			),
 		];
     }
+	//wpisanie logu
+	public function wlog($value, $name=-1, $type=-1){
+		//jeżeli logi wyłączone
+		if($this->log_save==false) return false;
+		//ciąg do zapisania
+		$string = '['.date('Y.m.d h:m:s.v').'] ['.$name.'] ['.$type.'] ['.$value.']'.PHP_EOL;
+		//ścieżka do pliku
+		$path = $this->log_dir.$this->log_file;
+		//jeżeli plik nie istnieje to utworzenie go
+		if(!file_exists($path)) touch($path);
+		//zapis do pliku
+		return file_put_contents($path, $string, FILE_APPEND);
+	}
+	//pobieranie klasy i zwracanie jej nazwy
+	public function _loadClassFromFile($path){
+		//pobieranie tablicy z klasami
+		$cln = get_declared_classes();
+		//wczytanie pliku
+		include($path);
+		// wyszukiwanie wczytanego objektu
+		$classname = array_diff(get_declared_classes(), $cln);
+		//sprawdzanie czy jakaś klasa została znaleziona
+		if(count($classname) ==  0) return $this->wlog('error find object in file, path: \''.$path.'\'', 'core', 'error');
+		//zwracanie nazwy
+		return $classname[key($classname)];
+	}
 }
