@@ -1,7 +1,7 @@
 <?php
 class core{
 	//wersja programu
-	public $version = '0.1.0 Alpha';
+	public $version = '0.1.1 Alpha';
 	//Funkcja główna
 	public function __construct(){
 		// $this->config = include('config.php');
@@ -14,7 +14,7 @@ class core{
 		}
 		//jeżeli logi błędów php mają być zapisywane do pliku
 		if($this->php_error == true){
-			$dir = $this->php_error_dir.$this->php_error_file;
+			$dir = $this->reversion.$this->php_error_dir.$this->php_error_file;
 			ini_set("error_log", $dir);
 		}
 		//automatyczne tworzenie ścieżki dla zmiennej reversion
@@ -62,7 +62,7 @@ class core{
 		//dodawanie modułu do listy modułów
 		array_push($this->module_list, $name);
 		//informacja o poprawnie załadowanym module
-		$this->wlog('Success loading module '.$name.' on path: '.$path, 'config', 'message');
+		$this->wlog('Success loading module '.$name.' on path: '.$path, 'core', 'message');
 		return true;
 	}
 	//Usunięcie załadowanego modułu
@@ -90,7 +90,7 @@ class core{
 			if(!is_file($path)) return $this->wlog('Error loading model file on path: '.$path, 'core', 'message');
 			//ładowanie klasy
 			$className = $this->_loadClassFromFile($path);
-			$this->model[$name] = new $className($this, $config);
+			$this->model[$name] = new $className($this);
 			//dodawanie nazwy modeli do listy
 			array_push($this->model_list, $name);
 			//informacja o sukcesie
@@ -106,11 +106,9 @@ class core{
 		if(!is_file($path)) $this->_fatalError('Error loading controller file on path: '.$path.' (core)');
 		//ładowanie klasy
 		$className = $this->_loadClassFromFile($path);
-		new $className($this, $config);
+		new $className($this);
 		//log o pozytywnym załadowaniu modelu
 		$this->wlog('Success loading controller file on path: '.$path, 'core', 'message');
-		//wykonanie kontrolera
-		new $name($this);
 	}
 	//Ładowanie szablonu strony (folder template/)
 	public function Template($file, $dir = -1, $ext = -1){
@@ -124,7 +122,7 @@ class core{
 		//pobieranie treści pliku do zmiennej
 		$data = file_get_contents($path);
 		//konwersja danych szablonu
-		foreach($this->config['array_template'] as $text => $content)
+		foreach($this->array_template as $text => $content)
 			$data = str_replace("{\$".$text."\$}", $content, $data);
 		//konwersja danych których nie ma na liście
 		$data = preg_replace('({\$(.*?)\$})', "", $data);
@@ -136,22 +134,15 @@ class core{
 	//Ładowanie danych do szablonu np.
 	public function templateSet($name, $value, $edit=true){
 		//jeżeli $edit==1 oraz dane już istnieją
-		if(in_array($name, $this->config['array_template_list']) and $edit==true)
-			$this->config['array_template'][$name] .= $value;
+		if(in_array($name, $this->array_template_list) and $edit==true)
+			$this->array_template[$name] .= $value;
 		//tworzenie nowych danych
 		else{
 			//aktualizacja danych
-			$this->config['array_template'][$name] = $value;
+			$this->array_template[$name] = $value;
 			//dodanie danych do tablicy
-			array_push($this->config['array_template_list'], $name);
+			array_push($this->array_template_list, $name);
 		}
-	}
-	//wczytywanie pliku jeżeli istnieje
-	public function _include($path){
-		//sprawdzanie czy plik istnieje i jeżeli tak to wczytywanie go
-		if(is_file($path)) return include($path);
-		//zwracanie false jeżeli błąd
-		return false;
 	}
 	//funkcja debugująca
 	public function __debugInfo() {
@@ -190,7 +181,7 @@ class core{
 		//ciąg do zapisania
 		$string = '['.date('Y.m.d h:m:s.v').'] ['.$name.'] ['.$type.'] ['.$value.']'.PHP_EOL;
 		//ścieżka do pliku
-		$path = $this->log_dir.$this->log_file;
+		$path = $this->reversion.$this->log_dir.$this->log_file;
 		//jeżeli plik nie istnieje to utworzenie go
 		if(!file_exists($path)) touch($path);
 		//zapis do pliku

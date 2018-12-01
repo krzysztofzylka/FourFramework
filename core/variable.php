@@ -11,12 +11,14 @@ $this->model_list = [];
 //dla szablonu
 $this->template_dir = 'template/';
 $this->template_extension = '.inc.tpl';
+$this->array_template_list = []; //zmienna zawierająca liste danych
+$this->array_template = []; //zmienna zawierająca dane
 //zmienne dla logów
-$this->log_dir = $this->reversion.'log/'; //folder logów
+$this->log_dir = 'log/'; //folder logów
 $this->log_file = 'log_'.date('Y_m').'.log'; //plik logów
 $this->log_save = true; //tworzenie logów
 //zmienne dla logów błędów PHP
 $this->error = true; //wyświetlenie błędów PHP
 $this->php_error = true; //dodawanie do logów błędów PHP
 $this->php_error_file = 'log_php_'.date('Y_m').'.log'; //plik logów
-$this->php_error_dir = $this->reversion.'log/'; //folder błędów PHP
+$this->php_error_dir = 'log/'; //folder błędów PHP

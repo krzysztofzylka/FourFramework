@@ -1,3 +1,10 @@
+0.1.1 Alpha
+- Poprawiono funkcje szablonów
+- Usuniêto funkcjê _include
+- Poprawiono funkcjê loadController
+- Poprawiono logi w funkcji loadModule
+- Poprawiono problem z powrotem karetki w funkcjach logów
+
 0.1.0 Alpha
 - Zast¹piono wszystkie funkcje logów (writelog, log_*) na funkcjê wlog
 - Poprawiono funkcjê loadModule
