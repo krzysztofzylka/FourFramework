@@ -24,6 +24,8 @@ class core{
 			// wpisanie powrotu folderu do zmiennej
 			$this->reversion .= "../";
 		}
+		//uruchamianie rozszerzeń
+		$this->_startExtension();
 	}
 	//Ładowanie pliku widoku (folder view/)
 	public function loadView($name, $dir = "view/"){
@@ -188,7 +190,7 @@ class core{
 		return file_put_contents($path, $string, FILE_APPEND);
 	}
 	//pobieranie klasy i zwracanie jej nazwy
-	public function _loadClassFromFile($path){
+	private function _loadClassFromFile($path){
 		//pobieranie tablicy z klasami
 		$cln = get_declared_classes();
 		//wczytanie pliku
@@ -199,5 +201,11 @@ class core{
 		if(count($classname) ==  0) return $this->wlog('error find object in file, path: \''.$path.'\'', 'core', 'error');
 		//zwracanie nazwy
 		return $classname[key($classname)];
+	}
+	//uruchamianie rozszerzenia
+	private function _startExtension(){
+		//rozszerzenie bazy danych
+		include($this->reversion.'core/extension/db.php');
+		$this->db = new core_db_bakj98D($this);
 	}
 }

@@ -22,3 +22,5 @@ $this->error = true; //wyświetlenie błędów PHP
 $this->php_error = true; //dodawanie do logów błędów PHP
 $this->php_error_file = 'log_php_'.date('Y_m').'.log'; //plik logów
 $this->php_error_dir = 'log/'; //folder błędów PHP
+//rozszerzenia
+$this->db = null;
