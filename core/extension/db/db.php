@@ -4,7 +4,7 @@ class core_db_bakj98D{
 	protected $path = '';
 	public function __construct($obj){
 		$this->core = $obj;
-		$this->path = $obj->reversion.'core/extension/db/';
+		$this->path = $obj->reversion.'core/extension/db/base/';
 		if(!file_exists($this->path)) mkdir($this->path);
 	}
 	public function write($db_name, $name, $value){

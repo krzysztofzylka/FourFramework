@@ -1,7 +1,7 @@
 <?php
 class core{
 	//wersja programu
-	public $version = '0.1.1 Alpha';
+	public $version = '0.1.3 Alpha';
 	//Funkcja główna
 	public function __construct(){
 		// $this->config = include('config.php');
@@ -30,7 +30,7 @@ class core{
 	//Ładowanie pliku widoku (folder view/)
 	public function loadView($name, $dir = "view/"){
 		//tworzenie ścieżki
-		$path = $this->reversion.$dir.$name.'.php';
+		$path = $this->reversion.$dir.basename($name).'.php';
 		//jeżeli plik nie istnieje
 		if(!is_file($path)) return $this->wlog('Error loading view file on path: '.$path, 'core', 'error');
 		//dodanie logu do pliku
@@ -40,6 +40,9 @@ class core{
 	}
 	//Ładowanie pliku modułu (folder module/)
 	public function loadModule($name){
+		//zabezpieczenie nazwy
+		$name = basename($name);
+		//tworzenie ścieżek
 		$path = $this->reversion.'module/'.$name.'/'; //ścieżka do modułu
 		$path_config = $path."config.php"; //ścieżka do konfiguracji
 		//błąd jeżeli moduł jest już zalogowany
@@ -50,6 +53,7 @@ class core{
 		//ładowanie konfiguracji do tablicy
 		$config = include($path_config);
 		$config['path'] = $path;
+		if(!isset($config['name']) or $config['name'] == '') $config['name'] = $name;
 		$this->module_config[$name] = $config;
 		//sprawdzanie czy moduł wymaga dodatkowych modułów
 		if(isset($config['module_include']))
@@ -84,6 +88,8 @@ class core{
 	}
 	//Ładowanie modelu (folder model/)
 	public function loadModel($name, $dir = "model/"){
+		//zabezpieczenie pliku
+		$name = basename($name);
 		//sprawdzanie czy model nie jest już wczytany
 		if(!in_array($name, $this->model_list)){
 			//generowanie ścieżki do pliku
@@ -103,7 +109,7 @@ class core{
 	//Ładowanie kontrolera (folder controller/)
 	public function loadController($name, $dir = "controller/"){
 		//tworzenie ścieżki do pliku
-		$path = $this->reversion.$dir.$name.'.php';
+		$path = $this->reversion.$dir.basename($name).'.php';
 		//jeżeli plik nie istnieje
 		if(!is_file($path)) $this->_fatalError('Error loading controller file on path: '.$path.' (core)');
 		//ładowanie klasy
@@ -156,6 +162,7 @@ class core{
 				'php_error' => [
 					'active' => $this->php_error==true?'true':'false',
 					'dir' => $this->php_error_dir,
+					'file' => $this->php_error_file,
 				],
 			],
 			'module' => Array(
@@ -173,13 +180,20 @@ class core{
 			'log' => Array(
 				'save' => $this->log_save==true?'true':'false',
 				'dir' => $this->log_dir,
+				'file' => $this->log_file,
+				'hidden_type' => $this->log_hide_type,
 			),
+			'extension' => [
+				'db', 'moduleManager',
+			]
 		];
     }
 	//wpisanie logu
 	public function wlog($value, $name=-1, $type=-1){
 		//jeżeli logi wyłączone
 		if($this->log_save==false) return false;
+		//anulowanie dodawania wybranych typów logów
+		if(in_array($type, $this->log_hide_type)) return false;
 		//ciąg do zapisania
 		$string = '['.date('Y.m.d h:m:s.v').'] ['.$name.'] ['.$type.'] ['.$value.']'.PHP_EOL;
 		//ścieżka do pliku
@@ -205,7 +219,10 @@ class core{
 	//uruchamianie rozszerzenia
 	private function _startExtension(){
 		//rozszerzenie bazy danych
-		include($this->reversion.'core/extension/db.php');
+		include($this->reversion.'core/extension/db/db.php');
 		$this->db = new core_db_bakj98D($this);
+		//rozszerzenie menadżera modułów
+		include($this->reversion.'core/extension/moduleManager/moduleManager.php');
+		$this->moduleManager = new core_moduleManager_hdyT53gA($this);
 	}
 }
