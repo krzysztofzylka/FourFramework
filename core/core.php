@@ -1,7 +1,7 @@
 <?php
 class core{
 	//wersja programu
-	public $version = '0.1.3 Alpha';
+	public $version = '0.1.3a Alpha';
 	//Funkcja główna
 	public function __construct(){
 		// $this->config = include('config.php');
@@ -58,7 +58,7 @@ class core{
 		//sprawdzanie czy moduł wymaga dodatkowych modułów
 		if(isset($config['module_include']))
 			foreach($config['module_include'] as $requiremodule)
-				if(!in_array($requiremodule, $this->module_list))
+				if(!$this->checkModule($requiremodule))
 					return $this->wlog('Error loading module '.$name.', you must include and configurate other module: '.$requiremodule, 'core', 'error');
 		//wczytywanie wybranych plików
 		foreach($config['include'] as $file) require_once($path.$file);
@@ -69,7 +69,7 @@ class core{
 		array_push($this->module_list, $name);
 		//informacja o poprawnie załadowanym module
 		$this->wlog('Success loading module '.$name.' on path: '.$path, 'core', 'message');
-		return true;
+		return $this->module[$name];
 	}
 	//Usunięcie załadowanego modułu
 	public function unloadModule($name){
@@ -111,7 +111,7 @@ class core{
 		//tworzenie ścieżki do pliku
 		$path = $this->reversion.$dir.basename($name).'.php';
 		//jeżeli plik nie istnieje
-		if(!is_file($path)) $this->_fatalError('Error loading controller file on path: '.$path.' (core)');
+		if(!is_file($path)) return $this->wlog('Error loading controller file on path: '.$path, 'core', 'error');
 		//ładowanie klasy
 		$className = $this->_loadClassFromFile($path);
 		new $className($this);
@@ -184,7 +184,7 @@ class core{
 				'hidden_type' => $this->log_hide_type,
 			),
 			'extension' => [
-				'db', 'moduleManager',
+				'db', ['nazwa' => 'moduleManager', 'debug' => $this->moduleManager->__debugInfo()], ['nazwa'=>'test', 'debug'=> $this->test->__debugInfo()],
 			]
 		];
     }
@@ -224,5 +224,8 @@ class core{
 		//rozszerzenie menadżera modułów
 		include($this->reversion.'core/extension/moduleManager/moduleManager.php');
 		$this->moduleManager = new core_moduleManager_hdyT53gA($this);
+		//rozszerzenie testowania
+		include($this->reversion.'core/extension/test/test.php');
+		$this->test = new test_g5hAGth($this);
 	}
 }

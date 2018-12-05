@@ -10,6 +10,20 @@
 		if($color == 'red') $opcje .= '<a href="'.$this->generateLink('on--'.$name).'">Włącz</a> ';
 		else $opcje .= '<a href="'.$this->generateLink('off--'.$name).'">Wyłącz</a> ';
 		if($color == 'green') if(method_exists($this->core->module[$name], '__debugInfo')) $opcje .= '<a href="'.$this->generateLink('debug--'.$name).'">Debug</a>';
+		$api_data = '';
+		if($this->vapi_use or $this->vapi_offline){
+			$api = $this->api_get(-1, $config['uid']);
+			if($api['count'] == 1){
+				$api_date = (int)strtotime($api['list']['date']);
+				$mod_date = (int)strtotime($config['date']);
+				if($api_date > $mod_date){ //dostępna aktualizacja
+					$color = 'orange';
+					$api_data = "(Dostępna aktualizacja)";
+				}
+				if($api_date < $mod_date) $color = 'purple';
+			}
+		}
+		
 		echo "<tr>
 			<td style='border-bottom: 1px solid black; margin: 0px; padding: 0px;'>
 				<table width='100%'>
@@ -24,7 +38,7 @@
 						</td>
 						<td>
 							<!-- wersja -->
-							".$config['version']."
+							".$config['version']." <i>".$api_data."</i>
 						</td>
 					</tr>
 					<tr>

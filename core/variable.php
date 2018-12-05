@@ -26,3 +26,4 @@ $this->php_error_dir = 'log/'; //folder błędów PHP
 //rozszerzenia
 $this->db = null; //baza danych
 $this->moduleManager = null; //menadżer modułów
+$this->test = null; //menadżer testowania

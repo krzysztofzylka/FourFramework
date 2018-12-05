@@ -1,3 +1,11 @@
+0.1.3a Alpha
+- Dodano wyœwietlanie debugu rozszerzeñ
+- Dodano do rozszerzenia moduleManager mo¿liwoœæ ³¹czenia z API oraz pobieranie z niego modu³ów
+- Dodano rozszerzenie testowania modu³ów i kodu
+- Poprawiono kod pod wzglêdem b³êdów fatalnych
+- Po wczytaniu modu³u funkcja loadModule zwraca za³adowan¹ klasê
+- Rozszerzenie moduleManager ma mo¿liwoœæ pobrania danych o module i trzymania ich w wersji offline
+
 0.1.3 Alpha
 - Dodano zabezpieczenie plików
 - Je¿eli modu³ nie posiada typu 'name' w konfiguracji to jest on automatycznie dodawany
