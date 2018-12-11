@@ -9,8 +9,8 @@ $this->module_config = [];
 $this->model = [];
 $this->model_list = [];
 //dla szablonu
-$this->template_dir = 'template/';
-$this->template_extension = '.inc.tpl';
+$this->template_dir = 'template/'; //nazwa pliku szablonu
+$this->template_extension = '.inc.tpl'; //rozszerzenie pliku szablonu
 $this->array_template_list = []; //zmienna zawierająca liste danych
 $this->array_template = []; //zmienna zawierająca dane
 //zmienne dla logów
@@ -27,3 +27,6 @@ $this->php_error_dir = 'log/'; //folder błędów PHP
 $this->db = null; //baza danych
 $this->moduleManager = null; //menadżer modułów
 $this->test = null; //menadżer testowania
+//API
+$this->API_secure = false; //wlacza połączenie z API za pomocą SSL (https), może spowolnić kod około 10 razy
+$this->API = ($this->API_secure==true?'https':'http').'://www.fourframework.hmcloud.pl'; //url do API

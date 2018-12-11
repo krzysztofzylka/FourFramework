@@ -1,3 +1,12 @@
+0.1.4 Alpha
+- Funkcja loadModel oraz loadController zwraca objekt
+- Zabezpieczono zmienn¹ $file w funkcji Template przed wpisaniem œcie¿ki
+- Dodano funkcjê _API pobieraj¹c¹ dane z API
+- Poprawiono rozszerzenie obs³ugi bazy danych
+- Dodano do rozszerzenia bazy danych domyœlne wyœwietlanedane je¿eli brak danych w bazie
+- Poprawiono rozszerzenie zarz¹dzania modu³ami
+- Poprawiono funkcjê write w rozszerzeniu db
+
 0.1.3a Alpha
 - Dodano wyœwietlanie debugu rozszerzeñ
 - Dodano do rozszerzenia moduleManager mo¿liwoœæ ³¹czenia z API oraz pobieranie z niego modu³ów

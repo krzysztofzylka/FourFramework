@@ -11,7 +11,7 @@ $this->manager = [
 $this->urlGetData = 'coreModuleManager';
 //zmienne dla API
 $this->vapi_use = false;
-$this->vapi_url = 'https://fourframework.hmcloud.pl/';
+$this->vapi_url = 'http://fourframework.hmcloud.pl/';
 $this->vapi_type = 0;
 //offline data
-$this->vapi_offline = false; //zapisane typy w trybie offline / vapi_use musi być wyłączone
+$this->vapi_offline = true; //zapisane typy w trybie offline / vapi_use musi być wyłączone

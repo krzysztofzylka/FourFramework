@@ -11,17 +11,15 @@
 		else $opcje .= '<a href="'.$this->generateLink('off--'.$name).'">Wyłącz</a> ';
 		if($color == 'green') if(method_exists($this->core->module[$name], '__debugInfo')) $opcje .= '<a href="'.$this->generateLink('debug--'.$name).'">Debug</a>';
 		$api_data = '';
-		if($this->vapi_use or $this->vapi_offline){
-			$api = $this->api_get(-1, $config['uid']);
-			if($api['count'] == 1){
-				$api_date = (int)strtotime($api['list']['date']);
-				$mod_date = (int)strtotime($config['date']);
-				if($api_date > $mod_date){ //dostępna aktualizacja
-					$color = 'orange';
-					$api_data = "(Dostępna aktualizacja)";
-				}
-				if($api_date < $mod_date) $color = 'purple';
+		$api = $this->core->_API('uid='.$config['uid']);
+		if($api['count'] == 1){
+			$api_date = (int)strtotime($api['list'][0]['date']);
+			$mod_date = (int)strtotime($config['date']);
+			if($api_date > $mod_date){ //dostępna aktualizacja
+				$color = 'orange';
+				$api_data = "(Dostępna aktualizacja)";
 			}
+			if($api_date < $mod_date) $color = 'purple';
 		}
 		
 		echo "<tr>
