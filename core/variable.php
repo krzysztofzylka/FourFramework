@@ -9,12 +9,12 @@ $this->module_config = [];
 $this->model = [];
 $this->model_list = [];
 //dla szablonu
-$this->template_dir = 'template/'; //nazwa pliku szablonu
+$this->template_dir = 'template/'; //ścieżka do folderu z plikami szablonu
 $this->template_extension = '.inc.tpl'; //rozszerzenie pliku szablonu
 $this->array_template_list = []; //zmienna zawierająca liste danych
 $this->array_template = []; //zmienna zawierająca dane
 //zmienne dla logów
-$this->log_dir = 'log/'; //folder logów
+$this->log_dir = 'log/'; //ścieżka do folderu z logami
 $this->log_file = 'log_'.date('Y_m').'.log'; //plik logów
 $this->log_save = true; //tworzenie logów
 $this->log_hide_type = ['message', 'info']; //typy logów które mają być niedodawanie do logów
@@ -30,3 +30,5 @@ $this->test = null; //menadżer testowania
 //API
 $this->API_secure = false; //wlacza połączenie z API za pomocą SSL (https), może spowolnić kod około 10 razy
 $this->API = ($this->API_secure==true?'https':'http').'://www.fourframework.hmcloud.pl'; //url do API
+//biblioteki
+$this->library = null;

@@ -1,3 +1,15 @@
+0.1.5 Alpha
+- Poprawiono funkcjê get_list w rozszerzeniu moduleManager
+- Poprawiono b³¹d w funkcji download w rozszerzeniu moduleManager
+- Poprawiono b³¹d w funkcji loadModule
+- Do³¹czono auomatycznie ³adowane biblioteki u³atwiaj¹ce pisanie modu³ów
+- Poprawiono funkcjê write rozszerzenia db
+- Utworzono biblioteke network wspomagaj¹c¹ odczyt danych z url
+- Poprawiono funkcje rozszerzenia db
+- Poprawiono funkcjê Template
+- Poprawiono deklarowanie funkcji rdzenia
+- Poprawiono deklarowanie funkcji rozszerzenia moduleManager
+
 0.1.4 Alpha
 - Funkcja loadModel oraz loadController zwraca objekt
 - Zabezpieczono zmienn¹ $file w funkcji Template przed wpisaniem œcie¿ki

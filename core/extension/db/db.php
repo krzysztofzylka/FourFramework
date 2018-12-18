@@ -12,12 +12,12 @@ class core_db_bakj98D{
 		//odczytywanie pliku, jeżeli nie istnieje to tworzenie pustej tablicy
 		$read = $this->_readFile($db_name);
 		if($read == false) $read = array();
-		//anulacja jeżeli zapisywane dane są takie same jak w bazie
-		if($temp[$name] == $value) return true;
+															   
+										 
 		//zapis danych do tablicy
-		$temp[$name] = $value;
+		$read[$name] = $value;
 		//zapis dantch do pliku
-		return $this->_saveFile($db_name, $temp);
+		return $this->_saveFile($db_name, $read);
 	}
 	//odczytanie danych z bazy
 	public function read($db_name, $name, $default=null){
@@ -55,8 +55,10 @@ class core_db_bakj98D{
 		$file = $this->path.$db_name.'.php';
 		//kodowanie tablicy
 		$data = '<?php return \''.serialize($array).'\' ?>';
-		//zapis do pliku
-		file_put_contents($file, $data);
+		//zapis do pliku (+ informacja jeżeli niepowodzenie)
+		if(!file_put_contents($file, $data)) $this->core->wlog('Error save string to file \''.$file.'\' data: \''.$data.'\' (before: \''.serialize($array).'\')', 'error', 'db');
+		//dodanie logu o sukcesie
+		else $this->core->wlog('Add data to database \''.$db_name.'\' data: \''.$data.'\'', 'db', 'message');
 		//zwracanie informacji o powodzeniu
 		return true;
 	}
@@ -65,13 +67,15 @@ class core_db_bakj98D{
 		//gerowanie ścieżki do pliku bazy
 		$file = $this->path.$db_name.'.php';
 		//błąd jeżeli plik nie isnieje
-		if(!file_exists($file)) return false;
+		if(!is_file($file)) return false;
 		//wczytanie pliku
 		$read = include($file);
 		//odczytywanie zakodowanych danych z pliku
 		$decode = unserialize($read);
 		//błąd jeżeli dane to nie tablica lub odczytane dane są puste
 		if(!is_array($decode) or $read == '') return false;
+		//log o sukcesie odczytania danych
+		$this->core->wlog('Read data from database \''.$db_name.'\' data: \''.$read.'\'', 'db', 'message');
 		//zwrócenie tablicy
 		return $decode;
 		

@@ -1,12 +1,12 @@
 <?php
 class core{
 	//wersja programu
-	public $version = '0.1.4 Alpha';
-	public $releaseDate = '11.12.2018';
+	public $version = '0.1.5 Alpha';
+	public $releaseDate = '18.12.2018';
 	//Funkcja główna
 	public function __construct(){
 		// $this->config = include('config.php');
-		include('variable.php');
+		require_once('variable.php');
 		//jeżeli logi włączone to ich wyświetlenie
 		if($this->error == true){
 			error_reporting(E_ALL);
@@ -27,9 +27,12 @@ class core{
 		}
 		//uruchamianie rozszerzeń
 		$this->_startExtension();
+		//uruchamianie bibliotek
+		require_once('library.php');
+		$this->library = new core_library_sdgh4y($this);
 	}
 	//Ładowanie pliku widoku (folder view/)
-	public function loadView($name, $dir = "view/"){
+	public function loadView(string $name, string $dir = "view/"){
 		//tworzenie ścieżki
 		$path = $this->reversion.$dir.basename($name).'.php';
 		//jeżeli plik nie istnieje
@@ -40,7 +43,7 @@ class core{
 		return require($path);
 	}
 	//Ładowanie pliku modułu (folder module/)
-	public function loadModule($name){
+	public function loadModule(string $name){
 		//zabezpieczenie nazwy
 		$name = basename($name);
 		//tworzenie ścieżek
@@ -70,10 +73,11 @@ class core{
 		array_push($this->module_list, $name);
 		//informacja o poprawnie załadowanym module
 		$this->wlog('Success loading module '.$name.' on path: '.$path, 'core', 'message');
+		//zwracanie modułu
 		return $this->module[$name];
 	}
 	//Usunięcie załadowanego modułu
-	public function unloadModule($name){
+	public function unloadModule(string $name){
 		//sprawdzanie czy modół istnieje
 		if(!$this->checkModule($name)) return false;
 		//wyszukiwanie modułu w liście modułów
@@ -83,12 +87,12 @@ class core{
 		return true;
 	}
 	//Sprawdzanie czy moduł jest załadowany
-	public function checkModule($name){
+	public function checkModule(string $name) : bool{
 		//zwracanie wartosci czy moduł jest na liście
 		return in_array($name, $this->module_list);
 	}
 	//Ładowanie modelu (folder model/)
-	public function loadModel($name, $dir = "model/"){
+	public function loadModel(string $name, string $dir = "model/"){
 		//zabezpieczenie pliku
 		$name = basename($name);
 		//sprawdzanie czy model nie jest już wczytany
@@ -104,11 +108,13 @@ class core{
 			array_push($this->model_list, $name);
 			//informacja o sukcesie
 			$this->wlog('Success loading model file on path: '.$path, 'core', 'message');
+			//zwracanie modelu
 			return $this->model[$name];
+		//jeżeli błąd
 		}else return false;
 	}
 	//Ładowanie kontrolera (folder controller/)
-	public function loadController($name, $dir = "controller/"){
+	public function loadController(string $name, string $dir = "controller/"){
 		//tworzenie ścieżki do pliku
 		$path = $this->reversion.$dir.basename($name).'.php';
 		//jeżeli plik nie istnieje
@@ -121,12 +127,12 @@ class core{
 		return $object;
 	}
 	//Ładowanie szablonu strony (folder template/)
-	public function Template($file, $dir = -1, $ext = -1){
+	public function Template(string $file, $dir = null, $ext = null){
 		//zabezpieczenie zmiennej $file
 		$file = basename($file);
 		//przybranie wartości domyślnych
-		if($dir == -1) $dir = $this->template_dir;
-		if($ext == -1) $ext = $this->template_extension;
+		$dir = $dir ?? $this->template_dir;
+		$ext = $ext ?? $this->template_extension;
 		//tworzenie ścieżki do pliku
 		$path = $this->reversion.$dir.$file.$ext;
 		//jeżeli plik nie istnieje
@@ -144,20 +150,24 @@ class core{
 		echo $data;
 	}
 	//Ładowanie danych do szablonu np.
-	public function templateSet($name, $value, $edit=true){
+	public function templateSet(string $name, string $value, bool $edit=true) : bool{
 		//jeżeli $edit==1 oraz dane już istnieją
-		if(in_array($name, $this->array_template_list) and $edit==true)
+		if(in_array($name, $this->array_template_list) and $edit==true){
 			$this->array_template[$name] .= $value;
+			return true;
 		//tworzenie nowych danych
-		else{
+		}else{
 			//aktualizacja danych
 			$this->array_template[$name] = $value;
 			//dodanie danych do tablicy
 			array_push($this->array_template_list, $name);
+			return true;
 		}
+		//jeżeli błąd
+		return false;
 	}
 	//funkcja debugująca
-	public function __debugInfo() {
+	public function __debugInfo() : array {
         return [
 			'version' => $this->version,
 			'reversion' => $this->reversion==''?'***none***':$this->reversion,
@@ -201,11 +211,15 @@ class core{
 					'nazwa'=>'test',
 					'debug'=> $this->test->__debugInfo()
 				],
-			]
+			],
+			'library' => [
+				'count' => count($this->library->__list),
+				'list' => $this->library->__list,
+			],
 		];
     }
 	//wpisanie logu
-	public function wlog($value, $name=-1, $type=-1){
+	public function wlog(string $value, $name=null, $type=null){
 		//jeżeli logi wyłączone
 		if($this->log_save==false) return false;
 		//anulowanie dodawania wybranych typów logów
@@ -218,9 +232,11 @@ class core{
 		if(!file_exists($path)) touch($path);
 		//zapis do pliku
 		return file_put_contents($path, $string, FILE_APPEND);
+		//zwrot pobranych danych
+		return $value;
 	}
 	//pobieranie klasy i zwracanie jej nazwy
-	private function _loadClassFromFile($path){
+	private function _loadClassFromFile(string $path){
 		//pobieranie tablicy z klasami
 		$cln = get_declared_classes();
 		//wczytanie pliku
@@ -243,11 +259,10 @@ class core{
 		//rozszerzenie testowania
 		include($this->reversion.'core/extension/test/test.php');
 		//zwracanie objektu
-		
 		$this->test = new test_g5hAGth($this);
 	}
 	//funkcja połączeniowa z API
-	public function _API($script=''){
+	public function _API(string $script='') : array{
 		//zabezpieczenie skryptu
 		$script = htmlspecialchars($script);
 		//rozdzielenie danych
@@ -279,37 +294,14 @@ class core{
 		if(substr($get, strlen($get)-1) == '&') $get = substr($get, 0, strlen($get)-1);
 		//generowanie linku
 		$url = $this->API.$get;
-		//sprawdzanie metody wysyłania do API
-		$metod = 0; //jeżeli błąd zostanie 0
-		if(function_exists('curl_version')) $metod = 1; //jeżeli curl
-		elseif(function_exists('file_get_contents')) $metod = 2; //jeżeli file_get_contents
 		//pobieranie danych
-		switch($metod){
-			//błąd pobierania danych
-			case 0:
-				//zwracanie błędu
-				return false;
-				break;
-			//curl
-			case 1:
-				//inicjonowanie curl
-				$curl = curl_init();
-				//konfiguracja curl
-				curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-				curl_setopt($curl, CURLOPT_URL, $url);
-				//pobieranie danych
-				$getData = curl_exec($curl);
-				//zamykanie curl
-				curl_close($curl);
-				//zwracanie zdekodowanych danych
-				return json_decode($getData, true);
-			//file_get_contents
-			case 2:
-				//pobieranie i dekodowanie danych
-				$getData = json_decode(file_get_contents($url), true);
-				return $getData;
-		}
-		//błąd
+		return $this->library->network->getJSONData($url);
+	}
+	//wersja php
+	private function _phpv($version=null){
+		if($version == null) return PHP_VERSION;
+		if(PHP_VERSION >= $version) return true;
 		return false;
+		
 	}
 }

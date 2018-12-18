@@ -6,20 +6,17 @@ class core_moduleManager_hdyT53gA{
 	protected $path_module;
 	//główna funkcja
 	public function __construct($obj){
-		//generowanie głównych zmiennych1
+		//generowanie głównych zmiennych
 		$this->core = $obj;
 		$this->path = $obj->reversion.'core/extension/moduleManager/';
 		$this->path_module = $obj->reversion.'module/';
-		//wczytywanie zmiennych
 		include($this->path.'variable.php');
-		//autostart modułów
 		$this->_autostart();
-		//sprawdzanie jakie jest włączone połączenie z API
-		// $this->_api_testconnect();
+		$this->_api_testconnect();
 	}
 	//pobieranie listy modułów
 	//0: wszystkie, 1: aktywne
-	public function get_list($type=0){
+	public function get_list(int $type=0) : array{
 		//główna tablica
 		$array = array();
 		//sprawdzanie typu
@@ -30,6 +27,8 @@ class core_moduleManager_hdyT53gA{
 				foreach(scandir($this->path_module) as $name){
 					//ścieżka do modułu
 					$path = $this->path_module.$name.'/';
+					//jeżel dane to nie folder
+					if(strpos($path, '.') > 0) continue;
 					//filtrowanie modułów
 					if(is_file($path) or $name == '.' or $name == '..' or !file_exists($path.'config.php')) continue;
 					//dodawanie modułu do tablicy
@@ -44,7 +43,7 @@ class core_moduleManager_hdyT53gA{
 		}
 	}
 	//wyświetlenie debugowania modułu
-	public function get_debug($name){
+	public function get_debug(string $name){
 		//pobieranie elementu
 		$object = $this->core->module[$name];
 		//jeżeli jest funkcja debugowania
@@ -80,16 +79,12 @@ class core_moduleManager_hdyT53gA{
 	}
 	//wyświetlenie menadżera modułów
 	public function manager(){
-		//wczytywanie funkcji
 		include($this->path.'function/manager.php');
-		//wczytywanie menadżera
 		include($this->path.'type/'.$this->manager['view'].'.php');
 	}
 	//automatyczne uruchamianie modułów
 	protected function _autostart(){
-		//pobieranie danych z bazy
 		$read = $this->core->db->read('core', 'extension_moduleManager_autostart');
-		//wczytywanie modułów
 		foreach(explode(',', $read) as $name){
 			if($name <> '') $this->core->loadModule($name);
 		}
@@ -119,6 +114,46 @@ class core_moduleManager_hdyT53gA{
 		foreach($explode as $id => $arr) $explode[$id] = implode('=', $arr);
 		//zwracanie linka
 		return '?'.implode('&', $explode);
+	}
+	//sprawdzanie typu przesyłania danych
+	private function _api_testconnect(){
+		if(function_exists('curl_version')) $this->vapi_type = 1;
+		$this->vapi_type = 2;
+	}
+	//pobieranie danych z API
+	public function api_get($name=-1, $uid=-1){
+		//jeżeli api wyłączone
+		if($this->vapi_use == false){
+			if($this->vapi_offline){
+				$read = $this->core->db->read('module_manager2_offline', $uid);
+				if($read == null) return ['count' => 0];
+				return unserialize($read);
+			}
+			return;
+		}
+		//jeżeli brak typu
+		if($this->vapi_type == 0) return;
+		$add = '';
+		if($name <> -1) $add .= 'search='.$name;
+		if($uid <> -1){
+			if($add <> '') $add .= '&';
+			$add .= 'uid='.$uid;
+		}
+		if($add <> '') $add = '?'.$add;
+		switch($this->vapi_type){
+			case 1:
+				//curl
+				break;
+			case 2:
+				$data = file_get_contents($this->vapi_url.$add);
+				break;
+		}
+		$data = json_decode($data, true);
+		if($uid <> -1 and $data['count'] == 1){
+			$data['list'] = $data['list'][0];
+		}
+		if($this->vapi_offline) $this->core->db->write('module_manager2_offline', $uid, serialize($data));
+		return $data;
 	}
 	//debugowanie
 	public function __debugInfo(){
@@ -153,32 +188,22 @@ class core_moduleManager_hdyT53gA{
 		];
 	}
 	//pobieranie nowego modulu
-	public function download($url){
-		//sprawdzanei czy vapi jest wybrane
-		// if($this->vapi_type == 0) return;
-		//generowanie ścieżki do pliku temp
-		// $path = $this->path.'temp.zip';
-		//pobieranie typu
-		// switch($this->vapi_type){
-			//curl
-			// case 1:
+	public function download(string $url){
+		if($this->vapi_type == 0) return;
+		$path = $this->path.'temp.zip';
+		switch($this->vapi_type){
+			case 1:
 				// curl
-				// break;
-			//file_put_contents
-			// case 2:
-				// file_put_contents($path, fopen($url, 'r'));
-				// break;
-		// }
-		//pobieranie klasy obsługi plików ZIP
-		// $zip = new ZipArchive;
-		//jeżeli poprawnie uruchomiono plik
-		// if ($zip->open($path) == TRUE) {
-			// rozpakowywanie pliku
-			// $zip->extractTo($this->path_module);
-			// zamykanie archiwum
-			// $zip->close();
-		// }
-		//usunięcie pliku tymczasowego
-		// unlink($path);
+				break;
+			case 2:
+				file_put_contents($path, fopen($url, 'r'));
+				break;
+		}
+		$zip = new ZipArchive;
+		if ($zip->open($path) == TRUE) {
+			$zip->extractTo($this->path_module);
+			$zip->close();
+		}
+		unlink($path);
 	}
 }
