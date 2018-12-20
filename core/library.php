@@ -1,5 +1,5 @@
 <?php
-class core_library_sdgh4y{
+return new class($this){
 	//zmienna z rdzeniem
 	protected $core;
 	//lista załadowanych bibliotek

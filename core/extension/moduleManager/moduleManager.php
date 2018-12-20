@@ -1,5 +1,5 @@
 <?php
-class core_moduleManager_hdyT53gA{
+return new class($this){
 	//główne zmienne
 	protected $core;
 	protected $path;
@@ -61,14 +61,34 @@ class core_moduleManager_hdyT53gA{
 			echo 'Moduł nie posiada funkcji debugującej';
 		}
 	}
+	//wyświetlenie panel administracyjny modułu
+	public function get_adminpanel(string $name){
+		$error = false;
+		//pobieranie elementu
+		if(!in_array($name, $this->core->module_list)){
+			// $path = $this->path_module.$name.'/';
+			// if(is_file($path.'config.php')){
+				// $config = include($path.'config.php');
+				// $config['path'] = $path;
+			// }
+		}else{
+			$config = $this->core->module_config[$name];
+		}
+		//jeżeli jest funkcja debugowania
+		if(isset($config['adminpanel'])){
+			include($config['path'].$config['adminpanel']);
+		}else{
+			echo 'Moduł nie posiada panelu administracyjnego';
+		}
+	}
 	//generowanie szablonu debugowania
 	public function get_debug_style($array){
 		if(is_array($array)) {
 			echo "<table border=1 cellspacing=0 cellpadding=3 width=100%>";
-			echo '<tr><td colspan=2 style="background-color:#333333;"><strong><font color=white>ARRAY</font></strong></td></tr>';
+			echo '<tr><td colspan=2 style="background-color:#333333;padding:2px"><strong><font color=white>ARRAY</font></strong></td></tr>';
 			foreach ($array as $k => $v) {
-					echo '<tr><td valign="top" style="width:40px;background-color:#F0F0F0;">';
-					echo '<strong>' . $k . "</strong></td><td>";
+					echo '<tr><td valign="top" style="width:40px;background-color:#F0F0F0; padding:2px">';
+					echo '<strong>' . $k . "</strong></td><td style='padding:2px'>";
 					$this->get_debug_style($v);
 					echo "</td></tr>";
 			}
@@ -207,3 +227,4 @@ class core_moduleManager_hdyT53gA{
 		unlink($path);
 	}
 }
+?>

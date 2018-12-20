@@ -1,8 +1,8 @@
 <?php
 class core{
 	//wersja programu
-	public $version = '0.1.5 Alpha';
-	public $releaseDate = '18.12.2018';
+	public $version = '0.1.6 Alpha';
+	public $releaseDate = '20.12.2018';
 	//Funkcja główna
 	public function __construct(){
 		// $this->config = include('config.php');
@@ -28,8 +28,7 @@ class core{
 		//uruchamianie rozszerzeń
 		$this->_startExtension();
 		//uruchamianie bibliotek
-		require_once('library.php');
-		$this->library = new core_library_sdgh4y($this);
+		$this->library = require_once('library.php');
 	}
 	//Ładowanie pliku widoku (folder view/)
 	public function loadView(string $name, string $dir = "view/"){
@@ -51,7 +50,7 @@ class core{
 		$path_config = $path."config.php"; //ścieżka do konfiguracji
 		//błąd jeżeli moduł jest już zalogowany
 		if($this->checkModule($name))
-			return wlog('module \''.$name.'\' is alerty exists', 'core', 'error');
+			return $this->wlog('module \''.$name.'\' is alerty exists', 'core', 'error');
 		if(!is_file($path_config))
 			$this->wlog('error loading module '.$name.' on path: '.$path, 'core', 'error');
 		//ładowanie konfiguracji do tablicy
@@ -67,7 +66,7 @@ class core{
 		//wczytywanie wybranych plików
 		foreach($config['include'] as $file) require_once($path.$file);
 		//pobieranie klasy
-		$className = $this->_loadClassFromFile($path.$config['main_file']);
+		$className = $this->_loadClassFromFile($path.$config['main_file'], $config);
 		$this->module[$name] = new $className($this, $config);
 		//dodawanie modułu do listy modułów
 		array_push($this->module_list, $name);
@@ -147,7 +146,7 @@ class core{
 		//dodanie logu
 		$this->wlog('Success loading template file on path: '.$path, 'core', 'message');
 		//wyświetlenie szablonu
-		echo $data;
+		return $data;
 	}
 	//Ładowanie danych do szablonu np.
 	public function templateSet(string $name, string $value, bool $edit=true) : bool{
@@ -168,6 +167,22 @@ class core{
 	}
 	//funkcja debugująca
 	public function __debugInfo() : array {
+		$class = $this->library->class;
+		$classList = [];
+		foreach($this->module_list as $name){
+			$className = get_class($this->module[$name]);
+			$classList['m_'.$name] = $class->is_anonymous($className)?'*** anonymous ***':$className;
+		}
+		foreach($this->model_list as $name){
+			$className = get_class($this->model[$name]);
+			$classList['mo_'.$name] = $class->is_anonymous($className)?'*** anonymous ***':$className;
+		}
+		$className = get_class($this->db);
+		$classList['e_db'] = $class->is_anonymous($className)?'*** anonymous ***':$className;
+		$className = get_class($this->moduleManager);
+		$classList['e_moduleManager'] = $class->is_anonymous($className)?'*** anonymous ***':$className;
+		$className = get_class($this->test);
+		$classList['e_test'] = $class->is_anonymous($className)?'*** anonymous ***':$className;
         return [
 			'version' => $this->version,
 			'reversion' => $this->reversion==''?'***none***':$this->reversion,
@@ -216,6 +231,7 @@ class core{
 				'count' => count($this->library->__list),
 				'list' => $this->library->__list,
 			],
+			'classList' => $classList,
 		];
     }
 	//wpisanie logu
@@ -232,15 +248,13 @@ class core{
 		if(!file_exists($path)) touch($path);
 		//zapis do pliku
 		return file_put_contents($path, $string, FILE_APPEND);
-		//zwrot pobranych danych
-		return $value;
 	}
 	//pobieranie klasy i zwracanie jej nazwy
-	private function _loadClassFromFile(string $path){
+	private function _loadClassFromFile(string $path, array $config){
 		//pobieranie tablicy z klasami
 		$cln = get_declared_classes();
 		//wczytanie pliku
-		include($path);
+		$includeClass = include($path);
 		// wyszukiwanie wczytanego objektu
 		$classname = array_diff(get_declared_classes(), $cln);
 		//sprawdzanie czy jakaś klasa została znaleziona
@@ -251,15 +265,11 @@ class core{
 	//uruchamianie rozszerzenia
 	private function _startExtension(){
 		//rozszerzenie bazy danych
-		include($this->reversion.'core/extension/db/db.php');
-		$this->db = new core_db_bakj98D($this);
+		$this->db = require_once($this->reversion.'core/extension/db/db.php');
 		//rozszerzenie menadżera modułów
-		include($this->reversion.'core/extension/moduleManager/moduleManager.php');
-		$this->moduleManager = new core_moduleManager_hdyT53gA($this);
+		$this->moduleManager = require_once($this->reversion.'core/extension/moduleManager/moduleManager.php');
 		//rozszerzenie testowania
-		include($this->reversion.'core/extension/test/test.php');
-		//zwracanie objektu
-		$this->test = new test_g5hAGth($this);
+		$this->test = require_once($this->reversion.'core/extension/test/test.php');
 	}
 	//funkcja połączeniowa z API
 	public function _API(string $script='') : array{
@@ -299,7 +309,9 @@ class core{
 	}
 	//wersja php
 	private function _phpv($version=null){
+		//jeżeli wyświetlenie funkcji
 		if($version == null) return PHP_VERSION;
+		//jeżeli sprawdzenie wersji
 		if(PHP_VERSION >= $version) return true;
 		return false;
 		

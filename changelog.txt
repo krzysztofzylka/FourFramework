@@ -1,3 +1,16 @@
+0.1.6 Alpha
+- Poprawiono zwracane dane w funkcji wlog
+- Funkcja Template zwraca dane nie wyœwietla
+- Zanimizowano g³ówn¹ klasê library, wszystkie biblioteki oraz rozszerzenia
+- Poprawiono wygl¹d funkcji get_debug_style oraz manager rozszerzenia moduleManager
+- Poprawiono b³¹d w funkcji loadModule
+- Funkcja Template zwraca dane, nie wyœwietla
+- Mo¿liwoœæ utworzenia anonimowych klas dla modu³ów
+- Rozszerzenie db podczas tworzenia bazy daje im bezpieczne uprawnienia pliku
+- Zmodernizowano j¹dro dla php 7
+- Obs³uga panelu administracyjnego w rozszerzeniu moduleManager
+- Dodano biblioteke class
+
 0.1.5 Alpha
 - Poprawiono funkcjê get_list w rozszerzeniu moduleManager
 - Poprawiono b³¹d w funkcji download w rozszerzeniu moduleManager

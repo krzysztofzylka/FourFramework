@@ -1,5 +1,5 @@
 <?php
-class core_db_bakj98D{
+return new class($this){
 	protected $core;
 	protected $path = '';
 	public function __construct($obj){
@@ -12,8 +12,6 @@ class core_db_bakj98D{
 		//odczytywanie pliku, jeżeli nie istnieje to tworzenie pustej tablicy
 		$read = $this->_readFile($db_name);
 		if($read == false) $read = array();
-															   
-										 
 		//zapis danych do tablicy
 		$read[$name] = $value;
 		//zapis dantch do pliku
@@ -53,6 +51,13 @@ class core_db_bakj98D{
 	private function _saveFile($db_name, $array){
 		//gerowanie ścieżki do pliku bazy
 		$file = $this->path.$db_name.'.php';
+		//jeżeli plik nie istnieje
+		if(!is_file($file)){
+			//tworzenie pliku
+			touch($file);
+			//ustalanie praw dostępu na tylko serwer
+			chmod($file, 0600);
+		}
 		//kodowanie tablicy
 		$data = '<?php return \''.serialize($array).'\' ?>';
 		//zapis do pliku (+ informacja jeżeli niepowodzenie)
@@ -78,6 +83,6 @@ class core_db_bakj98D{
 		$this->core->wlog('Read data from database \''.$db_name.'\' data: \''.$read.'\'', 'db', 'message');
 		//zwrócenie tablicy
 		return $decode;
-		
 	}
 }
+?>

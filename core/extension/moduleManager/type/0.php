@@ -1,4 +1,4 @@
-<table width='100%' style='border: 1px solid black; border-collapse: collapse;'>
+<table width='100%' style='border: 1px solid black; border-collapse: collapse; margin-bottom: 5px;'>
 	<?php
 	foreach($this->get_list() as $name){
 		$path = $this->path_module.$name.'/';
@@ -9,7 +9,8 @@
 		$opcje = '';
 		if($color == 'red') $opcje .= '<a href="'.$this->generateLink('on--'.$name).'">Włącz</a> ';
 		else $opcje .= '<a href="'.$this->generateLink('off--'.$name).'">Wyłącz</a> ';
-		if($color == 'green') if(method_exists($this->core->module[$name], '__debugInfo')) $opcje .= '<a href="'.$this->generateLink('debug--'.$name).'">Debug</a>';
+		if($color == 'green') if(method_exists($this->core->module[$name], '__debugInfo')) $opcje .= '<a href="'.$this->generateLink('debug--'.$name).'">Debug</a> ';
+		if(isset($config['adminpanel']) and $color == 'green') $opcje .= '<a href="'.$this->generateLink('adminpanel--'.$name).'">AdminPanel</a> ';
 		$api_data = '';
 		$api = $this->core->_API('uid='.$config['uid']);
 		if($api['count'] == 1){
@@ -23,7 +24,7 @@
 		}
 		
 		echo "<tr>
-			<td style='border-bottom: 1px solid black; margin: 0px; padding: 0px;'>
+			<td style='border-bottom: 1px solid black; margin: 0px; padding: 2px;' >
 				<table width='100%'>
 					<tr>
 						<td width='15px'>
@@ -67,6 +68,9 @@ if(isset($_GET[$this->urlGetData])){
 	switch($explode[0]){
 		case 'debug':
 			$this->get_debug($explode[1]);
+			break;
+		case 'adminpanel':
+			$this->get_adminpanel($explode[1]);
 			break;
 	}
 }

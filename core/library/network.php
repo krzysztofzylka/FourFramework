@@ -1,6 +1,6 @@
 <?php
 //główna klasa biblioteki
-class core_library_network_hdf5T2a{
+return $this->network = new class($this->core){
 	//funkcja z rdzeniem
 	protected $core;
 	//metoda pobierania danych
@@ -22,7 +22,7 @@ class core_library_network_hdf5T2a{
 			$this->method = 2;
 	}
 	//pobranie danych z url
-	public function getData($url){
+	public function getData(string $url){
 		switch($this->method){
 			//błąd pobierania danych
 			case 0:
@@ -52,7 +52,7 @@ class core_library_network_hdf5T2a{
 		return false;
 	}
 	//pobieranie danych JSON z url
-	public function getJSONData($url){
+	public function getJSONData(string $url) : array{
 		//pobieranie danych
 		$readData = $this->getData($url);
 		//jeżeli błąd
@@ -61,6 +61,4 @@ class core_library_network_hdf5T2a{
 		return json_decode($readData, true);
 	}
 };
-$this->network = new core_library_network_hdf5T2a($this->core);
-return $this->network;
 ?>

@@ -1,5 +1,5 @@
 <?php
-class test_g5hAGth{
+return new class($this){
 	public $active = true;
 	//rozpoczęcie pobierania czasu
 	public function timeStart(){
@@ -26,3 +26,4 @@ class test_g5hAGth{
 		];
 	}
 }
+?>
