@@ -1,11 +1,10 @@
 <?php
 class core{
 	//wersja programu
-	public $version = '0.1.6 Alpha';
-	public $releaseDate = '20.12.2018';
+	public $version = '0.1.7 Alpha';
+	public $releaseDate = '26.12.2018';
 	//Funkcja główna
 	public function __construct(){
-		// $this->config = include('config.php');
 		require_once('variable.php');
 		//jeżeli logi włączone to ich wyświetlenie
 		if($this->error == true){
@@ -19,27 +18,28 @@ class core{
 			ini_set("error_log", $dir);
 		}
 		//automatyczne tworzenie ścieżki dla zmiennej reversion
-		for($i=0; $i<=100; $i++){
-			// sprawdzanie czy plik istnieje
-			if(file_exists($this->reversion."core/core.php")) break;
-			// wpisanie powrotu folderu do zmiennej
-			$this->reversion .= "../";
-		}
+		$this->__getReversion();
+		//uruchamianie bibliotek
+		$this->library = include($this->reversion.'core/library.php');
 		//uruchamianie rozszerzeń
 		$this->_startExtension();
-		//uruchamianie bibliotek
-		$this->library = require_once('library.php');
 	}
 	//Ładowanie pliku widoku (folder view/)
 	public function loadView(string $name, string $dir = "view/"){
-		//tworzenie ścieżki
-		$path = $this->reversion.$dir.basename($name).'.php';
-		//jeżeli plik nie istnieje
-		if(!is_file($path)) return $this->wlog('Error loading view file on path: '.$path, 'core', 'error');
-		//dodanie logu do pliku
-		$this->wlog('Success loading view file on path: '.$path, 'core', 'message');
-		//wczytywanie pliku
-		return require($path);
+		//sprawdzanie błędów
+		try{
+			//tworzenie ścieżki
+			$path = $this->reversion.$dir.basename($name).'.php';
+			//jeżeli plik nie istnieje
+			if(!is_file($path)) return $this->wlog('Error loading view file on path: '.$path, 'core', 'error');
+			//dodanie logu do pliku
+			$this->wlog('Success loading view file on path: '.$path, 'core', 'message');
+			//wczytywanie pliku
+			return require($path);
+		//jeżeli błąd
+		}catch (Exception $e){
+			return $this->wlog('error in loadView: '.$e->getMessage(), 'core', 'error');
+		}
 	}
 	//Ładowanie pliku modułu (folder module/)
 	public function loadModule(string $name){
@@ -50,7 +50,7 @@ class core{
 		$path_config = $path."config.php"; //ścieżka do konfiguracji
 		//błąd jeżeli moduł jest już zalogowany
 		if($this->checkModule($name))
-			return $this->wlog('module \''.$name.'\' is alerty exists', 'core', 'error');
+			return $this->wlog('module \''.$name.'\' is alerty exists', 'core', 'message');
 		if(!is_file($path_config))
 			$this->wlog('error loading module '.$name.' on path: '.$path, 'core', 'error');
 		//ładowanie konfiguracji do tablicy
@@ -76,7 +76,7 @@ class core{
 		return $this->module[$name];
 	}
 	//Usunięcie załadowanego modułu
-	public function unloadModule(string $name){
+	public function unloadModule(string $name) : bool{
 		//sprawdzanie czy modół istnieje
 		if(!$this->checkModule($name)) return false;
 		//wyszukiwanie modułu w liście modułów
@@ -126,7 +126,7 @@ class core{
 		return $object;
 	}
 	//Ładowanie szablonu strony (folder template/)
-	public function Template(string $file, $dir = null, $ext = null){
+	public function Template(string $file, $dir = null, $ext = null) : string{
 		//zabezpieczenie zmiennej $file
 		$file = basename($file);
 		//przybranie wartości domyślnych
@@ -219,11 +219,11 @@ class core{
 			'extension' => [
 				'db',
 				[
-					'nazwa' => 'moduleManager',
+					'name' => 'moduleManager',
 					'debug' => $this->moduleManager->__debugInfo()
 				],
 				[
-					'nazwa'=>'test',
+					'name'=>'test',
 					'debug'=> $this->test->__debugInfo()
 				],
 			],
@@ -235,7 +235,7 @@ class core{
 		];
     }
 	//wpisanie logu
-	public function wlog(string $value, $name=null, $type=null){
+	public function wlog(string $value, $name=null, $type=null) : bool{
 		//jeżeli logi wyłączone
 		if($this->log_save==false) return false;
 		//anulowanie dodawania wybranych typów logów
@@ -247,20 +247,30 @@ class core{
 		//jeżeli plik nie istnieje to utworzenie go
 		if(!file_exists($path)) touch($path);
 		//zapis do pliku
-		return file_put_contents($path, $string, FILE_APPEND);
+		for($i=0;$i<5;$i++){
+			$save = @file_put_contents($path, $string, FILE_APPEND);
+			if($save != false) break;
+		}
+		return true;
 	}
 	//pobieranie klasy i zwracanie jej nazwy
 	private function _loadClassFromFile(string $path, array $config){
-		//pobieranie tablicy z klasami
-		$cln = get_declared_classes();
-		//wczytanie pliku
-		$includeClass = include($path);
-		// wyszukiwanie wczytanego objektu
-		$classname = array_diff(get_declared_classes(), $cln);
-		//sprawdzanie czy jakaś klasa została znaleziona
-		if(count($classname) ==  0) return $this->wlog('error find object in file, path: \''.$path.'\'', 'core', 'error');
-		//zwracanie nazwy
-		return $classname[key($classname)];
+		//sprawdzanie błędów
+		try{
+			//pobieranie tablicy z klasami
+			$cln = get_declared_classes();
+			//wczytanie pliku
+			$includeClass = include($path);
+			// wyszukiwanie wczytanego objektu
+			$classname = array_diff(get_declared_classes(), $cln);
+			//sprawdzanie czy jakaś klasa została znaleziona
+			if(count($classname) ==  0) return $this->wlog('error find object in file, path: \''.$path.'\'', 'core', 'error');
+			//zwracanie nazwy
+			return $classname[key($classname)];
+		//jeżeli błąd
+		}catch (Exception $e){
+			return $this->wlog('error in _loadClassFromFile: '.$e->getMessage(), 'core', 'error');
+		}
 	}
 	//uruchamianie rozszerzenia
 	private function _startExtension(){
@@ -308,12 +318,21 @@ class core{
 		return $this->library->network->getJSONData($url);
 	}
 	//wersja php
-	private function _phpv($version=null){
+	public function _phpv($version=null){
 		//jeżeli wyświetlenie funkcji
 		if($version == null) return PHP_VERSION;
 		//jeżeli sprawdzenie wersji
 		if(PHP_VERSION >= $version) return true;
 		return false;
 		
+	}
+	//automatyczne tworzenie ścieżki dla zmiennej reversion
+	private function __getReversion(){
+		for($i=0; $i<=100; $i++){
+			// sprawdzanie czy plik istnieje
+			if(file_exists($this->reversion."core/core.php")) break;
+			// wpisanie powrotu folderu do zmiennej
+			$this->reversion .= "../";
+		}
 	}
 }

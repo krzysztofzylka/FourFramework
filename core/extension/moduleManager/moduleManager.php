@@ -4,15 +4,16 @@ return new class($this){
 	protected $core;
 	protected $path;
 	protected $path_module;
+	protected $network;
 	//główna funkcja
 	public function __construct($obj){
 		//generowanie głównych zmiennych
 		$this->core = $obj;
 		$this->path = $obj->reversion.'core/extension/moduleManager/';
 		$this->path_module = $obj->reversion.'module/';
+		$this->network = $obj->library->network;
 		include($this->path.'variable.php');
 		$this->_autostart();
-		$this->_api_testconnect();
 	}
 	//pobieranie listy modułów
 	//0: wszystkie, 1: aktywne
@@ -58,20 +59,14 @@ return new class($this){
 				echo '</pre>';
 			}
 		}else{
-			echo 'Moduł nie posiada funkcji debugującej';
+			echo 'Moduł nie posiada funkcji debugującej (__debugInfo)';
 		}
 	}
 	//wyświetlenie panel administracyjny modułu
 	public function get_adminpanel(string $name){
 		$error = false;
 		//pobieranie elementu
-		if(!in_array($name, $this->core->module_list)){
-			// $path = $this->path_module.$name.'/';
-			// if(is_file($path.'config.php')){
-				// $config = include($path.'config.php');
-				// $config['path'] = $path;
-			// }
-		}else{
+		if(in_array($name, $this->core->module_list)){
 			$config = $this->core->module_config[$name];
 		}
 		//jeżeli jest funkcja debugowania
@@ -99,15 +94,17 @@ return new class($this){
 	}
 	//wyświetlenie menadżera modułów
 	public function manager(){
+		//czytanie funkcji menadżera
 		include($this->path.'function/manager.php');
+		//wczytanie menadżera
 		include($this->path.'type/'.$this->manager['view'].'.php');
 	}
 	//automatyczne uruchamianie modułów
 	protected function _autostart(){
+		//pobieranie modułów do autostartu
 		$read = $this->core->db->read('core', 'extension_moduleManager_autostart');
-		foreach(explode(',', $read) as $name){
-			if($name <> '') $this->core->loadModule($name);
-		}
+		//wczytywanie modułów w pętli
+		foreach(explode(',', $read) as $name) if($name <> '') $this->core->loadModule($name);
 	}
 	//funkcja generująca link
 	public function generateLink($get_data=''){
@@ -135,63 +132,8 @@ return new class($this){
 		//zwracanie linka
 		return '?'.implode('&', $explode);
 	}
-	//sprawdzanie typu przesyłania danych
-	private function _api_testconnect(){
-		if(function_exists('curl_version')) $this->vapi_type = 1;
-		$this->vapi_type = 2;
-	}
-	//pobieranie danych z API
-	public function api_get($name=-1, $uid=-1){
-		//jeżeli api wyłączone
-		if($this->vapi_use == false){
-			if($this->vapi_offline){
-				$read = $this->core->db->read('module_manager2_offline', $uid);
-				if($read == null) return ['count' => 0];
-				return unserialize($read);
-			}
-			return;
-		}
-		//jeżeli brak typu
-		if($this->vapi_type == 0) return;
-		$add = '';
-		if($name <> -1) $add .= 'search='.$name;
-		if($uid <> -1){
-			if($add <> '') $add .= '&';
-			$add .= 'uid='.$uid;
-		}
-		if($add <> '') $add = '?'.$add;
-		switch($this->vapi_type){
-			case 1:
-				//curl
-				break;
-			case 2:
-				$data = file_get_contents($this->vapi_url.$add);
-				break;
-		}
-		$data = json_decode($data, true);
-		if($uid <> -1 and $data['count'] == 1){
-			$data['list'] = $data['list'][0];
-		}
-		if($this->vapi_offline) $this->core->db->write('module_manager2_offline', $uid, serialize($data));
-		return $data;
-	}
 	//debugowanie
 	public function __debugInfo(){
-		$type = $this->vapi_type;
-		switch($type){
-			case 0:
-				$type = 'disable';
-				break;
-			case 1:
-				$type = 'curl';
-				break;
-			case 2:
-				$type = 'file_put_contents';
-				break;
-			default:
-				$type = 'unknown ('.$type.')';
-				break;
-		}
 		return [
 			'debug' => [
 				'style' => $this->debug['style']?'true':'false',
@@ -201,30 +143,9 @@ return new class($this){
 				'getData' => $this->urlGetData,
 			],
 			'api' => [
-				'active' => $this->vapi_use?'true':'false',
-				'url' => $this->vapi_url,
-				'type' => $type,
+				'active' => $this->vapi_use?'true':'false'
 			],
 		];
-	}
-	//pobieranie nowego modulu
-	public function download(string $url){
-		if($this->vapi_type == 0) return;
-		$path = $this->path.'temp.zip';
-		switch($this->vapi_type){
-			case 1:
-				// curl
-				break;
-			case 2:
-				file_put_contents($path, fopen($url, 'r'));
-				break;
-		}
-		$zip = new ZipArchive;
-		if ($zip->open($path) == TRUE) {
-			$zip->extractTo($this->path_module);
-			$zip->close();
-		}
-		unlink($path);
 	}
 }
 ?>
