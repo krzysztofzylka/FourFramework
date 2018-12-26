@@ -1,10 +1,29 @@
+0.1.7 Alpha
+- Poprawiono tworzenie logów i pêtla je¿eli b³¹d
+- Przyœpieszono rozszerzenie db za pomoc¹ tablicy tymczasowej
+- Poprawiono funkcje __debugInfo
+- Zmniejszono iloœæ prób po b³êdzie tworzenia pliku w funkcji wlog
+- Upubliczniono zmienn¹ path w rozszerzeniu db
+- Dodano obs³ugê b³êdów w bibliotece library dla funkcji getData (dla curl)
+- Poprawiono ³adowanie bibliotek
+- Dodano do rdzenia funkcjê _phpv
+- Dodano obs³ugê wyj¹tków w funkcji _loadClassFromFile, loadView
+- Poprawiono w funkcji loadModule wyœwietlanie b³êdów, od teraz informacja o ju¿ za³adowanym module ma status message
+- rozszerzenie moduleManager
+	* Poprawiono funkcjê get_adminpanel
+	* Usuniêto dane offline dla API
+	* Usuniêto funkcjê download oraz api_get
+	* Poprawiono dane w funkcji debuguj¹cej
+- biblioteka network
+	* Dodano funkcjê downloadFile która pobiera plik z URL
+	* Dodano funkcjê getCurrentPageURL która zwraca aktualn¹ œcie¿kê do strony
+
 0.1.6 Alpha
 - Poprawiono zwracane dane w funkcji wlog
 - Funkcja Template zwraca dane nie wyœwietla
 - Zanimizowano g³ówn¹ klasê library, wszystkie biblioteki oraz rozszerzenia
 - Poprawiono wygl¹d funkcji get_debug_style oraz manager rozszerzenia moduleManager
 - Poprawiono b³¹d w funkcji loadModule
-- Funkcja Template zwraca dane, nie wyœwietla
 - Mo¿liwoœæ utworzenia anonimowych klas dla modu³ów
 - Rozszerzenie db podczas tworzenia bazy daje im bezpieczne uprawnienia pliku
 - Zmodernizowano j¹dro dla php 7

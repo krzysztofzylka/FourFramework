@@ -5,6 +5,10 @@ return $this->network = new class($this->core){
 	protected $core;
 	//metoda pobierania danych
 	private $method = 0;
+	//metoda pobierania plików
+	private $methodDownloadFile = 0;
+	//maksymalny czas oczekiwania dla CURL
+	private $curlTimeout = 1000;
 	//główna funkcja
 	public function __construct($obj){
 		//inicjonowanie zmiennych
@@ -14,6 +18,7 @@ return $this->network = new class($this->core){
 	}
 	//pobranie metody połączenia z serwerem w celu pobrania danych
 	private function _getMethod(){
+		///--- dla pobierania danych
 		//jeżeli curl
 		if(function_exists('curl_version'))
 			$this->method = 1;
@@ -38,6 +43,12 @@ return $this->network = new class($this->core){
 				curl_setopt($curl, CURLOPT_URL, $url);
 				//pobieranie danych
 				$getData = curl_exec($curl);
+				//jeżeli błąd
+				if($getData === false){
+					//jeżeli błąd
+					$this->core->wlog('Error download data, error: '.curl_error($ch), 'library network', 'error');
+					return false;
+				}
 				//zamykanie curl
 				curl_close($curl);
 				//zwracanie danych
@@ -59,6 +70,55 @@ return $this->network = new class($this->core){
 		if($readData == false) return false;
 		//jeżeli sukces to dekodowanie i zwracanie danych
 		return json_decode($readData, true);
+	}
+	//pobieranie pliku
+	public function downloadFile(string $url, string $path) : bool{
+		//jeżeli plik w podaniej ścieżce już istnieje
+		if(file_exists($path)) return false;
+		//pobieranie plików
+		switch($this->method){
+			//jeżeli błąd
+			case 0:
+				return false;
+				break;
+			//dla curl
+			case 1:
+				set_time_limit(0);
+				//opcje
+				$opt = array(CURLOPT_FILE => $path, CURLOPT_TIMEOUT => $this->curlTimeout, CURLOPT_URL => $url);
+				//inicjonowanie curl
+				$ch = curl_init();
+				curl_setopt_array($ch, $options);
+				//wykonanie curl
+				if(curl_exec($ch) === false){
+					//jeżeli błąd
+					$this->core->wlog('Error download file, error: '.curl_error($ch), 'library network', 'error');
+					return false;
+				}
+				//zamykanie curl
+				curl_close($ch);
+				//jeżeli sukcess
+				return true;
+				break;
+			//dla file_put_contents
+			case 2:
+				//pobieranie plików
+				$download = file_put_contents($path, fopen($url, 'r'));
+				//jeżeli błąd
+				if(!$download) return false;
+				//jeżeli sukcess
+				return true;
+				break;
+		}
+		//jeżeli błąd
+		return false;
+	}
+	//Pobieranie linka do aktualnej strony
+	public function getCurrentPageURL() : string{
+		$url  = @( $_SERVER["HTTPS"] != 'on' ) ? 'http://'.$_SERVER["SERVER_NAME"] :  'https://'.$_SERVER["SERVER_NAME"];
+		$url .= ( $_SERVER["SERVER_PORT"] !== 80 ) ? ":".$_SERVER["SERVER_PORT"] : "";
+		$url .= $_SERVER["REQUEST_URI"];
+		return $url;
 	}
 };
 ?>

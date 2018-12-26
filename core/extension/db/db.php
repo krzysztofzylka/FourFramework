@@ -1,14 +1,16 @@
 <?php
 return new class($this){
 	protected $core;
-	protected $path = '';
+	public $path = '';
+	public $temp = true;
+	protected $temp_array = [];
 	public function __construct($obj){
 		$this->core = $obj;
 		$this->path = $obj->reversion.'core/extension/db/base/';
 		if(!file_exists($this->path)) mkdir($this->path);
 	}
 	//zapis danych do bazy danych
-	public function write($db_name, $name, $value){
+	public function write(string $db_name, string $name, string $value) : bool{
 		//odczytywanie pliku, jeżeli nie istnieje to tworzenie pustej tablicy
 		$read = $this->_readFile($db_name);
 		if($read == false) $read = array();
@@ -18,7 +20,7 @@ return new class($this){
 		return $this->_saveFile($db_name, $read);
 	}
 	//odczytanie danych z bazy
-	public function read($db_name, $name, $default=null){
+	public function read(string $db_name, string $name, $default=null) : string{
 		//odczytanie pliku
 		$read = $this->_readFile($db_name);
 		if($read == false) return $default==null?false:$default;
@@ -28,7 +30,7 @@ return new class($this){
 		return $default;
 	}
 	//usunięcie danych z bazy danych
-	public function del($db_name, $name){
+	public function del(string $db_name, string $name) : bool{
 		//odczytanie pliku
 		$read = $this->_readFile($db_name);
 		if($read == false) return false; //jeżeli błąd odczytywania bazy danych
@@ -40,7 +42,7 @@ return new class($this){
 		return $this->_saveFile($db_name, $read);
 	}
 	//sprawdzenie czy dane istnieją w bazie danych
-	public function check($db_name, $name){
+	public function check(string $db_name, string $name) : bool{
 		//odczytanie pliku
 		$read = $this->_readFile($db_name);
 		if($read == false) return false;
@@ -48,7 +50,7 @@ return new class($this){
 		return isset($read[$name])?true:false;
 	}
 	//zapisanie tablicy do pliku bazy danych
-	private function _saveFile($db_name, $array){
+	private function _saveFile(string $db_name, array $array){
 		//gerowanie ścieżki do pliku bazy
 		$file = $this->path.$db_name.'.php';
 		//jeżeli plik nie istnieje
@@ -64,11 +66,25 @@ return new class($this){
 		if(!file_put_contents($file, $data)) $this->core->wlog('Error save string to file \''.$file.'\' data: \''.$data.'\' (before: \''.serialize($array).'\')', 'error', 'db');
 		//dodanie logu o sukcesie
 		else $this->core->wlog('Add data to database \''.$db_name.'\' data: \''.$data.'\'', 'db', 'message');
+		//aktualizacja/dodawanie danych w tablicy jeżeli istnieją
+		if($this->temp == true) $this->temp_array[$db_name] = $array;
 		//zwracanie informacji o powodzeniu
 		return true;
 	}
 	//odczytanie pliku
-	private function _readFile($db_name){
+	private function _readFile(string $db_name){
+		//jeżeli aktywne dane tymczasowe
+		if($this->temp == true){
+			//jeżeli dane są w tablicy
+			if(isset($this->temp_array[$db_name])){
+				//odczytanie danych do tablicy
+				$read = $this->temp_array[$db_name];
+				//wpisanie logu
+				$this->core->wlog('Read data from database \''.$db_name.'\' (temponary)', 'db', 'message');
+				//zwrócenie danych
+				return $read;
+			}
+		}
 		//gerowanie ścieżki do pliku bazy
 		$file = $this->path.$db_name.'.php';
 		//błąd jeżeli plik nie isnieje
@@ -80,7 +96,9 @@ return new class($this){
 		//błąd jeżeli dane to nie tablica lub odczytane dane są puste
 		if(!is_array($decode) or $read == '') return false;
 		//log o sukcesie odczytania danych
-		$this->core->wlog('Read data from database \''.$db_name.'\' data: \''.$read.'\'', 'db', 'message');
+		$this->core->wlog('Read data from database \''.$db_name.'\'', 'db', 'message');
+		//jeżeli aktywne dane tymczasowe to dodawanie danych do tablicy
+		if($this->temp == true) $this->temp_array[$db_name] = $decode;
 		//zwrócenie tablicy
 		return $decode;
 	}
