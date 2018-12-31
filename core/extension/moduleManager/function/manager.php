@@ -18,6 +18,18 @@ if(isset($_GET[$this->urlGetData])){
 			$this->core->db->write('core', 'extension_moduleManager_autostart', implode(',', $off));
 			header('location: '.$this->generateLink());
 			break;
+		case 'download':
+			$temp_path = $this->core->moduleManager->path.'temp.zip';
+			$module_path = $this->core->moduleManager->path_module;
+			$this->core->library->network->downloadFile($explode[1], $temp_path);
+			$zip = new ZipArchive;
+			if($zip->open($temp_path)){
+				$zip->extractTo("module");
+				$zip->close();
+			}
+			unlink($temp_path);
+			header('location: '.$this->generateLink());
+			break;
 	}
 }
 ?>

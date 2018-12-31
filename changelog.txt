@@ -1,3 +1,24 @@
+0.1.8 Alpha
+- Dodano bibliotekê file
+- Dodano funkcjê debuguj¹c¹ do klasy library
+- Kompatybilnoœæ z php 7.0
+- Poprawiono funkcjê _loadClassFromFile
+- Poprawiono funkcjê loadModule która wczytywa³a usuniête modu³y
+- Poprawiono g³ówn¹ funkcjê __construct
+- Poprawiono funkcjê is_anonymous biblioteki class
+- Rozszerzenie db
+	* Poprawiono funkcje
+	* Dodano funkcjê readArray
+- Rozszerzenie moduleManager
+	* Poprawiono manad¿er
+	* Dodano funkcjê download_manager pozwalaj¹c¹ wyœwietliæ panel pobierania/aktualizacji modu³ów z API
+- Biblioteka network
+	* Naprawiono funkcjê downloadFile dla curl
+	* Poprawiono wyœwietlanie portu w funkcji getCurrentPageURL
+	* Poprawiono timeout dla curl w funkcji getData
+	* Dodano funkcjê getClientIP pobieraj¹c¹ adres IP klienta
+	* Poprawiono funkcjê getJSONData
+
 0.1.7 Alpha
 - Poprawiono tworzenie logów i pêtla je¿eli b³¹d
 - Przyœpieszono rozszerzenie db za pomoc¹ tablicy tymczasowej

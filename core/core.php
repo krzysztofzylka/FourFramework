@@ -1,19 +1,19 @@
 <?php
 class core{
 	//wersja programu
-	public $version = '0.1.7 Alpha';
-	public $releaseDate = '26.12.2018';
+	public $version = '0.1.8 Alpha';
+	public $releaseDate = '31.12.2018';
 	//Funkcja główna
 	public function __construct(){
 		require_once('variable.php');
 		//jeżeli logi włączone to ich wyświetlenie
-		if($this->error == true){
+		if($this->error){
 			error_reporting(E_ALL);
 			ini_set('display_errors', 1);
 			ini_set('default_enable', 1);
 		}
 		//jeżeli logi błędów php mają być zapisywane do pliku
-		if($this->php_error == true){
+		if($this->php_error){
 			$dir = $this->reversion.$this->php_error_dir.$this->php_error_file;
 			ini_set("error_log", $dir);
 		}
@@ -25,7 +25,7 @@ class core{
 		$this->_startExtension();
 	}
 	//Ładowanie pliku widoku (folder view/)
-	public function loadView(string $name, string $dir = "view/"){
+	public function loadView($name, $dir = "view/"){
 		//sprawdzanie błędów
 		try{
 			//tworzenie ścieżki
@@ -42,7 +42,7 @@ class core{
 		}
 	}
 	//Ładowanie pliku modułu (folder module/)
-	public function loadModule(string $name){
+	public function loadModule($name){
 		//zabezpieczenie nazwy
 		$name = basename($name);
 		//tworzenie ścieżek
@@ -52,7 +52,7 @@ class core{
 		if($this->checkModule($name))
 			return $this->wlog('module \''.$name.'\' is alerty exists', 'core', 'message');
 		if(!is_file($path_config))
-			$this->wlog('error loading module '.$name.' on path: '.$path, 'core', 'error');
+			return $this->wlog('error loading module '.$name.' on path: '.$path, 'core', 'error');
 		//ładowanie konfiguracji do tablicy
 		$config = include($path_config);
 		$config['path'] = $path;
@@ -76,7 +76,7 @@ class core{
 		return $this->module[$name];
 	}
 	//Usunięcie załadowanego modułu
-	public function unloadModule(string $name) : bool{
+	public function unloadModule($name){
 		//sprawdzanie czy modół istnieje
 		if(!$this->checkModule($name)) return false;
 		//wyszukiwanie modułu w liście modułów
@@ -86,12 +86,12 @@ class core{
 		return true;
 	}
 	//Sprawdzanie czy moduł jest załadowany
-	public function checkModule(string $name) : bool{
+	public function checkModule($name){
 		//zwracanie wartosci czy moduł jest na liście
 		return in_array($name, $this->module_list);
 	}
 	//Ładowanie modelu (folder model/)
-	public function loadModel(string $name, string $dir = "model/"){
+	public function loadModel($name, $dir = "model/"){
 		//zabezpieczenie pliku
 		$name = basename($name);
 		//sprawdzanie czy model nie jest już wczytany
@@ -113,7 +113,7 @@ class core{
 		}else return false;
 	}
 	//Ładowanie kontrolera (folder controller/)
-	public function loadController(string $name, string $dir = "controller/"){
+	public function loadController($name, $dir = "controller/"){
 		//tworzenie ścieżki do pliku
 		$path = $this->reversion.$dir.basename($name).'.php';
 		//jeżeli plik nie istnieje
@@ -126,7 +126,7 @@ class core{
 		return $object;
 	}
 	//Ładowanie szablonu strony (folder template/)
-	public function Template(string $file, $dir = null, $ext = null) : string{
+	public function Template($file, $dir = null, $ext = null){
 		//zabezpieczenie zmiennej $file
 		$file = basename($file);
 		//przybranie wartości domyślnych
@@ -149,9 +149,9 @@ class core{
 		return $data;
 	}
 	//Ładowanie danych do szablonu np.
-	public function templateSet(string $name, string $value, bool $edit=true) : bool{
+	public function templateSet($name, $value, $edit=true){
 		//jeżeli $edit==1 oraz dane już istnieją
-		if(in_array($name, $this->array_template_list) and $edit==true){
+		if(in_array($name, $this->array_template_list) and $edit){
 			$this->array_template[$name] .= $value;
 			return true;
 		//tworzenie nowych danych
@@ -166,7 +166,7 @@ class core{
 		return false;
 	}
 	//funkcja debugująca
-	public function __debugInfo() : array {
+	public function __debugInfo() {
 		$class = $this->library->class;
 		$classList = [];
 		foreach($this->module_list as $name){
@@ -235,9 +235,9 @@ class core{
 		];
     }
 	//wpisanie logu
-	public function wlog(string $value, $name=null, $type=null) : bool{
+	public function wlog($value, $name=null, $type=null){
 		//jeżeli logi wyłączone
-		if($this->log_save==false) return false;
+		if(!$this->log_save) return false;
 		//anulowanie dodawania wybranych typów logów
 		if(in_array($type, $this->log_hide_type)) return false;
 		//ciąg do zapisania
@@ -254,7 +254,7 @@ class core{
 		return true;
 	}
 	//pobieranie klasy i zwracanie jej nazwy
-	private function _loadClassFromFile(string $path, array $config){
+	private function _loadClassFromFile($path, $config=null){
 		//sprawdzanie błędów
 		try{
 			//pobieranie tablicy z klasami
@@ -280,12 +280,14 @@ class core{
 		$this->moduleManager = require_once($this->reversion.'core/extension/moduleManager/moduleManager.php');
 		//rozszerzenie testowania
 		$this->test = require_once($this->reversion.'core/extension/test/test.php');
+		//zwrot danych
+		return;
 	}
 	//funkcja połączeniowa z API
-	public function _API(string $script='') : array{
+	public function _API($script=''){
 		//zabezpieczenie skryptu
 		$script = htmlspecialchars($script);
-		//rozdzielenie danych
+		//rozdzielenie przyjmowanych danych
 		$dane = [];
 		$explode = explode(';', $script);
 		foreach($explode as $exp){
@@ -323,6 +325,7 @@ class core{
 		if($version == null) return PHP_VERSION;
 		//jeżeli sprawdzenie wersji
 		if(PHP_VERSION >= $version) return true;
+		//zwrócenie fałszu
 		return false;
 		
 	}
@@ -330,7 +333,7 @@ class core{
 	private function __getReversion(){
 		for($i=0; $i<=100; $i++){
 			// sprawdzanie czy plik istnieje
-			if(file_exists($this->reversion."core/core.php")) break;
+			if(file_exists($this->reversion."core/core.php")) return;
 			// wpisanie powrotu folderu do zmiennej
 			$this->reversion .= "../";
 		}

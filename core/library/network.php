@@ -27,7 +27,7 @@ return $this->network = new class($this->core){
 			$this->method = 2;
 	}
 	//pobranie danych z url
-	public function getData(string $url){
+	public function getData($url){
 		switch($this->method){
 			//błąd pobierania danych
 			case 0:
@@ -41,6 +41,7 @@ return $this->network = new class($this->core){
 				//konfiguracja curl
 				curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 				curl_setopt($curl, CURLOPT_URL, $url);
+				curl_setopt($curl, CURLOPT_TIMEOUT, $this->curlTimeout);
 				//pobieranie danych
 				$getData = curl_exec($curl);
 				//jeżeli błąd
@@ -63,16 +64,16 @@ return $this->network = new class($this->core){
 		return false;
 	}
 	//pobieranie danych JSON z url
-	public function getJSONData(string $url) : array{
+	public function getJSONData($url){
 		//pobieranie danych
 		$readData = $this->getData($url);
 		//jeżeli błąd
-		if($readData == false) return false;
+		if(!$readData) return false;
 		//jeżeli sukces to dekodowanie i zwracanie danych
 		return json_decode($readData, true);
 	}
 	//pobieranie pliku
-	public function downloadFile(string $url, string $path) : bool{
+	public function downloadFile($url, $path){
 		//jeżeli plik w podaniej ścieżce już istnieje
 		if(file_exists($path)) return false;
 		//pobieranie plików
@@ -83,21 +84,19 @@ return $this->network = new class($this->core){
 				break;
 			//dla curl
 			case 1:
-				set_time_limit(0);
-				//opcje
-				$opt = array(CURLOPT_FILE => $path, CURLOPT_TIMEOUT => $this->curlTimeout, CURLOPT_URL => $url);
-				//inicjonowanie curl
-				$ch = curl_init();
-				curl_setopt_array($ch, $options);
-				//wykonanie curl
-				if(curl_exec($ch) === false){
-					//jeżeli błąd
+				$fp = fopen($path, 'w');
+				$ch = curl_init($url);
+				curl_setopt($ch, CURLOPT_FILE, $fp);
+				curl_setopt($ch, CURLOPT_TIMEOUT, $this->curlTimeout);
+				$data = curl_exec($ch);
+				curl_close($ch);
+				if(curl_errno($ch)){
+					fclose($fp);
+					unlink($path);
 					$this->core->wlog('Error download file, error: '.curl_error($ch), 'library network', 'error');
 					return false;
 				}
-				//zamykanie curl
-				curl_close($ch);
-				//jeżeli sukcess
+				fclose($fp);
 				return true;
 				break;
 			//dla file_put_contents
@@ -114,11 +113,17 @@ return $this->network = new class($this->core){
 		return false;
 	}
 	//Pobieranie linka do aktualnej strony
-	public function getCurrentPageURL() : string{
+	public function getCurrentPageURL(){
 		$url  = @( $_SERVER["HTTPS"] != 'on' ) ? 'http://'.$_SERVER["SERVER_NAME"] :  'https://'.$_SERVER["SERVER_NAME"];
-		$url .= ( $_SERVER["SERVER_PORT"] !== 80 ) ? ":".$_SERVER["SERVER_PORT"] : "";
+		$url .= ( $_SERVER["SERVER_PORT"] <> 80 ) ? ":".$_SERVER["SERVER_PORT"] : "";
 		$url .= $_SERVER["REQUEST_URI"];
 		return $url;
+	}
+	//pobieranie adresu IP klienta
+	public function getClientIP(){
+		if (!empty($_SERVER['HTTP_CLIENT_IP'])) return $_SERVER['HTTP_CLIENT_IP'];
+		elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) return  $_SERVER['HTTP_X_FORWARDED_FOR'];
+		else return $_SERVER['REMOTE_ADDR'];
 	}
 };
 ?>

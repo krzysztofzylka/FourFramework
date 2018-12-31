@@ -99,6 +99,13 @@ return new class($this){
 		//wczytanie menadżera
 		include($this->path.'type/'.$this->manager['view'].'.php');
 	}
+	//wyświetlenie menadżera pobierania modułów
+	public function download_manager(){
+		//czytanie funkcji menadżera
+		include($this->path.'function/manager.php');
+		//wczytanie menadżera
+		include($this->path.'type/'.$this->manager['view'].'_download.php');
+	}
 	//automatyczne uruchamianie modułów
 	protected function _autostart(){
 		//pobieranie modułów do autostartu

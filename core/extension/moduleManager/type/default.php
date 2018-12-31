@@ -12,7 +12,8 @@
 		if($color == 'green') if(method_exists($this->core->module[$name], '__debugInfo')) $opcje .= '<a href="'.$this->generateLink('debug--'.$name).'">Debug</a> ';
 		if(isset($config['adminpanel']) and $color == 'green') $opcje .= '<a href="'.$this->generateLink('adminpanel--'.$name).'">AdminPanel</a> ';
 		$api_data = '';
-		$api = $this->core->_API('uid='.$config['uid']);
+		$api['count'] = 0;
+		if(isset($config['uid'])) $api = $this->core->_API('uid='.$config['uid']);
 		if($api['count'] == 1){
 			$api_date = (int)strtotime($api['list'][0]['date']);
 			$mod_date = (int)strtotime($config['date']);
@@ -47,7 +48,7 @@
 						<td>
 							<!-- opis -->
 							<i>
-								".$config['description']."
+								".(isset($config['description'])?$config['description']:'')."
 							</i>
 						</td>
 						<td>

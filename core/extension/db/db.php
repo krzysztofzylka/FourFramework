@@ -13,7 +13,7 @@ return new class($this){
 	public function write(string $db_name, string $name, string $value) : bool{
 		//odczytywanie pliku, jeżeli nie istnieje to tworzenie pustej tablicy
 		$read = $this->_readFile($db_name);
-		if($read == false) $read = array();
+		if(!$read) $read = array();
 		//zapis danych do tablicy
 		$read[$name] = $value;
 		//zapis dantch do pliku
@@ -23,7 +23,7 @@ return new class($this){
 	public function read(string $db_name, string $name, $default=null) : string{
 		//odczytanie pliku
 		$read = $this->_readFile($db_name);
-		if($read == false) return $default==null?false:$default;
+		if(!$read) return $default==null?false:$default;
 		//jeżeli dane istnieją
 		if(isset($read[$name])) return $read[$name];
 		//jeżeli dane nie istnieją
@@ -33,7 +33,7 @@ return new class($this){
 	public function del(string $db_name, string $name) : bool{
 		//odczytanie pliku
 		$read = $this->_readFile($db_name);
-		if($read == false) return false; //jeżeli błąd odczytywania bazy danych
+		if(!$read) return false; //jeżeli błąd odczytywania bazy danych
 		//usuwanie danych
 		unset($read[$name]);
 		//jeżeli w bazie nie ma więcej danych to usunięcie pliku bazy danych
@@ -45,7 +45,7 @@ return new class($this){
 	public function check(string $db_name, string $name) : bool{
 		//odczytanie pliku
 		$read = $this->_readFile($db_name);
-		if($read == false) return false;
+		if(!$read) return false;
 		//zwrócenie informacji czy plik istnieje
 		return isset($read[$name])?true:false;
 	}
@@ -67,14 +67,14 @@ return new class($this){
 		//dodanie logu o sukcesie
 		else $this->core->wlog('Add data to database \''.$db_name.'\' data: \''.$data.'\'', 'db', 'message');
 		//aktualizacja/dodawanie danych w tablicy jeżeli istnieją
-		if($this->temp == true) $this->temp_array[$db_name] = $array;
+		if($this->temp) $this->temp_array[$db_name] = $array;
 		//zwracanie informacji o powodzeniu
 		return true;
 	}
 	//odczytanie pliku
 	private function _readFile(string $db_name){
 		//jeżeli aktywne dane tymczasowe
-		if($this->temp == true){
+		if($this->temp){
 			//jeżeli dane są w tablicy
 			if(isset($this->temp_array[$db_name])){
 				//odczytanie danych do tablicy
@@ -98,9 +98,17 @@ return new class($this){
 		//log o sukcesie odczytania danych
 		$this->core->wlog('Read data from database \''.$db_name.'\'', 'db', 'message');
 		//jeżeli aktywne dane tymczasowe to dodawanie danych do tablicy
-		if($this->temp == true) $this->temp_array[$db_name] = $decode;
+		if($this->temp) $this->temp_array[$db_name] = $decode;
 		//zwrócenie tablicy
 		return $decode;
+	}
+	//odczytanie w formie tablicy całego pliku bazy
+	public function readArray(string $db_name){
+		//odczytanie pliku
+		$read = $this->_readFile($db_name);
+		if(!$read) return false;
+		//zwracanie odczytanej bazy
+		return $read;
 	}
 }
 ?>

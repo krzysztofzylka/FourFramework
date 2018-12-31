@@ -24,5 +24,11 @@ return new class($this){
 			die('<b>Error send function to \''.$name.'\' library</b>');
 		}
 	}
+	//debug
+	public function __debugInfo(){
+		return [
+			'list' => $this->__list,
+		];
+	}
 };
 ?>
