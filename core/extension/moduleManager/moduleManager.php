@@ -1,13 +1,10 @@
 <?php
 return new class($this){
-	//główne zmienne
 	protected $core;
 	protected $path;
 	protected $path_module;
 	protected $network;
-	//główna funkcja
 	public function __construct($obj){
-		//generowanie głównych zmiennych
 		$this->core = $obj;
 		$this->path = $obj->reversion.'core/extension/moduleManager/';
 		$this->path_module = $obj->reversion.'module/';
@@ -15,44 +12,35 @@ return new class($this){
 		include($this->path.'variable.php');
 		$this->_autostart();
 	}
-	//pobieranie listy modułów
-	//0: wszystkie, 1: aktywne
+	//get module list
+	//0: all, 1: only active
 	public function get_list(int $type=0) : array{
-		//główna tablica
+		//main table
 		$array = array();
-		//sprawdzanie typu
+		//checking type
 		switch($type){
-			//lista wszystkich pobranych modułów
+			//all
 			case 0:
-				//skanowanie folderu z modułami
 				foreach(scandir($this->path_module) as $name){
-					//ścieżka do modułu
 					$path = $this->path_module.$name.'/';
-					//jeżel dane to nie folder
 					if(strpos($path, '.') > 0) continue;
-					//filtrowanie modułów
 					if(is_file($path) or $name == '.' or $name == '..' or !file_exists($path.'config.php')) continue;
-					//dodawanie modułu do tablicy
 					array_push($array, $name);
 				}
 				return $array;
 				break;
-			//lista aktywnych modułów
+			//only active
 			case 1:
 				return $this->core->module_list;
 				break;
 		}
 	}
-	//wyświetlenie debugowania modułu
-	public function get_debug(string $name){
-		//pobieranie elementu
+	//show module debug
+	public function get_debug(string $name) : void{
 		$object = $this->core->module[$name];
-		//jeżeli jest funkcja debugowania
 		if(method_exists($object, '__debugInfo')){
-			//jeżeli aktywne wyświetlenie stylu
 			if($this->debug['style'] == true){
 				$this->get_debug_style($object->__debugInfo());
-			//jeżeli bez stylu
 			}else{
 				echo '<pre>';
 				print_r($object->__debugInfo());
@@ -61,23 +49,21 @@ return new class($this){
 		}else{
 			echo 'Moduł nie posiada funkcji debugującej (__debugInfo)';
 		}
+		return;
 	}
-	//wyświetlenie panel administracyjny modułu
-	public function get_adminpanel(string $name){
+	//show module admin panel
+	public function get_adminpanel(string $name) : void{
 		$error = false;
-		//pobieranie elementu
-		if(in_array($name, $this->core->module_list)){
+		if(in_array($name, $this->core->module_list))
 			$config = $this->core->module_config[$name];
-		}
-		//jeżeli jest funkcja debugowania
-		if(isset($config['adminpanel'])){
+		if(isset($config['adminpanel']))
 			include($config['path'].$config['adminpanel']);
-		}else{
+		else
 			echo 'Moduł nie posiada panelu administracyjnego';
-		}
+		return;
 	}
-	//generowanie szablonu debugowania
-	public function get_debug_style($array){
+	//generating debug table
+	public function get_debug_style($array) : void{
 		if(is_array($array)) {
 			echo "<table border=1 cellspacing=0 cellpadding=3 width=100%>";
 			echo '<tr><td colspan=2 style="background-color:#333333;padding:2px"><strong><font color=white>ARRAY</font></strong></td></tr>';
@@ -92,39 +78,33 @@ return new class($this){
 		}
 		echo $array;
 	}
-	//wyświetlenie menadżera modułów
-	public function manager(){
-		//czytanie funkcji menadżera
+	//show module manager
+	public function manager() : void{
 		include($this->path.'function/manager.php');
-		//wczytanie menadżera
 		include($this->path.'type/'.$this->manager['view'].'.php');
+		return;
 	}
-	//wyświetlenie menadżera pobierania modułów
-	public function download_manager(){
-		//czytanie funkcji menadżera
+	//show module download manager
+	public function download_manager() : void{
 		include($this->path.'function/manager.php');
-		//wczytanie menadżera
 		include($this->path.'type/'.$this->manager['view'].'_download.php');
+		return;
 	}
-	//automatyczne uruchamianie modułów
-	protected function _autostart(){
-		//pobieranie modułów do autostartu
+	//autostart module
+	protected function _autostart() : void{
 		$read = $this->core->db->read('core', 'extension_moduleManager_autostart');
-		//wczytywanie modułów w pętli
-		foreach(explode(',', $read) as $name) if($name <> '') $this->core->loadModule($name);
+		foreach(explode(',', $read) as $name) if($name <> '')
+			$this->core->loadModule($name);
+		return;
 	}
-	//funkcja generująca link
-	public function generateLink($get_data=''){
-		//nazwa danych get
+	//generating link
+	public function generateLink(string $get_data='') : string{
 		$get = $this->urlGetData;
-		//explode
 		$query = $_SERVER['QUERY_STRING'];
 		$explode = explode('&', $query);
-		foreach($explode as $name=>$data){
+		foreach($explode as $name=>$data)
 			$explode[$name] = explode('=', $data);
-		}
 		$search = 0;
-		//wyszukiwanie i zamiana
 		foreach($explode as $id => $data){
 			if($data[0] == $get){
 				$search = 1;
@@ -132,15 +112,14 @@ return new class($this){
 				break;
 			}
 		}
-		//jezeli nie znaleziono danych
-		if($search == 0) array_push($explode, array($get, $get_data));
-		//generowanie linka
-		foreach($explode as $id => $arr) $explode[$id] = implode('=', $arr);
-		//zwracanie linka
+		if($search == 0)
+			array_push($explode, array($get, $get_data));
+		foreach($explode as $id => $arr)
+			$explode[$id] = implode('=', $arr);
 		return '?'.implode('&', $explode);
 	}
-	//debugowanie
-	public function __debugInfo(){
+	//debug function
+	public function __debugInfo() : array{
 		return [
 			'debug' => [
 				'style' => $this->debug['style']?'true':'false',
@@ -151,6 +130,9 @@ return new class($this){
 			],
 			'api' => [
 				'active' => $this->vapi_use?'true':'false'
+			],
+			'path' => [
+				'module' => $this->path_module,
 			],
 		];
 	}

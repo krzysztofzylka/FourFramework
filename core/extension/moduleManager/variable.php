@@ -1,13 +1,13 @@
 <?php
-//zmienne dla debugowania
+//for debug
 $this->debug = [
 	'style' => true,
 ];
-//zmienne dla menadżera modułów
+//for modulemanager
 $this->manager = [
 	'view' => 'default',
 ];
-//nazwa linka dla danych GET
+//get name
 $this->urlGetData = 'coreModuleManager';
-//zmienne dla API
+//for API
 $this->vapi_use = false;

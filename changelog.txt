@@ -1,283 +1,309 @@
-0.1.8 Alpha
-- Dodano bibliotekê file
-- Dodano funkcjê debuguj¹c¹ do klasy library
-- Kompatybilnoœæ z php 7.0
-- Poprawiono funkcjê _loadClassFromFile
-- Poprawiono funkcjê loadModule która wczytywa³a usuniête modu³y
-- Poprawiono g³ówn¹ funkcjê __construct
-- Poprawiono funkcjê is_anonymous biblioteki class
+ï»¿0.1.9 Alpha (11.02.2019)
+- Dodano funkcje returnError obsÅ‚ugujÄ…cÄ… bÅ‚Ä™dy oraz zmiennÄ… z bÅ‚Ä™dami lastError
+- Poprawiono Å‚adowanie klas (anonimowe klasy wczytywaÅ‚y siÄ™ podwÃ³jnie)
+- Dodano bibliotekÄ™ crypt, database oraz account
+- Dodano tablicÄ™ path z wszystkimi Å›cieÅ¼kami do folderÃ³w oraz niektÃ³rych plikÃ³w
+- Zmieniono miejsce wykonania gÅ‚Ã³wnej funkcji __getReversion
+- Dostosowano jÄ…dro do dodatkowej tablicy path
+- UsuniÄ™to zmienne log_dir, php_error_dir oraz template_dir
+- Dodano menadÅ¼er frameworka pomagajÄ…cego w pierwszej konfiguracji
+- MoÅ¼liwoÅ›Ä‡ pobrania konfiguracji frameworka z bazy
+- Dodano folder tymczasowy
+- UsuniÄ™to z debugu dane o nazwach klas
+- Poprawiono funkcjÄ™ loadModule
+- MoÅ¼liwoÅ›Ä‡ doÅ‚Ä…czenia tablicy z konfiguracjÄ… podczas inicjacji rdzenia
+- rozszerzeniu moduleManager
+	* Poprawiono funkcjÄ™ pobierania moduÅ‚Ã³w
+	* Poprawiono wyÅ›wietlanie listy moduÅ‚Ã³w
+- Biblioteka network
+	* Poprawiono funkcjÄ™ getData oraz downloadFile
+- Rozszerzenie db
+	* Dodano menadÅ¼er bazy danych
+	* Dodano funkcjÄ™ manager oraz dbList
+	* Dodano przechowywanie plikÃ³w bazy danych w paczce zip
+	* Poprawiono funkcjÄ™ read
+	* UsuniÄ™to zmiennÄ… path
+
+0.1.8 Alpha (31.12.2018)
+- Dodano bibliotekÄ™ file
+- Dodano funkcjÄ™ debugujÄ…cÄ… do klasy library
+- KompatybilnoÅ›Ä‡ z php 7.0
+- Poprawiono funkcjÄ™ _loadClassFromFile
+- Poprawiono funkcjÄ™ loadModule ktÃ³ra wczytywaÅ‚a usuniÄ™te moduÅ‚y
+- Poprawiono gÅ‚Ã³wnÄ… funkcjÄ™ __construct
+- Poprawiono funkcjÄ™ is_anonymous biblioteki class
 - Rozszerzenie db
 	* Poprawiono funkcje
-	* Dodano funkcjê readArray
+	* Dodano funkcjÄ™ readArray
 - Rozszerzenie moduleManager
-	* Poprawiono manad¿er
-	* Dodano funkcjê download_manager pozwalaj¹c¹ wyœwietliæ panel pobierania/aktualizacji modu³ów z API
+	* Poprawiono manadÅ¼er
+	* Dodano funkcjÄ™ download_manager pozwalajÄ…cÄ… wyÅ›wietliÄ‡ panel pobierania/aktualizacji moduÅ‚Ã³w z API
 - Biblioteka network
-	* Naprawiono funkcjê downloadFile dla curl
-	* Poprawiono wyœwietlanie portu w funkcji getCurrentPageURL
+	* Naprawiono funkcjÄ™ downloadFile dla curl
+	* Poprawiono wyÅ›wietlanie portu w funkcji getCurrentPageURL
 	* Poprawiono timeout dla curl w funkcji getData
-	* Dodano funkcjê getClientIP pobieraj¹c¹ adres IP klienta
-	* Poprawiono funkcjê getJSONData
+	* Dodano funkcjÄ™ getClientIP pobierajÄ…cÄ… adres IP klienta
+	* Poprawiono funkcjÄ™ getJSONData
 
-0.1.7 Alpha
-- Poprawiono tworzenie logów i pêtla je¿eli b³¹d
-- Przyœpieszono rozszerzenie db za pomoc¹ tablicy tymczasowej
+0.1.7 Alpha (26.12.2018)
+- Poprawiono tworzenie logÃ³w i pÄ™tla jeÅ¼eli bÅ‚Ä…d
+- PrzyÅ›pieszono rozszerzenie db za pomocÄ… tablicy tymczasowej
 - Poprawiono funkcje __debugInfo
-- Zmniejszono iloœæ prób po b³êdzie tworzenia pliku w funkcji wlog
-- Upubliczniono zmienn¹ path w rozszerzeniu db
-- Dodano obs³ugê b³êdów w bibliotece library dla funkcji getData (dla curl)
-- Poprawiono ³adowanie bibliotek
-- Dodano do rdzenia funkcjê _phpv
-- Dodano obs³ugê wyj¹tków w funkcji _loadClassFromFile, loadView
-- Poprawiono w funkcji loadModule wyœwietlanie b³êdów, od teraz informacja o ju¿ za³adowanym module ma status message
+- Zmniejszono iloÅ›Ä‡ prÃ³b po bÅ‚Ä™dzie tworzenia pliku w funkcji wlog
+- Upubliczniono zmiennÄ… path w rozszerzeniu db
+- Dodano obsÅ‚ugÄ™ bÅ‚Ä™dÃ³w w bibliotece library dla funkcji getData (dla curl)
+- Poprawiono Å‚adowanie bibliotek
+- Dodano do rdzenia funkcjÄ™ _phpv
+- Dodano obsÅ‚ugÄ™ wyjÄ…tkÃ³w w funkcji _loadClassFromFile, loadView
+- Poprawiono w funkcji loadModule wyÅ›wietlanie bÅ‚Ä™dÃ³w, od teraz informacja o juÅ¼ zaÅ‚adowanym module ma status message
 - rozszerzenie moduleManager
-	* Poprawiono funkcjê get_adminpanel
-	* Usuniêto dane offline dla API
-	* Usuniêto funkcjê download oraz api_get
-	* Poprawiono dane w funkcji debuguj¹cej
+	* Poprawiono funkcjÄ™ get_adminpanel
+	* UsuniÄ™to dane offline dla API
+	* UsuniÄ™to funkcjÄ™ download oraz api_get
+	* Poprawiono dane w funkcji debugujÄ…cej
 - biblioteka network
-	* Dodano funkcjê downloadFile która pobiera plik z URL
-	* Dodano funkcjê getCurrentPageURL która zwraca aktualn¹ œcie¿kê do strony
+	* Dodano funkcjÄ™ downloadFile ktÃ³ra pobiera plik z URL
+	* Dodano funkcjÄ™ getCurrentPageURL ktÃ³ra zwraca aktualnÄ… Å›cieÅ¼kÄ™ do strony
 
-0.1.6 Alpha
+0.1.6 Alpha (20.12.2018)
 - Poprawiono zwracane dane w funkcji wlog
-- Funkcja Template zwraca dane nie wyœwietla
-- Zanimizowano g³ówn¹ klasê library, wszystkie biblioteki oraz rozszerzenia
-- Poprawiono wygl¹d funkcji get_debug_style oraz manager rozszerzenia moduleManager
-- Poprawiono b³¹d w funkcji loadModule
-- Mo¿liwoœæ utworzenia anonimowych klas dla modu³ów
+- Funkcja Template zwraca dane nie wyÅ›wietla
+- Zanimizowano gÅ‚Ã³wnÄ… klasÄ™ library, wszystkie biblioteki oraz rozszerzenia
+- Poprawiono wyglÄ…d funkcji get_debug_style oraz manager rozszerzenia moduleManager
+- Poprawiono bÅ‚Ä…d w funkcji loadModule
+- MoÅ¼liwoÅ›Ä‡ utworzenia anonimowych klas dla moduÅ‚Ã³w
 - Rozszerzenie db podczas tworzenia bazy daje im bezpieczne uprawnienia pliku
-- Zmodernizowano j¹dro dla php 7
-- Obs³uga panelu administracyjnego w rozszerzeniu moduleManager
+- Zmodernizowano jÄ…dro dla php 7
+- ObsÅ‚uga panelu administracyjnego w rozszerzeniu moduleManager
 - Dodano biblioteke class
 
-0.1.5 Alpha
-- Poprawiono funkcjê get_list w rozszerzeniu moduleManager
-- Poprawiono b³¹d w funkcji download w rozszerzeniu moduleManager
-- Poprawiono b³¹d w funkcji loadModule
-- Do³¹czono auomatycznie ³adowane biblioteki u³atwiaj¹ce pisanie modu³ów
-- Poprawiono funkcjê write rozszerzenia db
-- Utworzono biblioteke network wspomagaj¹c¹ odczyt danych z url
+0.1.5 Alpha (18.12.2018)
+- Poprawiono funkcjÄ™ get_list w rozszerzeniu moduleManager
+- Poprawiono bÅ‚Ä…d w funkcji download w rozszerzeniu moduleManager
+- Poprawiono bÅ‚Ä…d w funkcji loadModule
+- DoÅ‚Ä…czono auomatycznie Å‚adowane biblioteki uÅ‚atwiajÄ…ce pisanie moduÅ‚Ã³w
+- Poprawiono funkcjÄ™ write rozszerzenia db
+- Utworzono biblioteke network wspomagajÄ…cÄ… odczyt danych z url
 - Poprawiono funkcje rozszerzenia db
-- Poprawiono funkcjê Template
+- Poprawiono funkcjÄ™ Template
 - Poprawiono deklarowanie funkcji rdzenia
 - Poprawiono deklarowanie funkcji rozszerzenia moduleManager
 
-0.1.4 Alpha
+0.1.4 Alpha (11.12.2018)
 - Funkcja loadModel oraz loadController zwraca objekt
-- Zabezpieczono zmienn¹ $file w funkcji Template przed wpisaniem œcie¿ki
-- Dodano funkcjê _API pobieraj¹c¹ dane z API
-- Poprawiono rozszerzenie obs³ugi bazy danych
-- Dodano do rozszerzenia bazy danych domyœlne wyœwietlanedane je¿eli brak danych w bazie
-- Poprawiono rozszerzenie zarz¹dzania modu³ami
-- Poprawiono funkcjê write w rozszerzeniu db
+- Zabezpieczono zmiennÄ… $file w funkcji Template przed wpisaniem Å›cieÅ¼ki
+- Dodano funkcjÄ™ _API pobierajÄ…cÄ… dane z API
+- Poprawiono rozszerzenie obsÅ‚ugi bazy danych
+- Dodano do rozszerzenia bazy danych domyÅ›lne wyÅ›wietlanedane jeÅ¼eli brak danych w bazie
+- Poprawiono rozszerzenie zarzÄ…dzania moduÅ‚ami
+- Poprawiono funkcjÄ™ write w rozszerzeniu db
 
-0.1.3a Alpha
-- Dodano wyœwietlanie debugu rozszerzeñ
-- Dodano do rozszerzenia moduleManager mo¿liwoœæ ³¹czenia z API oraz pobieranie z niego modu³ów
-- Dodano rozszerzenie testowania modu³ów i kodu
-- Poprawiono kod pod wzglêdem b³êdów fatalnych
-- Po wczytaniu modu³u funkcja loadModule zwraca za³adowan¹ klasê
-- Rozszerzenie moduleManager ma mo¿liwoœæ pobrania danych o module i trzymania ich w wersji offline
+0.1.3a Alpha (05.12.2018)
+- Dodano wyÅ›wietlanie debugu rozszerzeÅ„
+- Dodano do rozszerzenia moduleManager moÅ¼liwoÅ›Ä‡ Å‚Ä…czenia z API oraz pobieranie z niego moduÅ‚Ã³w
+- Dodano rozszerzenie testowania moduÅ‚Ã³w i kodu
+- Poprawiono kod pod wzglÄ™dem bÅ‚Ä™dÃ³w fatalnych
+- Po wczytaniu moduÅ‚u funkcja loadModule zwraca zaÅ‚adowanÄ… klasÄ™
+- Rozszerzenie moduleManager ma moÅ¼liwoÅ›Ä‡ pobrania danych o module i trzymania ich w wersji offline
 
-0.1.3 Alpha
-- Dodano zabezpieczenie plików
-- Je¿eli modu³ nie posiada typu 'name' w konfiguracji to jest on automatycznie dodawany
-- Dodano mo¿liwoœæ ukrywania niektórych typów logów
-- Dodano rozszerzenie menad¿era modu³ów
+0.1.3 Alpha (03.12.2018)
+- Dodano zabezpieczenie plikÃ³w
+- JeÅ¼eli moduÅ‚ nie posiada typu 'name' w konfiguracji to jest on automatycznie dodawany
+- Dodano moÅ¼liwoÅ›Ä‡ ukrywania niektÃ³rych typÃ³w logÃ³w
+- Dodano rozszerzenie menadÅ¼era moduÅ‚Ã³w
 - Poprawiono debugowanie rdzenia
 
-0.1.2 Alpha
+0.1.2 Alpha (01.12.2018)
 - Dodano rozszerzenia rdzenia
 
-0.1.1 Alpha
-- Poprawiono funkcje szablonów
-- Usuniêto funkcjê _include
-- Poprawiono funkcjê loadController
+0.1.1 Alpha (01.12.2018)
+- Poprawiono funkcje szablonÃ³w
+- UsuniÄ™to funkcjÄ™ _include
+- Poprawiono funkcjÄ™ loadController
 - Poprawiono logi w funkcji loadModule
-- Poprawiono problem z powrotem karetki w funkcjach logów
+- Poprawiono problem z powrotem karetki w funkcjach logÃ³w
 
-0.1.0 Alpha
-- Zast¹piono wszystkie funkcje logów (writelog, log_*) na funkcjê wlog
-- Poprawiono funkcjê loadModule
+0.1.0 Alpha (30.11.2018)
+- ZastÄ…piono wszystkie funkcje logÃ³w (writelog, log_*) na funkcjÄ™ wlog
+- Poprawiono funkcjÄ™ loadModule
 - Funkcja loadModule, loadModel, loadController automatycznie wyszukuje oraz wczytuje klase
-- Modu³y
-	* Modu³y nie wymagaj¹ w konfiguracji danych main_class_name
-	* Nazwa klasy modu³u powinna byæ unikatowa
+- ModuÅ‚y
+	* ModuÅ‚y nie wymagajÄ… w konfiguracji danych main_class_name
+	* Nazwa klasy moduÅ‚u powinna byÄ‡ unikatowa
 
-0.0.6 Alpha
-- Poprawiono generowanie œcie¿ki do wczytywanego pliku w funkcji Template, loadView, loadModel, loadController
-- Zmiana metody wczytywania modu³u w funkcji loadModule na require_once
-- Podczas ³adowania modu³u funkcja loadModule sprawdza czy nie zosta³a ju¿ wczytana klasa o takiej samej nazwie
-- Podczas wczytywania modu³u funkcja loadModule sprawdza czy wszystkie wymagane modu³y zosta³y za³adowane
-- [Modu³ module_manager] Poprawiono wyœwietlanie opcji modu³u
-- [Modu³ module_manager] Poprawiono wyœwietlanie wymaganych modu³ów
-- [Modu³ database] Dodano funkcjê tableList która zwraca listê tabel w bazie danych
-- [Modu³ account] Dodano panel administratora
-- [Modu³ account] Wymagany dodatkowy modu³ table
-- [Modu³ account] Poprawiono funkcjê changePassword
+0.0.6 Alpha (13.12.2018)
+- Poprawiono generowanie Å›cieÅ¼ki do wczytywanego pliku w funkcji Template, loadView, loadModel, loadController
+- Zmiana metody wczytywania moduÅ‚u w funkcji loadModule na require_once
+- Podczas Å‚adowania moduÅ‚u funkcja loadModule sprawdza czy nie zostaÅ‚a juÅ¼ wczytana klasa o takiej samej nazwie
+- Podczas wczytywania moduÅ‚u funkcja loadModule sprawdza czy wszystkie wymagane moduÅ‚y zostaÅ‚y zaÅ‚adowane
+- [ModuÅ‚ module_manager] Poprawiono wyÅ›wietlanie opcji moduÅ‚u
+- [ModuÅ‚ module_manager] Poprawiono wyÅ›wietlanie wymaganych moduÅ‚Ã³w
+- [ModuÅ‚ database] Dodano funkcjÄ™ tableList ktÃ³ra zwraca listÄ™ tabel w bazie danych
+- [ModuÅ‚ account] Dodano panel administratora
+- [ModuÅ‚ account] Wymagany dodatkowy moduÅ‚ table
+- [ModuÅ‚ account] Poprawiono funkcjÄ™ changePassword
 
-0.0.5 Alpha
-- Dodano dane do funkcji debuguj¹cej
+0.0.5 Alpha (09.11.2018)
+- Dodano dane do funkcji debugujÄ…cej
 - zmiana is_file na file_exists w funkcji writelog
 - Zmieniono typ funkcji writelog na public
-- Mo¿liwoœæ zapisywania b³êdów PHP do logów
-- Dodano funkcjê log_info
+- MoÅ¼liwoÅ›Ä‡ zapisywania bÅ‚Ä™dÃ³w PHP do logÃ³w
+- Dodano funkcjÄ™ log_info
 - Zmieniono typ funkcji _include na public 
-- [Modu³ account] Poprawiono wykonywanie funkcji bindParam
-- [Modu³ cookie] Dodano kodowanie/dekodowanie ciasteczek (treœæ oraz nazwa)
-- [Modu³ database] Poprawiono wyœwietlanie w funkcji debuguj¹cej danych is_connect
+- [ModuÅ‚ account] Poprawiono wykonywanie funkcji bindParam
+- [ModuÅ‚ cookie] Dodano kodowanie/dekodowanie ciasteczek (treÅ›Ä‡ oraz nazwa)
+- [ModuÅ‚ database] Poprawiono wyÅ›wietlanie w funkcji debugujÄ…cej danych is_connect
 
-0.0.4a Alpha
-- Zmiana funkcji file_exists na is_file w wymienionch funkcjach wewnêtrz core: loadView, loadModule, loadModel, loadController, Template, writelog
-- Skrócenie funkcji Template
-- Poprawiono funkcjê wymuszaj¹c¹ wyœwietlanie b³êdów
-- Funkcja debuguj¹ca
-- [Modu³ database] Dodano funkcjê debuduj¹c¹
-- [Modu³ module_manager] Poprawiono zaznaczanie uruchomionych modu³ów
-- [Modu³ module_manager] Dodano wyœwietlenie debugowania
-- [Modu³ zlecenie] Dodano funkcjê debuguj¹c¹
-- [Modu³ protokol] Dodano funkcjê debuguj¹c¹
+0.0.4a Alpha (04.11.2018)
+- Zmiana funkcji file_exists na is_file w wymienionch funkcjach wewnÄ™trz core: loadView, loadModule, loadModel, loadController, Template, writelog
+- SkrÃ³cenie funkcji Template
+- Poprawiono funkcjÄ™ wymuszajÄ…cÄ… wyÅ›wietlanie bÅ‚Ä™dÃ³w
+- Funkcja debugujÄ…ca
+- [ModuÅ‚ database] Dodano funkcjÄ™ debudujÄ…cÄ…
+- [ModuÅ‚ module_manager] Poprawiono zaznaczanie uruchomionych moduÅ‚Ã³w
+- [ModuÅ‚ module_manager] Dodano wyÅ›wietlenie debugowania
+- [ModuÅ‚ zlecenie] Dodano funkcjÄ™ debugujÄ…cÄ…
+- [ModuÅ‚ protokol] Dodano funkcjÄ™ debugujÄ…cÄ…
 
-0.0.4 Alpha
-- Poprawiono b³¹d w logach który nie dodawa³ przez godzin¹ zera wiod¹cego
-- Funkcja loadModule zwraca do za³adowanego modu³u dodatkow¹ zmienn¹ z konfiguracj¹
+0.0.4 Alpha (29.10.2018)
+- Poprawiono bÅ‚Ä…d w logach ktÃ³ry nie dodawaÅ‚ przez godzinÄ… zera wiodÄ…cego
+- Funkcja loadModule zwraca do zaÅ‚adowanego moduÅ‚u dodatkowÄ… zmiennÄ… z konfiguracjÄ…
 - Plik htaccess dla folderu model
-- Usprawniono kod dodaj¹cy zero wi¹d¹ce do godziny w funkcji writelog
-- Usuniêto zmienn¹ $cln z funkcji writelog, log_error, log_message
-- Zmieniono funkcjê wenêtrzn¹ w funkcji _include z require na include
+- Usprawniono kod dodajÄ…cy zero wiÄ…dÄ…ce do godziny w funkcji writelog
+- UsuniÄ™to zmiennÄ… $cln z funkcji writelog, log_error, log_message
+- Zmieniono funkcjÄ™ wenÄ™trznÄ… w funkcji _include z require na include
 - Poprawiono sprawdzanie pliku w funkcji _include z file_exists na is_file
-- [Modu³ database] Usuniêto zmienn¹ moduleconfig
-- [Modu³ database] Poprawiono b³¹d fatalny w funkcji checkError
-- [Modu³ database] Mo¿liwoœæ ³¹czenia z baz¹ danych Oracle
-- [Modu³ account] zmieniono funkcjê check, od teraz je¿eli u¿ytkownik nie jest zalgoowany, zwraca wartoœæ false
-- [Modu³ account] dodano zmienn¹ logout (bool) która jest pobierana przez funkcjê check, je¿eli wartoœæ to true, to wylogowywuje u¿ytkownika je¿eli nie jest zalogowany
-- [Modu³ account] Dodano funkcjê register która pozwala na zrejestrowanie konta
-- [Modu³ account] Dodano funkcjê registerForm wyœwietlaj¹c¹ formularz rejestracji
-- [Modu³ loading] Usuniêto modu³
-- [Modu³ secure] Usuniêto modu³
-- [Modu³ setting] Usuniêto modu³
-- [Modu³ module_manager] Usuniêto modu³
+- [ModuÅ‚ database] UsuniÄ™to zmiennÄ… moduleconfig
+- [ModuÅ‚ database] Poprawiono bÅ‚Ä…d fatalny w funkcji checkError
+- [ModuÅ‚ database] MoÅ¼liwoÅ›Ä‡ Å‚Ä…czenia z bazÄ… danych Oracle
+- [ModuÅ‚ account] zmieniono funkcjÄ™ check, od teraz jeÅ¼eli uÅ¼ytkownik nie jest zalgoowany, zwraca wartoÅ›Ä‡ false
+- [ModuÅ‚ account] dodano zmiennÄ… logout (bool) ktÃ³ra jest pobierana przez funkcjÄ™ check, jeÅ¼eli wartoÅ›Ä‡ to true, to wylogowywuje uÅ¼ytkownika jeÅ¼eli nie jest zalogowany
+- [ModuÅ‚ account] Dodano funkcjÄ™ register ktÃ³ra pozwala na zrejestrowanie konta
+- [ModuÅ‚ account] Dodano funkcjÄ™ registerForm wyÅ›wietlajÄ…cÄ… formularz rejestracji
+- [ModuÅ‚ loading] UsuniÄ™to moduÅ‚
+- [ModuÅ‚ secure] UsuniÄ™to moduÅ‚
+- [ModuÅ‚ setting] UsuniÄ™to moduÅ‚
+- [ModuÅ‚ module_manager] UsuniÄ™to moduÅ‚
 
 0.0.3 Alpha
-- Osobny plik z konfiguracj¹ rdzenia
-- Usuniête zmienne z rdzenia: array_template, log_backdir, module_backkdir, log_dir, error
-- Dodano zmienn¹ reversion z powrotami do rdzenia
-- Usuniêto funkcjê autosearch_dir i przeniesiono kod do _construct
-- Usuniêto z g³ównej funkcji generowanie nazwy pliku logu, przeniesiono go do zmiennej konfiguracyjnej
+- Osobny plik z konfiguracjÄ… rdzenia
+- UsuniÄ™te zmienne z rdzenia: array_template, log_backdir, module_backkdir, log_dir, error
+- Dodano zmiennÄ… reversion z powrotami do rdzenia
+- UsuniÄ™to funkcjÄ™ autosearch_dir i przeniesiono kod do _construct
+- UsuniÄ™to z gÅ‚Ã³wnej funkcji generowanie nazwy pliku logu, przeniesiono go do zmiennej konfiguracyjnej
 - Zamiana w funkcji _include funkcji wczytywania z include na require
 - Poprawiono w funkcji writelog chmod tworzonego pliku logu z 0777 na 0644
-- [Modu³ database] Dodano funkcjê checkError wyœwietlaj¹c¹ b³¹d (je¿eli wystêpuje) w zapytaniach
-- [Modu³ setting] Dodano sprawdzanie poprawnoœci zapytañ do bazy danych
-- [Modu³ account] Poprawiono zabezpieczenie zapytañ do bazy danych w funkcjach getUserData, changePassword
-- [Modu³ account] Poprawiono wczytywanie ID sesji w funkcji changePassword
-- [Modu³ account] Zmieniono typ zmiennej connect z public na private
-- [Modu³ account] Poprawiono b³¹d w funkcji getUserData
-- [Modu³ account] Dodano sprawdzanie poprawnoœci zapytañ do bazy danych
-- [Modu³ captcha] Dodano komentarze do kodu
-- [Modu³ captcha] Zmieniono chmod tworzenia folderu logów z 777 na 644
+- [ModuÅ‚ database] Dodano funkcjÄ™ checkError wyÅ›wietlajÄ…cÄ… bÅ‚Ä…d (jeÅ¼eli wystÄ™puje) w zapytaniach
+- [ModuÅ‚ setting] Dodano sprawdzanie poprawnoÅ›ci zapytaÅ„ do bazy danych
+- [ModuÅ‚ account] Poprawiono zabezpieczenie zapytaÅ„ do bazy danych w funkcjach getUserData, changePassword
+- [ModuÅ‚ account] Poprawiono wczytywanie ID sesji w funkcji changePassword
+- [ModuÅ‚ account] Zmieniono typ zmiennej connect z public na private
+- [ModuÅ‚ account] Poprawiono bÅ‚Ä…d w funkcji getUserData
+- [ModuÅ‚ account] Dodano sprawdzanie poprawnoÅ›ci zapytaÅ„ do bazy danych
+- [ModuÅ‚ captcha] Dodano komentarze do kodu
+- [ModuÅ‚ captcha] Zmieniono chmod tworzenia folderu logÃ³w z 777 na 644
 
 0.0.2a Alpha
-- [Modu³ account] Sprawdzanie czy modu³ bazy danych jest skonfigurowany
-- [Modu³ account] Poprawiono logowanie w funkcji login
-- [Modu³ account] Funkcja check, je¿eli u¿ytkownik jest poprawny wykonuje funkcje getUserData
-- [Modu³ loading] Poprawiono ³adowanie plików (zezwolenia w pliku .htaccess)
-- [Modu³ loading] Zmieniono nazwy zmiennych i poprawiono generowanie œcie¿ek
-- [Modu³ captcha] Dodano wyj¹tek w htaccess dla czcionki
+- [ModuÅ‚ account] Sprawdzanie czy moduÅ‚ bazy danych jest skonfigurowany
+- [ModuÅ‚ account] Poprawiono logowanie w funkcji login
+- [ModuÅ‚ account] Funkcja check, jeÅ¼eli uÅ¼ytkownik jest poprawny wykonuje funkcje getUserData
+- [ModuÅ‚ loading] Poprawiono Å‚adowanie plikÃ³w (zezwolenia w pliku .htaccess)
+- [ModuÅ‚ loading] Zmieniono nazwy zmiennych i poprawiono generowanie Å›cieÅ¼ek
+- [ModuÅ‚ captcha] Dodano wyjÄ…tek w htaccess dla czcionki
 
 0.0.2 Alpha
 - Optymalizacja funkcji checkModule, loadModule, unloadModule
-- Poprawiono wczytywanie konfiguracji modu³u w funkcji loadModule
-- Usuniêto w funkcji loadModule dodawanie logu o poprawnym wczytaniu dodatkowych plików wpisanych w pliku config.php (array->include)
-- Poprawiono w funkcji loadModule automatyczne nadanie konfiguracji name, je¿eli jest ona pusta
-- Mo¿liwoœæ kontrolowania jakie dane maj¹ byæ zapisywane do logów
-- [Modu³ account] Optymalizacja zapytañ do bazy danych
-- [Modu³ account] Dodano funkcjê hashpass oraz autpmatyczne kodowanie hase³ w module
-- [Modu³ account] Zmodyfikowano wszystkie zmienne do po³¹czenia z baz¹ danych do jednej tablicy
-- [Modu³ account] Dodano funkcjê permission_check sprawdzaj¹c¹ czy u¿ytkownik ma uprawnienia do pogl¹du strony/wykonania funkcji
-- [Modu³ account] dodano funkcjê getUserID zwracaj¹c¹ ID u¿ytkownika
-- [Modu³ database] Mo¿liwoœæ po³¹czenia z baz¹ PostgreSQL
-- [Modu³ database] Poprawiono wczytywanie œcie¿ki do modu³u
-- [Modu³ database] Plik SQL z tabelami u¿ytkownika
-- [Modu³ setting] Optymalizacja zapytañ do bazy danych
-- [Modu³ captcha] Dodano automatyczne tworzenie œcie¿ek do folderu tmp oraz fonts
-- [Modu³ setting] Dodano funkcje del usuwaj¹c¹ ustawienie
-- [Modu³ email] Poprawiono zwracane dane w funkcji send_email
-- [Modu³ module_manager] Wyœwietlanie kolejki uruchamiania modu³ów
+- Poprawiono wczytywanie konfiguracji moduÅ‚u w funkcji loadModule
+- UsuniÄ™to w funkcji loadModule dodawanie logu o poprawnym wczytaniu dodatkowych plikÃ³w wpisanych w pliku config.php (array->include)
+- Poprawiono w funkcji loadModule automatyczne nadanie konfiguracji name, jeÅ¼eli jest ona pusta
+- MoÅ¼liwoÅ›Ä‡ kontrolowania jakie dane majÄ… byÄ‡ zapisywane do logÃ³w
+- [ModuÅ‚ account] Optymalizacja zapytaÅ„ do bazy danych
+- [ModuÅ‚ account] Dodano funkcjÄ™ hashpass oraz autpmatyczne kodowanie haseÅ‚ w module
+- [ModuÅ‚ account] Zmodyfikowano wszystkie zmienne do poÅ‚Ä…czenia z bazÄ… danych do jednej tablicy
+- [ModuÅ‚ account] Dodano funkcjÄ™ permission_check sprawdzajÄ…cÄ… czy uÅ¼ytkownik ma uprawnienia do poglÄ…du strony/wykonania funkcji
+- [ModuÅ‚ account] dodano funkcjÄ™ getUserID zwracajÄ…cÄ… ID uÅ¼ytkownika
+- [ModuÅ‚ database] MoÅ¼liwoÅ›Ä‡ poÅ‚Ä…czenia z bazÄ… PostgreSQL
+- [ModuÅ‚ database] Poprawiono wczytywanie Å›cieÅ¼ki do moduÅ‚u
+- [ModuÅ‚ database] Plik SQL z tabelami uÅ¼ytkownika
+- [ModuÅ‚ setting] Optymalizacja zapytaÅ„ do bazy danych
+- [ModuÅ‚ captcha] Dodano automatyczne tworzenie Å›cieÅ¼ek do folderu tmp oraz fonts
+- [ModuÅ‚ setting] Dodano funkcje del usuwajÄ…cÄ… ustawienie
+- [ModuÅ‚ email] Poprawiono zwracane dane w funkcji send_email
+- [ModuÅ‚ module_manager] WyÅ›wietlanie kolejki uruchamiania moduÅ‚Ã³w
 
 0.0.1c Alpha
-- Usuniêto zbêdne zmienne
-- Poprawiono wyœwietlanie b³êdów krytycznych
-- Podczas wczytywania modu³u w konfiguracji tworz¹ siê dane "path" ze œcie¿k¹ do wczytanego modu³u
-- Przeniesiono ³adowanie konfiguracji nad ³adowaniem modu³u
-- [Modu³ cookie] Funkcja od teraz sprawdza czy ciasteczko istnieje za pomoc¹ w³asnej funkcji check
-- [Modu³ cookie] Funkcja set od teraz poprawnie dodaje ciasteczko o czasie oczekiwania w skundach
-- [Modu³ database] Zmiana wartoœci domyœlnej zmiennej $dir z "default" na -1 w funkcji loadConfig
-- [Modu³ cookie] Od teraz w funkcji set je¿eli ciasteczko istnieje to tylko podmienia jego treœæ
-- [Modu³ cookie] Poprawiono b³¹d krytyczny w funkcji read
-- [Modu³ email] Dodano funkcjê disposable_check sprawdzaj¹c¹ czy e-mail nie nale¿y do bazy poczt jednorazwych/tymczasowych
-- [Modu³ module_manager] Ca³kowicie zmieniono zwracane dane w funkcjach site_manager oraz site_adminpanel
-- [Modu³ account] Dodano funkcjê loginForm która dodaje pole logowania
+- UsuniÄ™to zbÄ™dne zmienne
+- Poprawiono wyÅ›wietlanie bÅ‚Ä™dÃ³w krytycznych
+- Podczas wczytywania moduÅ‚u w konfiguracji tworzÄ… siÄ™ dane "path" ze Å›cieÅ¼kÄ… do wczytanego moduÅ‚u
+- Przeniesiono Å‚adowanie konfiguracji nad Å‚adowaniem moduÅ‚u
+- [ModuÅ‚ cookie] Funkcja od teraz sprawdza czy ciasteczko istnieje za pomocÄ… wÅ‚asnej funkcji check
+- [ModuÅ‚ cookie] Funkcja set od teraz poprawnie dodaje ciasteczko o czasie oczekiwania w skundach
+- [ModuÅ‚ database] Zmiana wartoÅ›ci domyÅ›lnej zmiennej $dir z "default" na -1 w funkcji loadConfig
+- [ModuÅ‚ cookie] Od teraz w funkcji set jeÅ¼eli ciasteczko istnieje to tylko podmienia jego treÅ›Ä‡
+- [ModuÅ‚ cookie] Poprawiono bÅ‚Ä…d krytyczny w funkcji read
+- [ModuÅ‚ email] Dodano funkcjÄ™ disposable_check sprawdzajÄ…cÄ… czy e-mail nie naleÅ¼y do bazy poczt jednorazwych/tymczasowych
+- [ModuÅ‚ module_manager] CaÅ‚kowicie zmieniono zwracane dane w funkcjach site_manager oraz site_adminpanel
+- [ModuÅ‚ account] Dodano funkcjÄ™ loginForm ktÃ³ra dodaje pole logowania
 
 0.0.1b Alpha
 - Poprawiono zmienne
-- Poprawiono funkcjê writelog
+- Poprawiono funkcjÄ™ writelog
 - Dodano zabezpieczenia .htaccess
-- Dodano zmienn¹ $template_dir
-- Dodano zmienn¹ $template_extension
-- Ca³kowicie przebudowano system b³êdów krytycznych
-- Dodano funkcjê _fatalError
-- Zmieniono nazwê zmiennej z $roz na $ext w funkcji Template
-- [Modu³ database] przerobiono wczytywanie konfiguracji z klasy na tablicê
-- [Modu³ cookie] dodano funkcjê check
-- [Modu³ module_manager] poprawiono funkcjê generate_link
-- [Modu³ module_manager] zmieniono nazwê funkcji list na mlist
-- [Modu³ account] Zmieniono wartoœæ domyœln¹ zmiennej $user na null
+- Dodano zmiennÄ… $template_dir
+- Dodano zmiennÄ… $template_extension
+- CaÅ‚kowicie przebudowano system bÅ‚Ä™dÃ³w krytycznych
+- Dodano funkcjÄ™ _fatalError
+- Zmieniono nazwÄ™ zmiennej z $roz na $ext w funkcji Template
+- [ModuÅ‚ database] przerobiono wczytywanie konfiguracji z klasy na tablicÄ™
+- [ModuÅ‚ cookie] dodano funkcjÄ™ check
+- [ModuÅ‚ module_manager] poprawiono funkcjÄ™ generate_link
+- [ModuÅ‚ module_manager] zmieniono nazwÄ™ funkcji list na mlist
+- [ModuÅ‚ account] Zmieniono wartoÅ›Ä‡ domyÅ›lnÄ… zmiennej $user na null
 
 0.0.1a Alpha
-- Zmiana typu zmiennej module_backdir na publiczn¹
-- Zmiana domyœlnej wartoœci zmiennej $edit w funkcji templateSet z 1 na true
+- Zmiana typu zmiennej module_backdir na publicznÄ…
+- Zmiana domyÅ›lnej wartoÅ›ci zmiennej $edit w funkcji templateSet z 1 na true
 - Zmiana nazwy zmiennej z loadTemplate na Template
 - Poprawa szablonu
-- Dodano modu³ module_manager
-- Usuniêto zmienn¹ log_file
-- Poprawiono funkcjê writelog
-- Poprawiono funkcjê auto wyszukiwania folderów
-- [Modu³ setting] sprawdzanie czy modu³ database jest uruchomiony
-- [Modu³ database] poprawiono generowanie œcie¿ki do modu³u
-- [Modu³ secure] zmiana nazwy zmiennej z text na protectText
-- [Modu³ cookie] zmiana nazwy funkcji z unset na del
+- Dodano moduÅ‚ module_manager
+- UsuniÄ™to zmiennÄ… log_file
+- Poprawiono funkcjÄ™ writelog
+- Poprawiono funkcjÄ™ auto wyszukiwania folderÃ³w
+- [ModuÅ‚ setting] sprawdzanie czy moduÅ‚ database jest uruchomiony
+- [ModuÅ‚ database] poprawiono generowanie Å›cieÅ¼ki do moduÅ‚u
+- [ModuÅ‚ secure] zmiana nazwy zmiennej z text na protectText
+- [ModuÅ‚ cookie] zmiana nazwy funkcji z unset na del
 
 0.0.1 Alpha
-- Poprawiono g³ówne zmienne
+- Poprawiono gÅ‚Ã³wne zmienne
 - Poprawiono wczytywanie pliku w funkcji loadModel
-- System szablonów
-- Dodano modu³ captcha
-- Dodano zmienn¹ $log_dir
-- Dodano funkcjê writelog, log_error, log_message, log_setbackdir
-- Dodano logi do ca³ego j¹dra oraz modu³ów
-- Mo¿liwoœæ "usuniêcia" wczytanego modu³u
-- Dodano modu³ loading
+- System szablonÃ³w
+- Dodano moduÅ‚ captcha
+- Dodano zmiennÄ… $log_dir
+- Dodano funkcjÄ™ writelog, log_error, log_message, log_setbackdir
+- Dodano logi do caÅ‚ego jÄ…dra oraz moduÅ‚Ã³w
+- MoÅ¼liwoÅ›Ä‡ "usuniÄ™cia" wczytanego moduÅ‚u
+- Dodano moduÅ‚ loading
 - Poprawiono funkcje warunkowe
-- Zakomentowanie ca³ego kodu
-- Ca³kowite przerobienie modu³ów
-- Usuniêto modu³ notification i zast¹piono go funkcjami wewn¹trz j¹dra
-- Dodano modu³ account
+- Zakomentowanie caÅ‚ego kodu
+- CaÅ‚kowite przerobienie moduÅ‚Ã³w
+- UsuniÄ™to moduÅ‚ notification i zastÄ…piono go funkcjami wewnÄ…trz jÄ…dra
+- Dodano moduÅ‚ account
 - Poprawiono "demo"
-- Dodano modu³ setting
-- [Modu³ cookie] dodano odczytywanie ciasteczka
-- [Modu³ database] dodano kodowanie bazy danych
-- [Modu³ database] dodano mo¿liwoœæ po³¹czenia siê z baz¹ SQLite
-- [Modu³ database] poprawiono ³adowanie konfiguracji
-- [Modu³ database] dodano funkcje lastInsertID oraz execute
-- [Modu³ database] przeniesiene konfiguracj z pliku database.php do config.php
-- [Modu³ database] poprawiono funkcjê connect
-- [Modu³ database] zmienne z danymi tabel w bazie danych
-- [Modu³ notification] poprawiono zmienne
-- [Modu³ notification] dodano funkcjê getLastXDataLine, loadConfig, topInfoViewer, topLogViewer, createArchiveLog
-- [Modu³ secure] zmeniono nazwê funkcji wewnêtrznych
-- [Modu³ email] zmieniono nazwê funkcji uruchom_email na start
-- [Modu³ email] dodano funkcje setCharset
-- [Modu³ email] dodano zmienn¹ replayTo
-- [Modu³ email] poprawiono funkcjê start
-- [Modu³ email] dodanie nag³ówka X-Mailer
+- Dodano moduÅ‚ setting
+- [ModuÅ‚ cookie] dodano odczytywanie ciasteczka
+- [ModuÅ‚ database] dodano kodowanie bazy danych
+- [ModuÅ‚ database] dodano moÅ¼liwoÅ›Ä‡ poÅ‚Ä…czenia siÄ™ z bazÄ… SQLite
+- [ModuÅ‚ database] poprawiono Å‚adowanie konfiguracji
+- [ModuÅ‚ database] dodano funkcje lastInsertID oraz execute
+- [ModuÅ‚ database] przeniesiene konfiguracj z pliku database.php do config.php
+- [ModuÅ‚ database] poprawiono funkcjÄ™ connect
+- [ModuÅ‚ database] zmienne z danymi tabel w bazie danych
+- [ModuÅ‚ notification] poprawiono zmienne
+- [ModuÅ‚ notification] dodano funkcjÄ™ getLastXDataLine, loadConfig, topInfoViewer, topLogViewer, createArchiveLog
+- [ModuÅ‚ secure] zmeniono nazwÄ™ funkcji wewnÄ™trznych
+- [ModuÅ‚ email] zmieniono nazwÄ™ funkcji uruchom_email na start
+- [ModuÅ‚ email] dodano funkcje setCharset
+- [ModuÅ‚ email] dodano zmiennÄ… replayTo
+- [ModuÅ‚ email] poprawiono funkcjÄ™ start
+- [ModuÅ‚ email] dodanie nagÅ‚Ã³wka X-Mailer

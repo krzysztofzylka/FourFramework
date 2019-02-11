@@ -1,126 +1,106 @@
 <?php
-//główna klasa biblioteki
 return $this->network = new class($this->core){
-	//funkcja z rdzeniem
 	protected $core;
-	//metoda pobierania danych
 	private $method = 0;
-	//metoda pobierania plików
 	private $methodDownloadFile = 0;
-	//maksymalny czas oczekiwania dla CURL
 	private $curlTimeout = 1000;
-	//główna funkcja
 	public function __construct($obj){
-		//inicjonowanie zmiennych
 		$this->core = $obj;
-		//pobieranie metody połączenia z zewnętrznymi stronami
 		$this->_getMethod();
 	}
-	//pobranie metody połączenia z serwerem w celu pobrania danych
-	private function _getMethod(){
-		///--- dla pobierania danych
-		//jeżeli curl
+	//get method
+	private function _getMethod() : void{
+		$this->core->returnError();
+		//curl
 		if(function_exists('curl_version'))
 			$this->method = 1;
-		//jeżeli file_get_contents
+		//file_get_contents
 		elseif(function_exists('file_get_contents'))
 			$this->method = 2;
+		else
+			return $this->core->returnError(1, 'error set method'); //error 1
+		return;
 	}
-	//pobranie danych z url
-	public function getData($url){
+	//download data from url
+	public function getData(string $url){
+		$this->core->returnError();
 		switch($this->method){
-			//błąd pobierania danych
-			case 0:
-				//zwracanie błędu
+			case 0: //if error
 				return false;
 				break;
 			//curl
 			case 1:
-				//inicjonowanie curl
 				$curl = curl_init();
-				//konfiguracja curl
-				curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-				curl_setopt($curl, CURLOPT_URL, $url);
-				curl_setopt($curl, CURLOPT_TIMEOUT, $this->curlTimeout);
-				//pobieranie danych
+				curl_setopt_array($curl, [
+					CURLOPT_RETURNTRANSFER => true,
+					CURLOPT_URL => $url,
+					CURLOPT_TIMEOUT => $this->curlTimeout
+				]);
 				$getData = curl_exec($curl);
-				//jeżeli błąd
-				if($getData === false){
-					//jeżeli błąd
-					$this->core->wlog('Error download data, error: '.curl_error($ch), 'library network', 'error');
-					return false;
-				}
-				//zamykanie curl
+				if($getData === false)
+					return $this->core->returnError(1, 'error download data', curl_error($ch), 'Error download data, error: '.curl_error($ch), 'library network', 'error'); //error 1
 				curl_close($curl);
-				//zwracanie danych
 				return $getData;
 			//file_get_contents
 			case 2:
-				//pobieranie i zwracanie danych
-				$getData = file_get_contents($url);
-				return $getData;
+				return file_get_contents($url);
 		}
-		//błąd
 		return false;
 	}
-	//pobieranie danych JSON z url
-	public function getJSONData($url){
-		//pobieranie danych
+	//download JSON from url
+	public function getJSONData(string $url){
+		$this->core->returnError();
 		$readData = $this->getData($url);
-		//jeżeli błąd
-		if(!$readData) return false;
-		//jeżeli sukces to dekodowanie i zwracanie danych
+		if(!$readData)
+			return $this->core->returnError(1, 'error read data from url', ['url' => $url]); //error 1
 		return json_decode($readData, true);
 	}
-	//pobieranie pliku
-	public function downloadFile($url, $path){
-		//jeżeli plik w podaniej ścieżce już istnieje
-		if(file_exists($path)) return false;
-		//pobieranie plików
+	//download file from url
+	public function downloadFile(string $url, string $path){
+		$this->core->returnError();
+		if(file_exists($path))
+			return false;
 		switch($this->method){
-			//jeżeli błąd
-			case 0:
+			case 0: //if error
 				return false;
 				break;
-			//dla curl
+			//curl
 			case 1:
 				$fp = fopen($path, 'w');
 				$ch = curl_init($url);
-				curl_setopt($ch, CURLOPT_FILE, $fp);
-				curl_setopt($ch, CURLOPT_TIMEOUT, $this->curlTimeout);
+				curl_setopt_array($ch, [
+					CURLOPT_FILE => $fp,
+					CURLOPT_TIMEOUT => $this->curlTimeout
+				]);
 				$data = curl_exec($ch);
 				curl_close($ch);
 				if(curl_errno($ch)){
 					fclose($fp);
 					unlink($path);
-					$this->core->wlog('Error download file, error: '.curl_error($ch), 'library network', 'error');
-					return false;
+					return $this->core->returnError(1, 'error download file', curl_error($ch), 'Error download file, error: '.curl_error($ch), 'library network', 'error'); //error 1
 				}
 				fclose($fp);
 				return true;
 				break;
-			//dla file_put_contents
+			//file_put_contents
 			case 2:
-				//pobieranie plików
-				$download = file_put_contents($path, fopen($url, 'r'));
-				//jeżeli błąd
-				if(!$download) return false;
-				//jeżeli sukcess
-				return true;
+				return file_put_contents($path, fopen($url, 'r'));
 				break;
 		}
 		//jeżeli błąd
-		return false;
+		return $this->core->returnError(2, 'error download file', 'unknown error'); //error 2
 	}
-	//Pobieranie linka do aktualnej strony
-	public function getCurrentPageURL(){
+	//return current page url
+	public function getCurrentPageURL() : string{
+		$this->core->returnError();
 		$url  = @( $_SERVER["HTTPS"] != 'on' ) ? 'http://'.$_SERVER["SERVER_NAME"] :  'https://'.$_SERVER["SERVER_NAME"];
 		$url .= ( $_SERVER["SERVER_PORT"] <> 80 ) ? ":".$_SERVER["SERVER_PORT"] : "";
 		$url .= $_SERVER["REQUEST_URI"];
 		return $url;
 	}
-	//pobieranie adresu IP klienta
-	public function getClientIP(){
+	//return client IP
+	public function getClientIP() : string{
+		$this->core->returnError();
 		if (!empty($_SERVER['HTTP_CLIENT_IP'])) return $_SERVER['HTTP_CLIENT_IP'];
 		elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) return  $_SERVER['HTTP_X_FORWARDED_FOR'];
 		else return $_SERVER['REMOTE_ADDR'];

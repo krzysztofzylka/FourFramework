@@ -1,114 +1,116 @@
 <?php
 return new class($this){
 	protected $core;
-	public $path = '';
 	public $temp = true;
 	protected $temp_array = [];
 	public function __construct($obj){
 		$this->core = $obj;
-		$this->path = $obj->reversion.'core/extension/db/base/';
-		if(!file_exists($this->path)) mkdir($this->path);
 	}
-	//zapis danych do bazy danych
-	public function write(string $db_name, string $name, string $value) : bool{
-		//odczytywanie pliku, jeżeli nie istnieje to tworzenie pustej tablicy
+	//write to database
+	public function write(string $db_name, string $name, string $value){
+		$this->core->returnError();
 		$read = $this->_readFile($db_name);
 		if(!$read) $read = array();
-		//zapis danych do tablicy
 		$read[$name] = $value;
-		//zapis dantch do pliku
 		return $this->_saveFile($db_name, $read);
 	}
-	//odczytanie danych z bazy
-	public function read(string $db_name, string $name, $default=null) : string{
-		//odczytanie pliku
+	//read from database
+	public function read(string $db_name, string $name, $default=null){
+		$this->core->returnError();
 		$read = $this->_readFile($db_name);
 		if(!$read) return $default==null?false:$default;
-		//jeżeli dane istnieją
 		if(isset($read[$name])) return $read[$name];
-		//jeżeli dane nie istnieją
 		return $default;
 	}
-	//usunięcie danych z bazy danych
-	public function del(string $db_name, string $name) : bool{
-		//odczytanie pliku
+	//delete data from database
+	public function del(string $db_name, string $name){
+		$this->core->returnError();
 		$read = $this->_readFile($db_name);
-		if(!$read) return false; //jeżeli błąd odczytywania bazy danych
-		//usuwanie danych
+		if(!$read) return $this->core->returnError(1, 'error save to file'); //error 1
 		unset($read[$name]);
-		//jeżeli w bazie nie ma więcej danych to usunięcie pliku bazy danych
-		if(count($read) == 0) return unlink($file);
-		//jeżeli jakieś dane jeszcze są to zapisanie pozostałych danych do bazy danych
+		if(count($read) == 0){
+			$file = $this->core->path['file_ext_db_base'];
+			$zip = new ZipArchive();
+			if($zip->open($file, ZipArchive::CREATE) !== true) return false;
+			$zip->deleteName($db_name.'.sdb');
+			$zip->close();
+			return true;
+		}
 		return $this->_saveFile($db_name, $read);
 	}
-	//sprawdzenie czy dane istnieją w bazie danych
-	public function check(string $db_name, string $name) : bool{
-		//odczytanie pliku
+	//check data in database
+	public function check(string $db_name, string $name){
+		$this->core->returnError();
 		$read = $this->_readFile($db_name);
-		if(!$read) return false;
-		//zwrócenie informacji czy plik istnieje
+		if(!$read) return return $this->core->returnError(1, 'error read from file'); //error 1
 		return isset($read[$name])?true:false;
 	}
-	//zapisanie tablicy do pliku bazy danych
+	//save array to file
 	private function _saveFile(string $db_name, array $array){
-		//gerowanie ścieżki do pliku bazy
-		$file = $this->path.$db_name.'.php';
-		//jeżeli plik nie istnieje
-		if(!is_file($file)){
-			//tworzenie pliku
-			touch($file);
-			//ustalanie praw dostępu na tylko serwer
-			chmod($file, 0600);
-		}
-		//kodowanie tablicy
-		$data = '<?php return \''.serialize($array).'\' ?>';
-		//zapis do pliku (+ informacja jeżeli niepowodzenie)
-		if(!file_put_contents($file, $data)) $this->core->wlog('Error save string to file \''.$file.'\' data: \''.$data.'\' (before: \''.serialize($array).'\')', 'error', 'db');
-		//dodanie logu o sukcesie
-		else $this->core->wlog('Add data to database \''.$db_name.'\' data: \''.$data.'\'', 'db', 'message');
-		//aktualizacja/dodawanie danych w tablicy jeżeli istnieją
-		if($this->temp) $this->temp_array[$db_name] = $array;
-		//zwracanie informacji o powodzeniu
+		$this->core->returnError();
+		$write = serialize($array);
+		$zip = new ZipArchive();
+		if($zip->open($this->core->path['file_ext_db_base'], ZipArchive::CREATE) !== true) return false;
+		$zip->addFromString($db_name.'.sdb', $write);
+		$zip->close();
 		return true;
 	}
-	//odczytanie pliku
+	//read array from file
 	private function _readFile(string $db_name){
-		//jeżeli aktywne dane tymczasowe
+		$this->core->returnError();
 		if($this->temp){
-			//jeżeli dane są w tablicy
 			if(isset($this->temp_array[$db_name])){
-				//odczytanie danych do tablicy
 				$read = $this->temp_array[$db_name];
-				//wpisanie logu
 				$this->core->wlog('Read data from database \''.$db_name.'\' (temponary)', 'db', 'message');
-				//zwrócenie danych
 				return $read;
 			}
 		}
-		//gerowanie ścieżki do pliku bazy
-		$file = $this->path.$db_name.'.php';
-		//błąd jeżeli plik nie isnieje
-		if(!is_file($file)) return false;
-		//wczytanie pliku
-		$read = include($file);
-		//odczytywanie zakodowanych danych z pliku
-		$decode = unserialize($read);
-		//błąd jeżeli dane to nie tablica lub odczytane dane są puste
-		if(!is_array($decode) or $read == '') return false;
-		//log o sukcesie odczytania danych
-		$this->core->wlog('Read data from database \''.$db_name.'\'', 'db', 'message');
-		//jeżeli aktywne dane tymczasowe to dodawanie danych do tablicy
+		$zip = new ZipArchive();
+		if($zip->open($this->core->path['file_ext_db_base']) === true){
+			$string = $zip->getFromName($db_name.'.sdb');
+			$zip->close();
+			$decode = unserialize($string);
+		}else return $this->core->returnError(1, 'error open zip file', ['path' => $this->core->path['file_ext_db_base']]); //error 1;
 		if($this->temp) $this->temp_array[$db_name] = $decode;
-		//zwrócenie tablicy
+		//return array
 		return $decode;
 	}
-	//odczytanie w formie tablicy całego pliku bazy
+	//read array from database
 	public function readArray(string $db_name){
-		//odczytanie pliku
+		$this->core->returnError();
 		$read = $this->_readFile($db_name);
 		if(!$read) return false;
-		//zwracanie odczytanej bazy
 		return $read;
+	}
+	//show manager
+	public function manager(){
+		$this->core->returnError();
+		include($this->core->path['dir_ext_db'].'manager.php');
+	}
+	//get database list
+	public function dbList(){
+		$this->core->returnError();
+		$arr = [];
+		$zip = new ZipArchive();
+		if ($zip->open($this->core->path['file_ext_db_base']) == TRUE) {
+			for ($i = 0; $i < $zip->numFiles; $i++) {
+				$filename = $zip->getNameIndex($i);
+				array_push($arr, $filename);
+			}
+		}
+		return $arr;
+	}
+	//debug function
+	public function __debugInfo(){
+		$this->core->returnError();
+		return [
+			'db_path' => $this->core->path['file_ext_db_base'],
+			'temp' => [
+				'active' => $this->temp?'true':'false',
+				'count' => $this->temp?count($this->temp_array):'***disable***',
+				'list' => $this->temp?implode(',',array_keys($this->temp_array)):'***disable***',
+			],
+		];
 	}
 }
 ?>

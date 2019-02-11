@@ -14,8 +14,8 @@ $list = $this->get_list();
 	for($x=0;$x<$api['count'];$x++){
 		$data = $api['list'][$x];
 		$opcje = '';
-		if(in_array($data['name'], $list)) $opcje = '<a href="'.$this->generateLink('download--'.$data['download']).'">Aktualizuj ('.$data['version'].')</a>'; //dla aktualizacji
-		elseif(strlen($data['download']) > 5) $opcje = '<a href="'.$this->generateLink('download--'.$data['download']).'">Pobierz</a>'; //dla pobierania
+		if(in_array($data['name'], $list)) $opcje = '<a href="'.$this->generateLink('download--'.$data['download']).'">Aktualizuj ('.$data['version'].')</a>'; //for update
+		elseif(strlen($data['download']) > 5) $opcje = '<a href="'.$this->generateLink('download--'.$data['download']).'">Pobierz</a>'; //for download
 		$color = 'red';
 		if(in_array($data['name'], $list)) $color = 'blue';
 		if(in_array($data['name'], $this->core->module_list)) $color = 'green';

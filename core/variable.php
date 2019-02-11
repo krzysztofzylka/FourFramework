@@ -1,34 +1,50 @@
 <?php
-//główne zmienne
-$this->reversion = ''; //powroty karetki do głównego folderu
-//zmienne dla modułów
+//path list
+$this->path = [
+	 'dir_core' => $this->reversion.'core/',
+	'file_core' => $this->reversion.'core/core.php',
+	 'dir_extension' => $this->reversion.'core/extension/',
+	 'dir_ext_db' => $this->reversion.'core/extension/db/',
+	'file_ext_db_base' => $this->reversion.'core/extension/db/base.zip',
+	 'dir_ext_moduleManager' => $this->reversion.'core/extension/moduleManager/',
+	 'dir_ext_test' => $this->reversion.'core/extension/test/',
+	 'dir_library' => $this->reversion.'core/library/',
+	 'dir_controller' => $this->reversion.'controller/',
+	 'dir_model' => $this->reversion.'model/',
+	 'dir_log' => $this->reversion.'log/',
+	 'dir_log_php' => $this->reversion.'log/',
+	 'dir_module' => $this->reversion.'module/',
+	 'dir_template' => $this->reversion.'template/',
+	 'dir_view' => $this->reversion.'view/',
+	 'dir_temp' => $this->reversion.'temp/',
+];
+//for module
 $this->module = [];
 $this->module_list = [];
 $this->module_config = [];
-//zmienne dla modeli
+//for model
 $this->model = [];
 $this->model_list = [];
-//dla szablonu
-$this->template_dir = 'template/'; //ścieżka do folderu z plikami szablonu
-$this->template_extension = '.inc.tpl'; //rozszerzenie pliku szablonu
-$this->array_template_list = []; //zmienna zawierająca liste danych
-$this->array_template = []; //zmienna zawierająca dane
-//zmienne dla logów
-$this->log_dir = 'log/'; //ścieżka do folderu z logami
-$this->log_file = 'log_'.date('Y_m').'.log'; //plik logów
-$this->log_save = true; //tworzenie logów
-$this->log_hide_type = ['message', 'info']; //typy logów które mają być niedodawanie do logów
-//zmienne dla logów błędów PHP
-$this->error = true; //wyświetlenie błędów PHP
-$this->php_error = true; //dodawanie do logów błędów PHP
-$this->php_error_file = 'log_php_'.date('Y_m').'.log'; //plik logów
-$this->php_error_dir = 'log/'; //folder błędów PHP
-//rozszerzenia
-$this->db = null; //baza danych
-$this->moduleManager = null; //menadżer modułów
-$this->test = null; //menadżer testowania
-//API
-$this->API_secure = false; //wlacza połączenie z API za pomocą SSL (https), może spowolnić kod około 10 razy
-$this->API = ($this->API_secure==true?'https':'http').'://www.fourframework.hmcloud.pl'; //url do API
-//biblioteki
+//for template
+$this->template_extension = '.inc.tpl';
+$this->array_template_list = [];
+$this->array_template = [];
+//for log
+$this->log_file = 'log_'.date('Y_m').'.log'; //file name
+$this->log_save = true; //active
+$this->log_hide_type = ['message', 'info']; //hidden log types
+//for error
+$this->error = true;
+$this->php_error = true;
+$this->php_error_file = 'log_php_'.date('Y_m').'.log';
+//for extension
+$this->db = null;
+$this->moduleManager = null;
+$this->test = null;
+//fot API
+$this->API_secure = false; //ssl
+$this->API = ($this->API_secure==true?'https':'http').'://www.fourframework.hmcloud.pl'; //API url
+//for library
 $this->library = null;
+//for error
+$this->lastError = null;

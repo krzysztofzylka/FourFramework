@@ -16,7 +16,7 @@
 		if(isset($config['uid'])) $api = $this->core->_API('uid='.$config['uid']);
 		if($api['count'] == 1){
 			$api_date = (int)strtotime($api['list'][0]['date']);
-			$mod_date = (int)strtotime($config['date']);
+			$mod_date = isset($config['date'])?(int)strtotime($config['date']):0;
 			if($api_date > $mod_date){ //dostępna aktualizacja
 				$color = 'orange';
 				$api_data = "(Dostępna aktualizacja)";

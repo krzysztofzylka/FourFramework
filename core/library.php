@@ -1,30 +1,23 @@
 <?php
 return new class($this){
-	//zmienna z rdzeniem
 	protected $core;
-	//lista załadowanych bibliotek
 	public $__list = [];
-	//główna funkcja
 	public function __construct($obj){
 		$this->core = $obj;
 	}
-	//jeżeli biblioteka nie jest zaimportowana
+	//if variable not exists
 	public function __get($name){
-		//generowanie ścieżki do biblioteki
-		$path = $this->core->reversion.'core/library/'.$name.'.php';
-		//jeżeli biblioteka istnieje
+		//generate path to library file
+		$path = $this->core->path['dir_library'].$name.'.php';
 		if(is_file($path)){
-			//dodawanie biblioteki do listy
 			array_push($this->__list, $name);
-			//wczytywanie biblioteki
 			return include($path);
-		//jeżeli biblioteka nie istnieje
 		}else{
 			$this->core->wlog('Error send function to \''.$name.'\' library', 'core', 'error');
 			die('<b>Error send function to \''.$name.'\' library</b>');
 		}
 	}
-	//debug
+	//debug function
 	public function __debugInfo(){
 		return [
 			'list' => $this->__list,
