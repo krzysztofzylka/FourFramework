@@ -1,8 +1,1 @@
-﻿<?php
-require('core/core.php');
-
-$core = new core();
-$core->templateSet('title', 'Tytuł strony');
-$core->Template('header');
-$core->loadController('index');
-$core->Template('footer');
+﻿<a href="manager/index.php">Menadżer frameworka (admin/admin)</a>

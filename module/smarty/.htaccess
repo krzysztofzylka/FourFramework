@@ -1,0 +1,8 @@
+<Files "*.css">
+Allow from all
+Satisfy Any
+</Files>
+<Files "*.js">
+Allow from all
+Satisfy Any
+</Files>

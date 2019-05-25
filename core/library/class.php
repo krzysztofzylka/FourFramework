@@ -1,6 +1,7 @@
 <?php
 return $this->class = new class($this->core){
 	protected $core;
+	public $version = "1.0";
 	public function __construct($obj){
 		$this->core = $obj;
 	}
