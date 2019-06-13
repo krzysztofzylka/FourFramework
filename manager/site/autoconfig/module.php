@@ -8,18 +8,18 @@ if(isset($_POST['optSave'])){
 		}
 	}
 	$core->__autoConfigDB('module_autostart', htmlspecialchars(implode('|', $arr)));
-	echo '<div class="message green">Poprawnie zapisano modułu do autostartu</div>';
+	echo '<div class="message green">'.$lang->get('successsabemodtoas').'</div>';
 }
 ?>
-<h1>Automatyczne uruchamianie modułów</h1>
+<h1><?php echo $lang->get('autostartmodule') ?></h1>
 <form method="POST">
 	<table class="title border">
 		<tr>
-			<td>Autostart</td>
-			<td>Nazwa</td>
-			<td>Wersja</td>
-			<td>Opis</td>
-			<td>Język</td>
+			<td><?php echo $lang->get('autostart') ?></td>
+			<td><?php echo $lang->get('name') ?></td>
+			<td><?php echo $lang->get('version') ?></td>
+			<td><?php echo $lang->get('description') ?></td>
+			<td><?php echo $lang->get('lang') ?></td>
 		</tr>
 	<?php
 	$as = $core->__autoConfigDB('module_autostart');
@@ -40,5 +40,5 @@ if(isset($_POST['optSave'])){
 	?>
 	</table>
 	<br />
-	<input type="submit" name="optSave" value="Zapisz ustawienia" />
+	<input type="submit" name="optSave" value="<?php echo $lang->get('saveoption') ?>" />
 </form>

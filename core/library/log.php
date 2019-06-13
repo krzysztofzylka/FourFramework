@@ -27,7 +27,7 @@ return $this->log = new class($this->core){
 		$name = str_replace('{sec}', date('s'), $name);
 		return $name;
 	}
-	public function write($text) : bool{
+	public function write(string $text) : bool{
 		$write = str_replace('{date}', date('Y-m-d H:i:s'), $this->writeData);
 		$write = str_replace('{text}', $text, $write);
 		$return = file_put_contents($this->path.$this->fileName, $write.PHP_EOL, FILE_APPEND);

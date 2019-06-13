@@ -1,10 +1,10 @@
-<h1>Zużycie danych przez biblioteki</h1>
+<h1><?php echo $lang->get('libraryusage') ?></h1>
 <table class="table title border">
 	<tr>
-		<td>Nazwa</td>
-		<td>Rozmiar</td>
-		<td>Zużycie RAM<br />(załadowanie)</td>
-		<td>Czas ładowania</td>
+		<td><?php echo $lang->get('name') ?></td>
+		<td><?php echo $lang->get('size') ?></td>
+		<td><?php echo $lang->get('ramusage') ?></td>
+		<td><?php echo $lang->get('loadtime') ?></td>
 	</tr>
 	<?php
 	$scan = scandir($core->path['dir_library']);

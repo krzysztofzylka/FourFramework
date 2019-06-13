@@ -1,7 +1,7 @@
 <?php
 class core{
-	public $version = '0.1.10 Alpha';
-	public $releaseDate = '25.05.2019';
+	public $version = '0.1.11 Alpha';
+	public $releaseDate = '13.06.2019';
 	private $__lastInsertClass;
 	public function __construct($config = null){
 		$this->reversion = "";
@@ -46,8 +46,6 @@ class core{
 				];
 			}
 		};
-		if(!file_exists($this->path['dir_base']))
-			mkdir($this->path['dir_base']);
 	}
 	public function loadView(string $name, string $dir = "view/"){
 		$this->returnError();
@@ -61,7 +59,7 @@ class core{
 			return $this->returnError(2, 'error inside function', $e->getMessage(), 'Error in the loadView function: '.$e->getMessage(), 'core', 'error'); 
 		}
 	}
-	public function loadModule($name){
+	public function loadModule(string $name){
 		$this->returnError();
 		if(is_array($name)){
 			foreach($name as $item)
@@ -127,7 +125,8 @@ class core{
 			array_push($this->model_list, $name);
 			$this->wlog('Success loading model file on path: '.$path, 'core', 'message');
 			return $this->model[$name];
-		}else return $this->returnError(2, 'model is alerty exists');
+		}else
+			return $this->returnError(2, 'model is alerty exists');
 	}
 	public function loadController(string $name, string $dir = "controller/"){
 		$this->returnError();
@@ -135,8 +134,10 @@ class core{
 		if(!is_file($path))
 			return $this->returnError(1, 'error loading controller file', 'file is not exists', 'Error loading controller file on path: '.$path, 'core', 'error');
 		$className = $this->_loadClassFromFile($path);
-		if($this->library->class->is_anonymous($className) or $className === false) $object = $this->__lastInsertClass;
-		else $object = new $className($this);
+		if($this->library->class->is_anonymous($className) or $className === false)
+			$object = $this->__lastInsertClass;
+		else
+			$object = new $className($this);
 		$this->wlog('Success loading controller file on path: '.$path, 'core', 'message');
 		return $object;
 	}
@@ -271,12 +272,9 @@ class core{
 	}
 	private function __getReversion() : void{
 		$this->returnError();
-		for($i=0; $i<=100; $i++){
-			if(file_exists($this->reversion."core/core.php"))
-				return;
-			$this->reversion .= "../";
+		while(!file_exists($this->reversion."core/core.php")){
+			$this->reversion .= '../';
 		}
-		return;
 	}
 	public function returnError(int $number=-1, $name=null, $message=null, $log_value=null, $log_name=null, $log_type=null) : bool{
 		if($log_value <> null)
@@ -317,7 +315,7 @@ class core{
 		$path = $this->path['dir_library'].$name.'.php';
 		return file_exists($path);
 	}
-	public function _autoConfig(){
+	public function _autoConfig() : void{
 		//core path
 		foreach($this->path as $name => $value){
 			$check = $this->__autoConfigDB('core_path_'.$name);
@@ -366,14 +364,12 @@ class core{
 					$this->loadModule($name);
 			}
 		}
+		return;
 	}
 	public function __autoConfigDB(string $name, $value=null){
 		if($value === null){
 			$query = $this->library->db->getData('core_autoconfig', ['name='.$name], false);
-			if($query == false)
-				return false;
-			else
-				return $query['value'];
+			return $query==false?false:$query['value'];
 		}else{
 			$query = $this->library->db->getData('core_autoconfig', ['name='.$name], false);
 			if($query == false)

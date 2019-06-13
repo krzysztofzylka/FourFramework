@@ -27,12 +27,12 @@ if(isset($_POST['optDefault'])){
 	}
 }
 ?>
-<h1>Zmiana ścieżek dostępu</h1>
+<h1><?php echo $lang->get('changepathlist') ?></h1>
 <form method="POST">
 	<table class="title border">
 	<tr>
-		<td>Nazwa</td>
-		<td>Wartość</td>
+		<td><?php echo $lang->get('name'); ?></td>
+		<td><?php echo $lang->get('value'); ?></td>
 	</tr>
 	<?php
 	foreach($core->path as $name => $value){
@@ -47,6 +47,6 @@ if(isset($_POST['optDefault'])){
 	}
 	?>
 	</table><br />
-	<input type="submit" value="Zapisz" name="optSave" />
-	<input type="submit" value="Pobierz wartości domyślne" name="optDefault" />
+	<input type="submit" value="<?php echo $lang->get('saveoption'); ?>" name="optSave" />
+	<input type="submit" value="<?php echo $lang->get('loaddefault'); ?>" name="optDefault" />
 </form>

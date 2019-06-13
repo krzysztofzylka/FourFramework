@@ -14,7 +14,7 @@ if(isset($_POST['optSave'])){
 		$core->__autoConfigDB('lib_network_method', htmlspecialchars($_POST['lib_network_method']));
 }
 ?>
-<h1>Konfiguracja biblioteki network</h1>
+<h1><?php echo $lang->get('configurationlibrary2'); ?> network</h1>
 <form method="POST">
 <table class="border">
 	<tr>
@@ -22,7 +22,7 @@ if(isset($_POST['optSave'])){
 			<input type="checkbox" name="lib_network_autostart" <?php if((bool)$core->__autoConfigDB('lib_network_autostart') == true) echo 'checked' ?> />
 		</td>
 		<td>
-			Automatyczne wczytywanie biblioteki oraz jego konfiguracji
+			<?php echo $lang->get('autoloadlibandconf'); ?>
 		</td>
 	</tr>
 	<tr>
@@ -30,7 +30,7 @@ if(isset($_POST['optSave'])){
 			<input type="text" name="lib_network_curltimeout" value="<?php echo $core->__autoConfigDB('lib_network_curltimeout')===false?$core->library->network->curlTimeout:$core->__autoConfigDB('lib_network_curltimeout') ?>" />
 		</td>
 		<td>
-			Maksymalny czas oczekiwania dla połączenia curl
+			<?php echo $lang->get('maxtomeoutcurl'); ?>
 		</td>
 	</tr>
 	<tr>
@@ -38,7 +38,7 @@ if(isset($_POST['optSave'])){
 			<input type="checkbox" name="lib_network_methodManual" <?php echo (bool)$core->__autoConfigDB('lib_network_methodManual')===false?'':'checked' ?> />
 		</td>
 		<td>
-			Manualne wybranie typu łączenia
+			<?php echo $lang->get('manualconntype'); ?>
 		</td>
 	</tr>
 	<tr>
@@ -49,9 +49,9 @@ if(isset($_POST['optSave'])){
 			</select>
 		</td>
 		<td>
-			Typ połączenia (jeżeli manualne)
+			<?php echo $lang->get('connecttype'); ?>
 		</td>
 	</tr>
-</table>
-<input type="submit" name="optSave" value="Zapisz konfigurację" />
+</table><br />
+<input type="submit" name="optSave" value="<?php echo $lang->get('saveoption'); ?>" />
 </form>

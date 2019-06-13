@@ -30,6 +30,10 @@ return $this->network = new class($this->core){
 					CURLOPT_TIMEOUT => $this->curlTimeout
 				]);
 				$getData = curl_exec($curl);
+				$httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+				if($httpCode <> 200){
+					return $this->core->returnError(3, 'error http code', 'Http Code: '.$httpCode, 'Error http code, code: '.$httpCode, 'library network', 'error');
+				}
 				if($getData === false)
 					return $this->core->returnError(1, 'error download data', curl_error($ch), 'Error download data, error: '.curl_error($ch), 'library network', 'error');
 				curl_close($curl);
@@ -47,7 +51,7 @@ return $this->network = new class($this->core){
 		$this->core->returnError();
 		$readData = $this->getData($url);
 		if(!$readData)
-			return $this->core->returnError(1, 'error read data from url', ['url' => $url]); //error 1
+			return $this->core->returnError(1, 'error read data from url', ['url' => $url, 'getDataError' => $this->core->lastError]); //error 1
 		return json_decode($readData, true);
 	}
 	public function downloadFile(string $url, string $path){
@@ -97,12 +101,12 @@ return $this->network = new class($this->core){
 		else
 			return $_SERVER['REMOTE_ADDR'];
 	}
-	public function ping($domain) : int{
+	public function ping(string $domain) : int{
 		$starttime = microtime(true);
 		$file = @fsockopen($domain, 80, $errno, $errstr, 10);
 		$stoptime = microtime(true);
 		$status = 0;
-		if (!$file)
+		if(!$file)
 			$status = -1;
 		else {
 			fclose($file);
@@ -111,7 +115,7 @@ return $this->network = new class($this->core){
 		}
 		return $status;
 	}
-	public function __debugInfo(){
+	public function __debugInfo() : array{
 		return [
 			'version' => $this->version,
 			'method' => $this->method,

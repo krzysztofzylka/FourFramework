@@ -6,6 +6,12 @@ return new class($this, $config){
 	public $sessionName = "user_id";
 	public $sessionNameIP = "user_ip";
 	public $hashAlgoritm = "pbkdf2";
+	public $data = [
+		'tab_name' => 'uzytkownicy',
+		'col_id' => 'id',
+		'col_login' => 'login',
+		'col_pass' => 'haslo',
+	];
 	public $user;
 	public function __construct($core, $config){
 		$this->core = $core;
@@ -14,7 +20,7 @@ return new class($this, $config){
 	}
 	public function getUserData() : bool{
 		if(!$this->check()) return false;
-		$this->user = $this->db->query('SELECT *, count(*) as count FROM uzytkownicy WHERE id='.$this->getUserID().' LIMIT 1')->fetch(PDO::FETCH_ASSOC);
+		$this->user = $this->db->query('SELECT *, count(*) as count FROM '.$this->data->tab_name.' WHERE '.$this->data->col_id.'='.$this->getUserID().' LIMIT 1')->fetch(PDO::FETCH_ASSOC);
 		if($this->user['count'] == 0){
 			$this->user = null;
 			return false;
@@ -26,7 +32,7 @@ return new class($this, $config){
 		if(!$this->db->is_connect)
 			return $this->core->returnError(1, 'you must connect to database');
 		$password = $this->core->library->crypt->exHash($password, $this->hashAlgoritm);
-		$prep = $this->db->prepare('SELECT id, count(*) as count FROM uzytkownicy WHERE login=:login and haslo=:haslo LIMIT 1');
+		$prep = $this->db->prepare('SELECT id, count(*) as count FROM '.$this->data->tab_name.' WHERE '.$this->data->col_login.'=:login and '.$this->data->col_pass.'=:haslo LIMIT 1');
 		$prep->bindParam(':login', $login);
 		$prep->bindParam(':haslo', $password);
 		$prep->execute();
@@ -41,7 +47,7 @@ return new class($this, $config){
 	public function register($login, $password) : bool{
 		if(!$this->db->is_connect)
 			return $this->core->returnError(1, 'you must connect to database');
-		$prep = $this->db->prepare('SELECT count(*) as count FROM uzytkownicy WHERE login=:login LIMIT 1');
+		$prep = $this->db->prepare('SELECT count(*) as count FROM '.$this->data->tab_name.' WHERE '.$this->data->col_login.'=:login LIMIT 1');
 		$prep->bindParam(':login', $login);
 		$prep->execute();
 		$prep = $prep->fetch(PDO::FETCH_ASSOC);
@@ -49,7 +55,7 @@ return new class($this, $config){
 			return $this->core->returnError(2, 'account is already exists');
 		}else{
 			$password = $this->core->library->crypt->exHash($password, $this->hashAlgoritm);
-			$prep = $this->db->prepare('INSERT INTO uzytkownicy (login, haslo) VALUES (:login, :haslo)');
+			$prep = $this->db->prepare('INSERT INTO '.$this->data->tab_name.' ('.$this->data->col_login.', '.$this->data->col_pass.') VALUES (:login, :haslo)');
 			$prep->bindParam(':login', $login);
 			$prep->bindParam(':haslo', $password);
 			$prep->execute();
@@ -79,7 +85,7 @@ return new class($this, $config){
 		if(!$this->db->is_connect)
 			return $this->core->returnError(1, 'you must connect to database');
 		$password = $this->core->library->crypt->hash($password, $this->hashAlgoritm);
-		$prep = $this->db->prepare('UPDATE uzytkownicy SET haslo=:haslo WHERE id=:id');
+		$prep = $this->db->prepare('UPDATE '.$this->data->tab_name.' SET '.$this->data->col_pass.'=:haslo WHERE '.$this->data->col_id.'=:id');
 		$prep->bindParam(':id', $id);
 		$prep->bindParam(':haslo', $password);
 		$prep->execute();

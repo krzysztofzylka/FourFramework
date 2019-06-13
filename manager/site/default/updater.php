@@ -1,19 +1,19 @@
-<h1>Aktualizator</h1>
+<h1><?php echo $lang->get('updater') ?></h1>
 <?php
 $api = $core->library->network->getJSONData($core->APIUpdater.'?date='.$core->releaseDate);
 if($api === false)
-	echo 'Nie udało się połączyć z API ('.$core->APIUpdater.')';
+	echo $lang->get('errorconnecttoapi').' ('.$core->APIUpdater.')';
 else{
 	if($api['status'] === false)
 		echo $api['description'];
 	else{
 		if($api['search']['count'] == 0){
-			echo 'Nie znaleziono żadnych aktualizacji';
+			echo $lang->get('nofindupdate');
 		}else{
-			echo 'Znaleziono <b>'.$api['search']['count'].'</b> aktualizacji.<br />Lista znalezionych aktualizacji:
+			echo $lang->get('find').' <b>'.$api['search']['count'].'</b> '.$lang->get('update').'.<br />'.$lang->get('updatelist').':
 			<table class="title">
 				<tr>
-					<td>Wersja</td><td>Data</td><td>Typ</td>
+					<td>'.$lang->get('version').'</td><td>'.$lang->get('date').'</td><td>'.$lang->get('type').'</td>
 				</tr>';
 			foreach($api['list'] as $item){
 				echo '<tr>
@@ -21,22 +21,22 @@ else{
 				</tr>';
 			}
 			echo '</table>
-			<a href="index.php?type=default&page=updater&update=install" class="button">Zainstaluj aktualizacje</a><br />';
+			<a href="index.php?type=default&page=updater&update=install" class="button">'.$lang->get('installupdate').'</a><br />';
 			if(isset($_GET['update'])){
 				switch($_GET['update']){
 					case 'install':
-						echo '<br /><hr /><h1>Logi z instalacji</h1><pre>';
+						echo '<br /><hr /><h1>'.$lang->get('installlog').'</h1><pre>';
 						foreach($api['list'] as $item){
 							$temp = $core->path['dir_temp'].'update.zip';
-							echo '> <b>Instalacja aktualizacji '.$item['version'].' ('.$item['date'].')</b><br />';
-							echo '> Pobieranie pliku `'.$item['file'].'` do '.$temp.'<br />';
+							echo '> <b>'.$lang->get('installingupdate').' '.$item['version'].' ('.$item['date'].')</b><br />';
+							echo '> '.$lang->get('downloadfile').' `'.$item['file'].'` '.$lang->get('do').' '.$temp.'<br />';
 							$core->library->network->downloadFile($item['file'], $temp);
-							echo '> Wypakowywanie aktualizacji<br />';
+							echo '> '.$lang->get('unzipupdate').'<br />';
 							$core->library->exZip->unzip($temp, $core->reversion);
-							echo '> Usuwanie pliku tymczasowego<br />';
+							echo '> '.$lang->get('deletetempfile').'<br />';
 							unlink($temp);
 						}
-						echo '> <b>Poprawnie zainstalowano aktualizacje</b>';
+						echo '> <b>'.$lang->get('successupdateinstall').'</b>';
 						echo '</pre>';
 						break;
 				}

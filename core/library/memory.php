@@ -5,7 +5,7 @@ return $this->memory = new class($this->core){
 	public function __construct($obj){
 		$this->core = $obj;
 	}
-	public function formatBytes($bytes, $prec = 2) : string{
+	public function formatBytes(int $bytes, int $prec = 2) : string{
 		$suff = ['B', 'KB', 'MB', 'GB', 'TB', 'PT', 'EB', 'ZB', 'YB'];
 		$i = 0;
 		while(true){

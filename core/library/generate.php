@@ -36,7 +36,7 @@ return $this->generate = new class($this->core){
 		$generate = $mtime.$msec.rand(100,999);
 		if($hash)
 			$generate = $this->core->library->crypt->hash($generate, 'md5');
-		return (string) $generate;
+		return (string)$generate;
 	}
 	public function createNoise(int $x=100, int $y=100){
 		$return = [];

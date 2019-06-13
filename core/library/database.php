@@ -87,13 +87,13 @@ return $this->database = new class($this->core){
 		$this->_log($sql);
 		return $this->conn->prepare($sql, $option);
 	}
-	private function _log($sql){
+	private function _log(string $sql){
 		$this->core->returnError();
 		if(!$this->advanced_logs)
 			return false;
 		$this->core->wlog('SQL: '.$sql, 'library database advenced', 'message');
 	}
-	public function __debugInfo(){
+	public function __debugInfo() : array{
 		return [
 			'version' => $this->version,
 			'conn' => $this->conn,

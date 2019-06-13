@@ -1,7 +1,7 @@
 <?php
 $name = htmlspecialchars($_GET['name']);
 ?>
-<h1>Informacje modułu <?php echo $name ?></h1>
+<h1><?php echo $lang->get('infomodule') ?> <?php echo $name ?></h1>
 <?php
 $core->loadModule($name);
 if($core->lastError['number'] == -1){
@@ -9,6 +9,6 @@ if($core->lastError['number'] == -1){
 	var_dump($core->module[$name]);
 	echo '</pre>';
 }else{
-	echo 'Nie udało się wczytać modułu ('.$core->lastError['name'].')';
+	echo $lang->get('errorloadingmodule').' ('.$core->lastError['name'].')';
 }
 ?>

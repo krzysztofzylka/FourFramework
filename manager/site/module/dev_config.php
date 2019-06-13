@@ -1,11 +1,11 @@
 <?php
 $name = htmlspecialchars($_GET['name']);
 ?>
-<h1>DEV: Wyświetlanie konfiguracji modułu <?php echo $name ?></h1>
+<h1><?php echo $lang->get('dev') ?>: <?php echo $lang->get('viewmoduleconfig') ?> <?php echo $name ?></h1>
 <table class="title border twoData">
 	<tr>
-		<td>Nazwa</td>
-		<td>Wartość</td>
+		<td><?php echo $lang->get('name') ?></td>
+		<td><?php echo $lang->get('value') ?></td>
 	</tr>
 	<?php
 	$path = $core->path['dir_module'].$name.'/';
@@ -15,14 +15,14 @@ $name = htmlspecialchars($_GET['name']);
 			if($name == "include"){
 				$data = "";
 				foreach($value as $fname){
-					$data .= $fname.' ('.(file_exists($path.$fname)?'Znaleziono':'Nie znaleziono').')'.PHP_EOL;
+					$data .= $fname.' ('.(file_exists($path.$fname)?$lang->get('find'):$lang->get('nofind')).')'.PHP_EOL;
 				}
 				$value = $data;
 			}else
 				$value = "{array}";
 		}
 		if($name == 'main_file')
-			$value = $value.' ('.(file_exists($path.$value)?'Znaleziono':'Nie znaleziono').')';
+			$value = $value.' ('.(file_exists($path.$value)?$lang->get('find'):$lang->get('nofind')).')';
 		echo '<tr>
 			<td>'.$name.'</td>
 			<td>'.$value.'</td>

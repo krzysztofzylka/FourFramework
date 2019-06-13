@@ -39,13 +39,13 @@ if(isset($_POST['testConn'])){
 	];
 	$core->library->database->connect($config);
 	if($core->lastError['number'] == -1){
-		echo '<div class="message green">Połączenie jest poprawne</div>';
+		echo '<div class="message green">'.$lang->get('connectsuccess').'</div>';
 	}else{
-		echo '<div class="message red">Błąd połączenia:<br />Nazwa: '.$core->lastError['name'].'<br />Opis: '.$core->lastError['message'].'</div>';
+		echo '<div class="message red">'.$lang->get('connecterror').':<br />'.$lang->get('name').': '.$core->lastError['name'].'<br />'.$lang->get('description').': '.$core->lastError['message'].'</div>';
 	}
 }
 ?>
-<h1>Konfiguracja biblioteki database</h1>
+<h1><?php echo $lang->get('configurationlibrary2') ?> database</h1>
 <form method="POST">
 <table class="border">
 	<tr>
@@ -53,7 +53,7 @@ if(isset($_POST['testConn'])){
 			<input type="checkbox" name="lib_database_autostart" <?php if((bool)$core->__autoConfigDB('lib_database_autostart') == true) echo 'checked' ?> />
 		</td>
 		<td>
-			Automatyczne wczytywanie biblioteki oraz jego konfiguracji
+			<?php echo $lang->get('autoloadlibandconf'); ?>
 		</td>
 	</tr>
 	<tr>
@@ -61,18 +61,18 @@ if(isset($_POST['testConn'])){
 			<input type="checkbox" name="lib_database_advlog" <?php if((bool)$core->__autoConfigDB('lib_database_advlog') == true) echo 'checked' ?> />
 		</td>
 		<td>
-			Zapisywanie zaawansowanych logów (wszystkie zapytania)
+			<?php echo $lang->get('saveadvlog'); ?>
 		</td>
 	</tr>
 	<tr>
-		<td colspan=2><b>Połączenie</b></td>
+		<td colspan=2><b><?php echo $lang->get('connect'); ?></b></td>
 	</tr>
 	<tr>
 		<td>
 			<input type="checkbox" name="lib_database_autoconnect" <?php if((bool)$core->__autoConfigDB('lib_database_autoconnect') == true) echo 'checked' ?> />
 		</td>
 		<td>
-			Automatycznie połącz z bazą danych
+			<?php echo $lang->get('autodbconnect'); ?>
 		</td>
 	</tr>
 	<tr>
@@ -85,7 +85,7 @@ if(isset($_POST['testConn'])){
 			</select>
 		</td>
 		<td>
-			Typ bazy danych
+			<?php echo $lang->get('dbtype'); ?>
 		</td>
 	</tr>
 	<tr>
@@ -93,7 +93,7 @@ if(isset($_POST['testConn'])){
 			<input type="text" name="lib_database_connect_sqlite" value="<?php echo $core->__autoConfigDB('lib_database_connect_sqlite') ?>" />
 		</td>
 		<td>
-			Ścieżka do bazy danych <b>(SQLite)</b>
+			<?php echo $lang->get('dbpath'); ?> <b>(SQLite)</b>
 		</td>
 	</tr>
 	<tr>
@@ -101,7 +101,7 @@ if(isset($_POST['testConn'])){
 			<input type="text" name="lib_database_connect_host" value="<?php echo $core->__autoConfigDB('lib_database_connect_host') ?>" />
 		</td>
 		<td>
-			Host <b>(MySQL, PostgreSQL)</b>
+			<?php echo $lang->get('host'); ?> <b>(MySQL, PostgreSQL)</b>
 		</td>
 	</tr>
 	<tr>
@@ -109,7 +109,7 @@ if(isset($_POST['testConn'])){
 			<input type="text" name="lib_database_connect_port" value="<?php echo $core->__autoConfigDB('lib_database_connect_port') ?>" />
 		</td>
 		<td>
-			Port <b>(PostgreSQL)</b>
+			<?php echo $lang->get('port'); ?> <b>(PostgreSQL)</b>
 		</td>
 	</tr>
 	<tr>
@@ -117,7 +117,7 @@ if(isset($_POST['testConn'])){
 			<input type="text" name="lib_database_connect_name" value="<?php echo $core->__autoConfigDB('lib_database_connect_name') ?>" />
 		</td>
 		<td>
-			Nazwa bazy danych <b>(MySQL, PostgreSQL, Oracle)</b>
+			<?php echo $lang->get('dbname'); ?> <b>(MySQL, PostgreSQL, Oracle)</b>
 		</td>
 	</tr>
 	
@@ -126,7 +126,7 @@ if(isset($_POST['testConn'])){
 			<input type="text" name="lib_database_connect_login" value="<?php echo $core->__autoConfigDB('lib_database_connect_login') ?>" />
 		</td>
 		<td>
-			Login <b>(MySQL, PostgreSQL, Oracle)</b>
+			<?php echo $lang->get('login'); ?> <b>(MySQL, PostgreSQL, Oracle)</b>
 		</td>
 	</tr>
 	<tr>
@@ -134,13 +134,13 @@ if(isset($_POST['testConn'])){
 			<input type="text" name="lib_database_connect_password" value="<?php echo $core->__autoConfigDB('lib_database_connect_password') ?>" />
 		</td>
 		<td>
-			Hasło <b>(MySQL, PostgreSQL, Oracle)</b>
+			<?php echo $lang->get('password'); ?> <b>(MySQL, PostgreSQL, Oracle)</b>
 		</td>
 	</tr>
-</table>
-<input type="submit" name="optSave" value="Zapisz konfigurację" />
+</table><br />
+<input type="submit" name="optSave" value="<?php echo $lang->get('saveoption'); ?>" />
 </form>
 <br />
 <form method="POST">
-	<input type="submit" value="Testuj połączenie" name="testConn" />
+	<input type="submit" value="<?php echo $lang->get('testconnect'); ?>" name="testConn" />
 </form>

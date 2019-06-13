@@ -8,7 +8,7 @@ if(isset($_POST['optSave'])){
 		$core->__autoConfigDB('lib_crypt_salt', htmlspecialchars($_POST['lib_crypt_salt']));
 }
 ?>
-<h1>Konfiguracja biblioteki database</h1>
+<h1><?php echo $lang->get('configurationlibrary2') ?> crypt</h1>
 <form method="POST">
 <table class="border">
 	<tr>
@@ -16,7 +16,7 @@ if(isset($_POST['optSave'])){
 			<input type="checkbox" name="lib_crypt_autostart" <?php if((bool)$core->__autoConfigDB('lib_crypt_autostart') == true) echo 'checked' ?> />
 		</td>
 		<td>
-			Automatyczne wczytywanie biblioteki oraz jego konfiguracji
+			<?php echo $lang->get('autoloadlibandconf'); ?>
 		</td>
 	</tr>
 	<tr>
@@ -24,9 +24,9 @@ if(isset($_POST['optSave'])){
 			<input type="text" name="lib_crypt_salt" maxlength="16" value="<?php echo $core->__autoConfigDB('lib_crypt_salt')===false?$core->library->crypt->salt:$core->__autoConfigDB('lib_crypt_salt') ?>" />
 		</td>
 		<td>
-			Sól kodowania (16 znaków)
+			<?php echo $lang->get('salt'); ?> (16 <?php echo $lang->get('char'); ?>)
 		</td>
 	</tr>
-</table>
-<input type="submit" name="optSave" value="Zapisz konfigurację" />
+</table><br />
+<input type="submit" name="optSave" value="<?php echo $lang->get('saveoption'); ?>" />
 </form>

@@ -12,8 +12,8 @@ return $this->file = new class($this->core){
 		if(is_dir($path)) {
 			$objects = scandir($path); 
 			foreach ($objects as $object) { 
-				if ($object != "." && $object != "..") { 
-					if (is_dir($path."/".$object))
+				if($object != "." && $object != "..") { 
+					if(is_dir($path."/".$object))
 						$this->deldir($path."/".$object);
 					else
 						unlink($path."/".$object); 

@@ -12,9 +12,8 @@ return $this->cookie = new class($this->core){
 			$pass = $obj->library->string->generateString(20);
 			file_put_contents($path, $pass);
 			$this->pass = $pass;
-		}else{
+		}else
 			$this->pass = file_get_contents($path);
-		}
 	}
 	public function getCookie(string $name){
 		if(!isset($_COOKIE[$name]))

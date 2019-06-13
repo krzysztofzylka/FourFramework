@@ -1,4 +1,4 @@
-<h1>Lista bibliotek</h1>
+<h1><?php echo $lang->get('librarylist') ?></h1>
 <?php
 $scan = scandir($core->path['dir_library']);
 $scan = array_diff($scan, ['.', '..']);

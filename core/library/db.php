@@ -1,7 +1,17 @@
 <?php
+/* obsługa wersji baz danych:
+	addData: 			1.0
+	getColumnAdvList:	1.0
+	getData: 			1.0
+	updateData: 		1.0
+	deleteData: 		1.0
+	setOption:			1.0
+	checkTable:			1.0
+*/
 return $this->db = new class($this->core){
 	protected $core;
-	public $version = '1.0';
+	public $version = '1.0.1';
+	public $tableVersion = '1.0';
 	public $cryptDB = true;
 	public $path;
 	private $lastId;
@@ -12,14 +22,14 @@ return $this->db = new class($this->core){
 		$this->path = $obj->path['dir_db'];
 		$this->setDatabaseDir();
 	}
-	public function createTable(string $tableName, array $column) : bool{ //create db table
+	public function createTable(string $tableName, array $column) : bool{
 		$this->core->returnError();
 		$path = $this->path.$tableName.'.FDB';
 		if(file_exists($path))
 			return $this->core->returnError(1, 'there is already a table with this name');
 		$option = [
 			'name' => $tableName,
-			'version' => '1.0',
+			'version' => $this->tableVersion,
 			'crypt' => $this->cryptDB,
 			'hash' => false,
 		];
@@ -33,8 +43,8 @@ return $this->db = new class($this->core){
 		foreach($column as $item){
 			$name = trim($item);
 			$ai = false;
-			if(strpos($name, 'AUTOINCREMENT')){
-				$name = trim(str_replace('AUTOINCREMENT', '', $name));
+			if(strpos(strtoupper($name), 'AUTOINCREMENT')){
+				$name = trim(str_ireplace('AUTOINCREMENT', '', $name));
 				$ai = true;
 				if($option2['autoincrement'] == null)
 					$option2['autoincrement'] = ['name' => $name, 'id' => $i];
@@ -42,14 +52,13 @@ return $this->db = new class($this->core){
 					return $this->core->returnError(2, 'there can be only one autoincrement field');
 			}
 			$item = [
-				'name' => trim($name),
+				'name' => $name,
 				'autoincrement' => $ai,
 				'count' => $ai?1:false,
 			];
 			array_push($col, $item);
 			$i++;
 		}
-		
 		$fileWrite = [
 			$option,
 			$option2,
@@ -60,8 +69,7 @@ return $this->db = new class($this->core){
 		chmod($path, 0600);
 		return true;
 	}
-	//1.0
-	public function addData(string $tableName, array $data) : bool{ //add data to db
+	public function addData(string $tableName, array $data) : bool{
 		$this->core->returnError();
 		$read = $this->__readDbFile($tableName, true);
 		if($read === false)
@@ -69,10 +77,9 @@ return $this->db = new class($this->core){
 		switch($read[0]["version"]){
 			case "1.0":
 				$columnList = $this->__columnList($read[2]);
-				foreach($data as $name => $string){
+				foreach(array_keys($data) as $name)
 					if(array_search($name, $columnList) === false)
 						return $this->core->returnError(2, 'not found column (name: '.$name.')');
-				}
 				if($read[1]['autoincrement'] <> null){
 					$data[$read[1]['autoincrement']['name']] = $read[2][(int)$read[1]['autoincrement']['id']]['count'];
 					$read[2][(int)$read[1]['autoincrement']['id']]['count']++;
@@ -83,8 +90,7 @@ return $this->db = new class($this->core){
 				break;
 		}
 	}
-	//1.0
-	public function getColumnAdvList(string $tableName){ //advence column list array
+	public function getColumnAdvList(string $tableName){
 		$this->core->returnError();
 		$option = $this->__readDbFile($tableName, false, 0);
 		$read = $this->__readDbFile($tableName, false, 2);
@@ -97,8 +103,7 @@ return $this->db = new class($this->core){
 		}
 		return false;
 	}
-	//1.0
-	public function getData(string $tableName, array $where = [], bool $multi = true){ //get data from db
+	public function getData(string $tableName, array $where = [], bool $multi = true){
 		$this->core->returnError();
 		$read = $this->__readDbFile($tableName, true);
 		if($read === false)
@@ -119,12 +124,11 @@ return $this->db = new class($this->core){
 		}
 		return false;
 	}
-	//1.0
-	public function updateData(string $tableName, array $where = [], array $set = []){ //update data in database
+	public function updateData(string $tableName, array $where = [], array $set = []){
+		$this->core->returnError();
 		$option = $this->__readDbFile($tableName, false, 0);
 		switch($option["version"]){
 			case "1.0":
-				$this->core->returnError();
 				$update = 0;
 				$read = $this->__readDbFile($tableName, true);
 				if($read === false)
@@ -148,8 +152,7 @@ return $this->db = new class($this->core){
 		}
 		return false;
 	}
-	//1.0
-	public function deleteData(string $tableName, array $where = []){ //usunięcie danych z bazy danych
+	public function deleteData(string $tableName, array $where = []){
 		$this->core->returnError();
 		$delete = 0;
 		$read = $this->__readDbFile($tableName, true);
@@ -170,7 +173,7 @@ return $this->db = new class($this->core){
 		}
 		return false;
 	}
-	public function script(string $script){ //execute script
+	public function script(string $script){
 		$this->core->returnError();
 		$main = explode(' ', $script, 2);
 		if(count($main) < 2)
@@ -184,12 +187,11 @@ return $this->db = new class($this->core){
 				switch($create[0]){
 					case 'TABLE': //CREATE TABLE
 						$create2 = explode(' ', $create[1], 2);
-						$name = $create2[0];
 						$column = $this->core->library->string->between($create2[1], '(', ')');
 						$column = explode(',', $column);
 						for($i=0;$i<count($column);$i++)
 							$column[$i] = trim($column[$i]);
-						return $this->createTable($name, $column);
+						return $this->createTable($create2[0], $column);
 						break;
 				}
 				break;
@@ -241,7 +243,7 @@ return $this->db = new class($this->core){
 				break;
 		}
 	}
-	private function __where(array $data, array $where, $type='unset'){ //where
+	private function __where(array $data, array $where, $type='unset'){
 		$this->core->returnError();
 		$temp = [];
 		foreach($data as $key => $element){
@@ -361,7 +363,7 @@ return $this->db = new class($this->core){
 		}
 		
 	}
-	private function __columnList(array $array){ //column name array
+	private function __columnList(array $array){
 		$this->core->returnError();
 		if(!is_array($array))
 			return $this->core->returnError(1);
@@ -370,7 +372,7 @@ return $this->db = new class($this->core){
 			array_push($tmp, $column['name']);
 		return $tmp;
 	}
-	private function __saveDbFile(string $tableName, array $array, bool $autoData = true) : bool{ //save db file
+	private function __saveDbFile(string $tableName, array $array, bool $autoData = true) : bool{
 		$this->core->returnError();
 		$crypt = $this->core->library->crypt;
 		$path = $this->path.$tableName.'.FDB';
@@ -392,7 +394,7 @@ return $this->db = new class($this->core){
 		file_put_contents($path, $toFileString);
 		return true;
 	}
-	public function __readDbFile(string $tableName, $array=false, $line=-1){ //read db file
+	private function __readDbFile(string $tableName, $array=false, $line=-1){
 		$this->core->returnError();
 		$path = $this->path.$tableName.'.FDB';
 		$crypt = $this->core->library->crypt;
@@ -431,7 +433,7 @@ return $this->db = new class($this->core){
 			'crypt' => $this->crypt
 		];
 	}
-	public function setDatabaseDir($path=null) : bool{ //set db dir
+	public function setDatabaseDir($path=null) : bool{
 		$this->core->returnError();
 		$this->path = $path??$this->core->path['dir_base'].'db/';
 		if(!file_exists($this->path)) mkdir($this->path);
@@ -442,7 +444,7 @@ return $this->db = new class($this->core){
 			$this->_generateDBHash();
 		return true;
 	}
-	public function tableList(){ //get table list
+	public function tableList(){
 		$this->core->returnError();
 		$list = [];
 		$scan = scandir($this->path);
@@ -454,7 +456,7 @@ return $this->db = new class($this->core){
 		}
 		return $list;
 	}
-	public function getDBInformaction(string $tableName){ //get db info
+	public function getDBInformaction(string $tableName){
 		$this->core->returnError();
 		$path = $this->path.$tableName.'.FDB';
 		$return = [];
@@ -467,7 +469,7 @@ return $this->db = new class($this->core){
 		$return['perms'] = substr(sprintf('%o', fileperms($path)), -4);
 		return $return;
 	}
-	public function deleteTable(string $tableName) : bool{ //delete table
+	public function deleteTable(string $tableName) : bool{
 		$this->core->returnError();
 		$path = $this->path.$tableName.'.FDB';
 		if(!file_exists($path))
@@ -477,8 +479,7 @@ return $this->db = new class($this->core){
 			return $this->core->returnError(2, 'error delete file');
 		return true;
 	}
-	//1.0
-	public function setOption(string $tableName, string $type, string $adding=null){ //set db option
+	public function setOption(string $tableName, string $type, string $adding=null){
 		$this->core->returnError();
 		$array = $this->__readDbFile($tableName, true);
 		if($array === false)
@@ -508,8 +509,7 @@ return $this->db = new class($this->core){
 		}
 		return false;
 	}
-	//1.0
-	public function checkTable(string $tableName, bool $repair = true){ //repair table in database
+	public function checkTable(string $tableName, bool $repair = true){
 		$return = "";
 		$path = $this->path.$tableName.'.FDB';
 		if(!file_exists($path))
@@ -645,9 +645,12 @@ return $this->db = new class($this->core){
 		$this->hash = $generate;
 		file_put_contents($path_hash, '<?php return \''.$this->hash.'\'; ?>');
 	}
-	//1.0
-	public function updinsData(string $tableName, array $where = [], array $set = []){ //update (if not exists insert) data
-		
+	public function _setHash(string $hash) : void{
+		$this->hash = $hash;
+		return;
+	}
+	private function _getConfig(string $tableName){
+		return $this->__readDbFile($tableName, false, 0);
 	}
 }
 ?>

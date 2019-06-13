@@ -1,7 +1,7 @@
 <?php
 return $this->crypt = new class($this->core){
 	protected $core;
-	public $version = '1.0';
+	public $version = '1.0.1';
 	private $method = 'AES-256-CBC';
 	public $salt = '0123456789012345';
 	public function __construct($obj){
@@ -9,6 +9,8 @@ return $this->crypt = new class($this->core){
 	}
 	public function crypt(string $string, $hash=null) : string{
 		$this->core->returnError();
+		if(!@function_exists(openssl_encrypt))
+			die('Error use function crypt (library crypt), you must run ssl module in server');
 		return base64_encode(
 			openssl_encrypt(
 				$string,
@@ -21,6 +23,8 @@ return $this->crypt = new class($this->core){
 	}
 	public function decrypt(string $string, $hash=null) : string{
 		$this->core->returnError();
+		if(!@function_exists(openssl_encrypt))
+			die('Error use function decrypt (library crypt), you must run ssl module in server');
 		return openssl_decrypt(
 			base64_decode($string),
 			$this->method,
@@ -29,7 +33,7 @@ return $this->crypt = new class($this->core){
 			$this->salt
 		);
 	}
-	public function hash(string$string, string $algoritm='md5') : string{
+	public function hash(string $string, string $algoritm='md5') : string{
 		$this->core->returnError();
 		switch($algoritm){
 			case 'md5':
@@ -77,6 +81,21 @@ return $this->crypt = new class($this->core){
 			case 'crc32':
 				$return = str_replace('{type}', '005', $return);
 				$return = str_replace('{hash}', hash('crc32', $string), $return);
+				break;
+			case '006':
+			case 'ripemd256':
+				$return = str_replace('{type}', '006', $return);
+				$return = str_replace('{hash}', hash('ripemd256', $string), $return);
+				break;
+			case '007':
+			case 'snefru':
+				$return = str_replace('{type}', '007', $return);
+				$return = str_replace('{hash}', hash('snefru', $string), $return);
+				break;
+			case '008':
+			case 'gost':
+				$return = str_replace('{type}', '008', $return);
+				$return = str_replace('{hash}', hash('gost', $string), $return);
 				break;
 		}
 		return $return;

@@ -1,4 +1,4 @@
-<h1>Wybierz log</h1>
+<h1><?php echo $lang->get('logs') ?></h1>
 <?php
 $scan = scandir($core->path['dir_log']);
 $scan = array_diff($scan, ['.htaccess', '.', '..']);
