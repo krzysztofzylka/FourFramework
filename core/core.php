@@ -1,7 +1,7 @@
 <?php
 class core{
-	public $version = '0.1.11 Alpha';
-	public $releaseDate = '13.06.2019';
+	public $version = '0.1.11a Alpha';
+	public $releaseDate = '08.07.2019';
 	private $__lastInsertClass;
 	public function __construct($config = null){
 		$this->reversion = "";
@@ -52,7 +52,7 @@ class core{
 		try{
 			$path = $this->reversion.$dir.basename($name).'.php';
 			if(!is_file($path))
-				return $this->returnError(1, 'error loading file', null, 'Error loading view file on path: '.$path, 'core', 'error');
+				return $this->returnError(1, 'error loading view file', 'Error loading view file on path: '.$path, 'Error loading view file on path: '.$path, 'core', 'error');
 			$this->wlog('Success loading view file on path: '.$path, 'core', 'message');
 			return require($path);
 		}catch (Exception $e){
@@ -132,7 +132,7 @@ class core{
 		$this->returnError();
 		$path = $this->reversion.$dir.basename($name).'.php';
 		if(!is_file($path))
-			return $this->returnError(1, 'error loading controller file', 'file is not exists', 'Error loading controller file on path: '.$path, 'core', 'error');
+			return $this->returnError(1, 'error loading controller file', 'Error loading controller file on path: '.$path, 'Error loading controller file on path: '.$path, 'core', 'error');
 		$className = $this->_loadClassFromFile($path);
 		if($this->library->class->is_anonymous($className) or $className === false)
 			$object = $this->__lastInsertClass;
@@ -272,9 +272,8 @@ class core{
 	}
 	private function __getReversion() : void{
 		$this->returnError();
-		while(!file_exists($this->reversion."core/core.php")){
+		while(!file_exists($this->reversion."core/core.php"))
 			$this->reversion .= '../';
-		}
 	}
 	public function returnError(int $number=-1, $name=null, $message=null, $log_value=null, $log_name=null, $log_type=null) : bool{
 		if($log_value <> null)
@@ -342,10 +341,8 @@ class core{
 			}
 		}
 		//library crypt
-		if((bool)$this->__autoConfigDB('lib_crypt_autostart') == true){
-			$this->library->crypt;
+		if((bool)$this->__autoConfigDB('lib_crypt_autostart') == true)
 			$this->library->crypt->salt = $this->__autoConfigDB('lib_crypt_salt');
-		}
 		//library network
 		if((bool)$this->__autoConfigDB('lib_network_autostart') == true){
 			$this->library->network;

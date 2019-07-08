@@ -32,8 +32,8 @@ $array =  [
 	],
 ];
 
-if(optionRead('show_service_menu')==1){
+if(optionRead('show_service_menu')==1)
 	array_push($array, ['name'=>$lang->get('service'), 'type'=>'service']);
-}
+
 return $array;
 ?>

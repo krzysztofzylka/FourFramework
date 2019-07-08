@@ -156,8 +156,16 @@ return [
 	'changelog' => 'Zmiany',
 	'devservicemenu' => 'Wyświetl menu serwisowe',
 	'service' => 'Serwis',
-	'errordownfromserver' => 'Błąd pobierania danych z serwera',
+	'errorunzip' => 'Błąd rozpakowywania',
+	'detdescerr' => 'Szczególowy opis błędu',
+	'updateerror' => 'Błąd aktualizacji',
 	'server' => 'Serwer',
 	'apachemodulelist' => 'Lista modułów',
+	'framework' => 'Framework',
+	'checkframeworkfile' => 'Sprawdź poprawność plików',
+	'path' => 'Ścieżka',
+	'lastedit' => 'Ostatnia edycja',
+	'dblibrary' => 'Biblioteka db',
+	'recoverypassword' => 'Odzyskanie hasła',
 ];
 ?>

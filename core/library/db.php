@@ -10,7 +10,7 @@
 */
 return $this->db = new class($this->core){
 	protected $core;
-	public $version = '1.0.1';
+	public $version = '1.0.2';
 	public $tableVersion = '1.0';
 	public $cryptDB = true;
 	public $path;
@@ -430,7 +430,8 @@ return $this->db = new class($this->core){
 		return [
 			'version' => $this->version,
 			'path' => $this->path,
-			'crypt' => $this->crypt
+			'crypt' => $this->crypt,
+			'lastId' => $this->lastId
 		];
 	}
 	public function setDatabaseDir($path=null) : bool{
@@ -447,12 +448,11 @@ return $this->db = new class($this->core){
 	public function tableList(){
 		$this->core->returnError();
 		$list = [];
-		$scan = scandir($this->path);
-		foreach($scan as $name){
-			if(strpos($name, '.FDB') === false)
-				continue;
-			$name = str_replace('.FDB', '', $name);
-			array_push($list, $name);
+		foreach(scandir($this->path) as $name){
+			if(pathinfo($name, PATHINFO_EXTENSION) === "FDB"){
+				$name = str_replace('.FDB', '', $name);
+				array_push($list, $name);
+			}
 		}
 		return $list;
 	}

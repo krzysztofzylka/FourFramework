@@ -1,7 +1,7 @@
 <?php
 return $this->exZip = new class($this->core){
 	protected $core;
-	public $version = '1.0';
+	public $version = '1.0.1';
 	public function __construct($obj){
 		$this->core = $obj;
 	}
@@ -13,7 +13,7 @@ return $this->exZip = new class($this->core){
 			$zip->close();
 			return true;
 		}else
-			return false;
+			return $this->core->returnError(1, 'zip open error ('.$res.')', ['zipPath' => ['path' => $zipPath, 'exists' => file_exists($zipPath)?'true':'false'], 'extractPath' => $extractPath]);
 	}
 }
 ?>
