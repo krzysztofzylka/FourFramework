@@ -1,19 +1,14 @@
 <?php
-return $this->debug = new class($this->core){
-	protected $core;
-	public $version = '1.0';
-	public function __construct($obj){
-		$this->core = $obj;
-	}
-	public function print_r($array, bool $var_type=false, string $title='ARRAY'){
-		$this->core->returnError();
-		if(is_object($array)){
-			if(method_exists($array, '__debugInfo'))
-				$array = $array->__debugInfo();
-			else
-				return $this->core->returnError(1, 'this element is not an array');
+return $this->debug = new class(){ //create library
+	public function print_r($array, bool $var_type=false, string $title='ARRAY'){ //print_r
+		core::setError(); //clear error
+		if(is_object($array)){ //if is array
+			if(method_exists($array, '__debugInfo')) //if method exists
+				$array = $array->__debugInfo(); //debug info
+			else //if is not array
+				return core::setError(1, 'this element is not an array'); //return error 1
 		}
-		if(is_array($array)){
+		if(is_array($array)){ //if is array
 			echo '<table border=1 cellspacing=0 cellpadding=3 width=100%>';
 			echo '<tr><td colspan=2 style="background-color:#333333;"><strong><font color=white>'.$title.'</font></strong></td></tr>';
 			foreach ($array as $k => $v) {
@@ -28,7 +23,7 @@ return $this->debug = new class($this->core){
 						}
 					}
 					echo '</td><td>';
-					$this->print_r($v, $var_type);
+					$this->print_r($v, $var_type); //recursive function
 					echo "</td></tr>";
 			}
 			echo "</table>";
@@ -36,28 +31,11 @@ return $this->debug = new class($this->core){
 		}
 		echo $array;
 	}
-	public function info() : void{
-		$this->core->returnError();
-		$curl = curl_version();
-		$curl['protocols'] = implode(',', $curl['protocols']);
-		$serwer = [
-			'PHP' => [
-				'Version' => phpversion(),
-				'Other' => [
-					'CURL' => $curl['version'],
-				],
-			],
-		];
-		$this->print_r($serwer, false, 'Serwer');
-		echo '<br />';
-		$this->print_r($curl, false, 'CURL');
-		return;
-	}
-	public function getOS() : int{
+	public function getOS() : int{ //get OS
 		switch (true) {
-            case stristr(PHP_OS, 'DAR'): return 2;
-            case stristr(PHP_OS, 'WIN'): return 3;
-            case stristr(PHP_OS, 'LINUX'): 4;
+            case stristr(PHP_OS, 'DAR'): return 2; //dar
+            case stristr(PHP_OS, 'WIN'): return 3; //win
+            case stristr(PHP_OS, 'LINUX'): 4; //linux
             default : return 1;
         }
 	}

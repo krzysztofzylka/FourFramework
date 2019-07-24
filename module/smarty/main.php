@@ -1,31 +1,30 @@
 <?php
-return new class($this, $config){
-	//zmienna z jądrem
-	private $core;
-	//zmienna z konfiguracją
-	private $config;
-	//zmienna z klasą smarty
-	public $smarty;
-	//główna funkcja
-	public function __construct($obj, $config){
-		//inicjonowanie zmiennych
-		$this->core = $obj;
-		$this->config = $config;
-		$this->smarty = new Smarty;
-		$this->smarty->setTemplateDir($obj->path['dir_template']);
-		$this->smarty->setCompileDir($obj->path['dir_temp'].'smarty/');
+return new class(){ //create class
+	public $smarty; //smarty main class
+	public $templateDir; //template dir
+	public function __construct(){ //construct
+		$config = core::$module_add['smarty']['config']; //load config to variable
+		include($config['path'].'smarty/Smarty.class.php'); //include smarty class
+		$this->smarty = new Smarty; //download class
+		$this->smarty->caching = true; //caching
+		$this->smarty->cache_lifetime = 5; //cache lifetime
+		$temp = core::$path['temp'].'smarty/'; //temp dir
+		$path = ['cache' => $temp.'cache/','compile' => $temp.'templates_c/']; //path list
+		$this->templateDir = core::$info['reversion'].'template/'; //set templateDir
+		if(!file_exists($this->templateDir)) //if not exists
+			mkdir($this->templateDir, 0777, true); //create template dir
+		$protectedFile = $this->templateDir.'.htaccess'; //htaccess path
+		if(!file_exists($protectedFile)) //if not exists
+			file_put_contents($protectedFile, 'deny from all', FILE_APPEND); //write to file
+		foreach($path as $dirPath) //path loop
+			if(!file_exists($dirPath)) //if not file exists
+				mkdir($dirPath, 0777, true); //create dir
+		$this->smarty->setTemplateDir($this->templateDir) //set template dir
+			->setCompileDir($path['compile']) //set compile dir
+			->setCacheDir($path['cache']); //set cache dir
 	}
-	//funkcja debugująca
-	public function __debugInfo(){
-		return [
-			//wersja modułu
-			'version' => $this->config['version'],
-			'smarty' => [
-				'version' => '3.1.34-dev',
-				'caching' => $this->smarty->caching,
-				'template_dir' => $this->smarty->getTemplateDir(),
-			],
-		];
+	public function setTemplateDir(string $path){ //set template Dir
+		$this->smarty->setTemplateDir($path); //set template dir in smarty
 	}
 }
 ?>
