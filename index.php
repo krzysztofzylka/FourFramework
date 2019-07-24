@@ -1,4 +1,1 @@
-<?php
-include('core/core.php');
-core::init();
-?>
+﻿<a href="manager/index.php">Menadżer frameworka (admin/admin)</a>

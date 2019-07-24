@@ -1,17 +1,31 @@
 <?php
-// echo "asdasfas";
-return new class(){ //create class
-	public function __construct(){ //construct
-		$config = core::$module_add['bootstrap']['config']; //load config to variable
-		$module_list = array_keys(core::$module_add); //module list
-		$search = array_search('smarty', $module_list); //search smarty
-		if($search === false) //if smarty not exists
-			return core::setError(1, 'smarty not exists'); //return error 1
-		$smarty = core::$module['smarty']->smarty; //get smarty
-		$bootstrap = '<link rel="stylesheet" href="'.$config['path'].'bootstrap/bootstrap.min.css">
-		<script src="'.$config['path'].'bootstrap/jquery.min.js"></script>
-		<script src="'.$config['path'].'bootstrap/bootstrap.min.js"></script>';
-		$smarty->assign('bootstrap', $bootstrap); //assign bootstrap
+return new class($this, $config){
+	private $core;
+	private $config;
+	public $adding;
+	public function __construct($obj, $config){
+		$this->core = $obj;
+		$this->config = $config;
+		$path  = $config['path'].'script/';
+		$this->adding = '<link rel="stylesheet" href="'.$path.'style/default.min.css">
+		<script src="'.$path.'jquery.min.js"></script>
+		<script src="'.$path.'pooper.min.js"></script>
+		<script src="'.$path.'bootstrap.min.js"></script>';
+	}
+	public function setStyle($name='default'){
+		$path  = $this->config['path'].'script/';
+		$this->adding = '<link rel="stylesheet" href="'.$path.'style/'.$name.'.min.css">
+		<script src="'.$path.'jquery.min.js"></script>
+		<script src="'.$path.'pooper.min.js"></script>
+		<script src="'.$path.'bootstrap.min.js"></script>';
+	}
+	public function __debugInfo(){
+		return [
+			'version' => $this->config['version'],
+			'bootstrap' => [
+				'version' => 'v4.2.1'
+			],
+		];
 	}
 }
 ?>

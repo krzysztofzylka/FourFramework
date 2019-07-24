@@ -1,0 +1,9 @@
+<files ~ "^.*\.([Hh][Tt][Aa])">
+	order allow,deny
+	deny from all
+	satisfy all
+</files>
+<FilesMatch "\.(txt|fdb)$">
+	Order allow,deny
+	Deny from all
+</FilesMatch>

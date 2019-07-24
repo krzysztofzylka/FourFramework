@@ -1,0 +1,2 @@
+0.1.5
+* Dodano możliwość zmiany nazw tabeli oraz kolumn użytkownika (tablica $data)
