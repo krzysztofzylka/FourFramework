@@ -1,106 +1,49 @@
 <?php
-return $this->database = new class($this->core){
-	private $core;
-	public $conn;
-	public $version = '1.0';
-	public $is_connect = false;
-	public $advanced_logs = false;
-	public $connError = true;
-	public function __construct($obj){
-		$this->core = $obj;
-	}
-	public function connect(array $config){
-		$this->core->returnError();
-		if(!isset($config['type']))
-			return false;
-		try{
-			switch($config['type']){
+return $this->database = new class(){ //create library
+	public $conn; //pdo object
+	public $isConnect = false; //is connect
+	public $connError = true; //die if error
+	public function connect(array $config){ //connect to database
+		core::setError(); //clear error
+		if(!isset($config['type'])) //config type
+			return core::setError(1, 'type configuration not found'); //return error 1
+		try{ //try
+			switch($config['type']){ //switch type
 				case 'mysql':
-					if(!isset($config['host']) or !isset($config['name']) or !isset($config['login']) or !isset($config['password']))
-						return $this->core->returnError(1, 'you must configurate connection');
-					$this->conn = new PDO("mysql:host=".$config['host'].";dbname=".$config['name'], $config['login'], $config['password']);
-					break;
-				case 'sqlite':
-					if(!isset($config['sqlite']))
-						return $this->core->returnError(1, 'you must configurate connection');
-					$this->conn = new PDO("sqlite:".$config['sqlite']);
-					break;
-				case 'postgresql':
-					if(!isset($config['host']) or !isset($config['name']) or !isset($config['port']) or !isset($config['login']) or !isset($config['password']))
-						return $this->core->returnError(1, 'you must configurate connection');
-					$this->conn = new PDO("pgsql:host=".$config['host'].";port=".$config['port'].";dbname=".$config['name'].";user=".$config['login'].";password=".$config['password']);
-					break;
-				case 'oracle':
-					if(!isset($config['name']) or !isset($config['login']) or !isset($config['password']))
-						return $this->core->returnError(1, 'you must configurate connection');
-					$this->conn = new PDO("oci:dbname=".$config['name'],$config['login'],$config['password']);
-					break;
+					$check = $this->__checkConfig($config, ['host', 'name', 'user', 'password']); //check config
+					if($check !== true) //if error
+						return core::setError(4, 'no find config: '.$check); //return error 4
+					$this->conn = new PDO('mysql:host='.$config['host'].';dbname='.$config['name'].'', $config['user'], $config['password']);
+					break; //break
+				default:
+					return core::setError(3, 'no find config: type'); //return error 3
+					break; //break
 			}
-			if(is_object($this->conn)){
-				$this->is_connect = true;
-				if(isset($config['charset']))
-					$this->setCharset();
-				$this->core->wlog('Success connect to '.$config['type'].' database', 'database', 'message');
-				return $this->conn;
-			}
-			$this->core->wlog('Error connect to database', 'library database', 'error');
-			return $this->core->returnError(2, 'error connect to database');
-		}catch(PDOException $error){
-			$this->core->wlog('Error DB Connection: '.$error->getMessage(), 'library database', 'error');
-			if($this->connError)
-				die('Error connect to database!');
-			return $this->core->returnError(3, 'error connect to database', $error->getMessage());
+			if(!is_object($this->conn)) //check conn object
+				return core::setError(5, 'error connect to database'); //return error 5
+			$this->isConnect = true; //set isConnect
+			$this->setCharset(); //set charset
+			return $this->conn; //return pdo
+		}catch(PDOException $error){ //if error
+			if($this->connError) //if conn error
+				die('Error connect to database!<br />'.$error->getMessage()); //die
+			return core::setError(2, 'error connect to database', $error->getMessage()); //return error 2
 		}
 	}
-	public function setCharset(string $name = 'utf8') : bool{
-		$this->core->returnError();
-		if(!$this->is_connect)
-			return $this->core->returnError(1, 'connection error');
-		$this->conn->exec("SET NAMES ".$name);
-		$this->conn->exec("SET CHARACTER SET ".$name);
+	public function setCharset(string $name = 'utf8') : bool{ //set charset
+		core::setError(); //clear error
+		if(!$this->isConnect)
+			return core::setError(1, 'connection error'); //return error 1
+		$this->conn->exec("SET NAMES ".$name); //set names
+		$this->conn->exec("SET CHARACTER SET ".$name); //set character
 		return true;
 	}
-	public function lastInsertId(){
-		$this->core->returnError();
-		if(!$this->is_connect)
-			return $this->core->returnError(1, 'connection error');
-		return $this->conn->lastInsertId();
-	}
-	public function query(string $sql){
-		$this->core->returnError();
-		if(!$this->is_connect)
-			return $this->core->returnError(1, 'connection error');
-		$this->_log($sql);
-		return $this->conn->query($sql);
-	}
-	public function exec(string $sql){
-		$this->core->returnError();
-		if(!$this->is_connect)
-			return $this->core->returnError(1, 'connection error');
-		$this->_log($sql);
-		return $this->conn->exec($sql);
-	}
-	public function prepare(string $sql, array $option = array()){
-		$this->core->returnError();
-		if(!$this->is_connect)
-			return $this->core->returnError(1, 'connection error');
-		$this->_log($sql);
-		return $this->conn->prepare($sql, $option);
-	}
-	private function _log(string $sql){
-		$this->core->returnError();
-		if(!$this->advanced_logs)
-			return false;
-		$this->core->wlog('SQL: '.$sql, 'library database advenced', 'message');
-	}
-	public function __debugInfo() : array{
-		return [
-			'version' => $this->version,
-			'conn' => $this->conn,
-			'is_connect' => $this->is_connect,
-			'advanced_logs' => $this->advanced_logs,
-			'connError' => $this->connError,
-		];
+	private function __checkConfig(array $config, array $check){ //check config
+		core::setError(); //clear error
+		foreach($check as $name) //loop
+			if(!isset($config[$name])) //check
+				return $name; //return error (name)
+		return true; //return true
 	}
 }
 ?>
