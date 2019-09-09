@@ -1,7 +1,7 @@
 <?php
 class core{
 	public static $error = [-1, '', '']; //last error
-	public static $info = ['version' => '1.2 Alpha','releaseDate' => '18.07.2019','reversion' => '']; //info
+	public static $info = ['version' => '0.2.1 Alpha','releaseDate' => '09.09.2019','reversion' => '']; //info
 	public static $private = []; //private data
 	public static $path = ['core' => 'core/', 'controller' => 'controller/', 'view' => 'view/', 'model' => 'model/', 'module' => 'module/', 'base' => 'core/base/', 'temp' => 'core/base/temp/'];
 	public static $controller = []; //all controller array
@@ -9,8 +9,23 @@ class core{
 	public static $module = []; //all module array
 	public static $module_add = []; //array add data for module
 	public static $library = []; //class library
+	public static $debug = [
+		'showError' => True,
+		'saveError' => True,
+	];
 	public static function init(){ //init function
 		self::setError(); //reset error table
+		//init debug
+		if(self::$debug['showError']) //show error
+			error_reporting(E_ALL);
+		if(self::$debug['saveError']){ //save error to file
+			ini_set("log_errors", 1);
+			$path = self::$path['base'].'log/';
+			if(!file_exists($path))
+				mkdir($path, 0700, true);
+			$path .= 'php_error.log';
+			ini_set("error_log", $path);
+		}
 		//get reversion path
 		while(!file_exists(self::$info['reversion']."core/core.php"))
 			self::$info['reversion'] .= '../';

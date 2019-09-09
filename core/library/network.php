@@ -1,5 +1,6 @@
 <?php
 return $this->network = new class(){ //create library
+	public $version = '1.0'; //version
 	public $method = 0; //connect method
 	private $methodDownloadFile = 0; //method download file
 	public $curlTimeout = 1000; //curl timeout
@@ -27,7 +28,7 @@ return $this->network = new class(){ //create library
 				]); //set config
 				$getData = curl_exec($curl); //get data
 				$httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE); //get info
-				if($httpCode <> 200) //if error
+				if($httpCode < 200 or $httpCode > 200) //if error
 					return core::setError(3, 'error http code', 'Http Code: '.$httpCode); //return error 3
 				if($getData === false) //error
 					return core::setError(1, 'error download data', curl_error($ch)); //return error 1
@@ -95,20 +96,26 @@ return $this->network = new class(){ //create library
 		else
 			return $_SERVER['REMOTE_ADDR'];
 	}
-	public function ping(string $domain) : int{ //get ping from domain
+	public function ping(string $url) : int{ //get ping from domain
 		core::setError(); //clear error
 		$starttime = microtime(true); //start count time
-		$file = @fsockopen($domain, 80, $errno, $errstr, 10); //open socket
+		$socket = @fsockopen($domain, 80, $errno, $errstr, 10); //open socket
 		$stoptime = microtime(true); //stop time
 		$status = 0;
-		if(!$file)
+		if(!$socket)
 			$status = -1;
 		else {
-			fclose($file);
+			fclose($socket);
 			$status = ($stoptime - $starttime) * 1000;
 			$status = floor($status);
 		}
 		return $status;
+	}
+	public function getHeader(string $name){ //get header from name
+		$headers = apache_request_headers(); //get all header
+		if(isset($headers[$name])) //isset
+			return null; //return null
+		return $headers[$name]; //return data
 	}
 };
 ?>

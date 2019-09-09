@@ -1,5 +1,6 @@
 <?php
 return $this->memory = new class(){ //create library
+	public $version = '1.0'; //version
 	public function formatBytes(int $bytes, int $prec = 2) : string{ //format bytes and add suff
 		core::setError(); //clear error
 		$suff = ['B', 'KB', 'MB', 'GB', 'TB', 'PT', 'EB', 'ZB', 'YB']; //table list

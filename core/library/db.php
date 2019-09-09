@@ -1,5 +1,6 @@
 <?php
 return $this->db = new class(){ //create db library
+	public $version = '1.0 preAlpha'; //version
 	public $tableVersion = '1.1'; //table version
 	public $cryptTable = false; //crypt db table
 	public $path = ''; //database path
@@ -66,51 +67,38 @@ return $this->db = new class(){ //create db library
 			mkdir($path, 0777, true); //create dir
 		return; //return empty
 	}
-	public function request(string $tableName){ //request table
-		return new class($this, $tableName){ //create class
-			protected $mainClass; //main class
-			protected $tableName; //table name
-			protected $path; //table path
-			public $tableOption = null; //table option
-			public function __construct($mainClass, $tableName){ //main function
-				$this->mainClass = $mainClass; //set main class
-				$this->tableName = basename($tableName); //set table name
-				$this->path = $mainClass->path.basename($tableName).'.FDB'; //set table path
-				if(!file_exists($this->path)) //if not exists
-					die('No find `'.basename($tableName).'` table in database'); //die
-				$this->tableOption = $mainClass->_dbFileRead($this->path, "option"); //read table pption
-			}
-			public function fetch(array $where = []){ //fetch function
-				$column = $this->mainClass->_dbFileRead($this->path, 'column'); //read column
-				$data = $this->mainClass->_dbFileRead($this->path, 'data'); //read data
-				foreach($where as $item){ //where loop
-				if(count($item) == 3){ //check where
-					switch($item[1]){ //switch $item[1]
-						case '=': //=
-							foreach($data as $id => $item2){ //data loop
-								if($item2[$item[0]] <> $item[2]) //false
-									unset($data[$id]); //delete item
-							}
-							break;
-					}
-				}else //error
-					return core::setError(1, 'reading error of the where condition'); //return error 1
-			}
-				return [
-					'count' => count($data),
-					'data' => $data,
-					'where' => count($where)==0?false:$where,
-				]; //return data
-			}
-		};
+	public function readData(string $tableName, array $where = []){
+		$column = $this->_dbFileRead($this->path, 'column'); //read column
+		$data = $this->_dbFileRead($this->path, 'data'); //read data
+		foreach($where as $item){ //where loop
+			if(count($item) == 3){ //check item
+				switch($item[1]){ //switch $item[1]
+					case '=': //=
+						foreach($data as $id => $item2){ //data loop
+							if($item2[$item[0]] <> $item[2]) //false
+								unset($data[$id]); //delete item
+						}
+						break;
+				}
+			}else //error
+				return core::setError(1, 'reading error of the where condition'); //return error 1
+		}
+		return [
+			'count' => count($data),
+			'data' => $data,
+			'where' => count($where)==0?false:$where,
+		]; //return data
 	}
-	public function _dbFileWrite(string $path, array $writeData){ //write array to database
+	private function _where(array $data, array $where){ //where loop
+		// foreach($data 
+	}
+	private function _dbFileWrite(string $path, array $writeData){ //write array to database
 		$write = json_encode($writeData['option']).PHP_EOL.
 				 json_encode($writeData['column']).PHP_EOL.
 				 json_encode($writeData['data']); //generate write string
 		file_put_contents($path, $write); //write
 	}
-	public function _dbFileRead(string $path, string $type = "all"){ //read all data (or type) from database
+	private function _dbFileRead(string $path, string $type = "all"){ //read all data (or type) from database
 		if(!file_exists($path)) //if not exists
 			return core::setError(1, 'file does not exist'); //return error 1
 		switch($type){ //switch type
@@ -126,13 +114,13 @@ return $this->db = new class(){ //create db library
 				return $return; // return array
 				break;
 			case 'option':
-				return json_decode(file($path)[0], true);
+				return json_decode(file($path)[0], true); //return option
 				break;
 			case 'column':
-				return json_decode(file($path)[1], true);
+				return json_decode(file($path)[1], true); //return column
 				break;
 			case 'data':
-				return json_decode(file($path)[2], true);
+				return json_decode(file($path)[2], true); //return data
 				break;
 		}
 	}

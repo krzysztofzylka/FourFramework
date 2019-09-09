@@ -1,5 +1,6 @@
 <?php
-return $this->crypt = new class(){
+return $this->crypt = new class(){ //create library class
+	public $version = '1.0'; //version
 	private $method = 'AES-256-CBC'; //method
 	public $salt = '0123456789012345'; //salt
 	public function crypt(string $string, $hash=null) : string{ //crypt
@@ -28,10 +29,10 @@ return $this->crypt = new class(){
 			$this->salt //salt
 		); //return
 	}
-	public function hash(string $string, string $algoritm='pbkdf2') : string{ //hash
+	public function hash(string $string, string $algorithm='pbkdf2') : string{ //hash
 		core::setError(); //clear error
 		$return = '${type}${hash}'; //return type
-		switch($algoritm){ //algoritm
+		switch($algorithm){ //algorithm
 			case '001':
 			case 'md5':
 				$return = str_replace('{type}', '001', $return);

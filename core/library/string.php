@@ -1,11 +1,12 @@
 <?php
 return $this->string = new class(){ //create class
+	public $version = '1.0'; //version
 	public function between(string $string, string $start, string $end, int $offset=0) : string{ //get string between
 		core::setError(); //reset error
 		$sub = substr($string, strpos($string,$start, $offset)+strlen($start),strlen($string)); //get substr
 		return substr($sub,0,strpos($sub,$end)); //return substr
 	}
-	public function generateString(int $length = 15, array $data = [true, true, true, true]){ //generate string
+	public function generateString(int $length = 15, array $data = [true, true, true, true]) : string{ //generate string
 		core::setError(); //reset error
 		$return = ''; //return value
 		$string = ''; //string value
@@ -20,9 +21,9 @@ return $this->string = new class(){ //create class
 	}
 	public function clean(string $string) : string{ //clean string
 		core::setError(); //reset error
+		$string = strip_tags($string); //strip tags
 		if(!get_magic_quotes_gpc())
 			$string = addslashes($string); //add slasher
-		$string = strip_tags($string); //strip tags
 		return $string; //return clean text
 	}
 };

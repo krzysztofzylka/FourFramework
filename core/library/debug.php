@@ -1,5 +1,6 @@
 <?php
 return $this->debug = new class(){ //create library
+	public $version = '1.0'; //version
 	public function print_r($array, bool $var_type=false, string $title='ARRAY'){ //print_r
 		core::setError(); //clear error
 		if(is_object($array)){ //if is array
@@ -32,7 +33,7 @@ return $this->debug = new class(){ //create library
 		echo $array;
 	}
 	public function getOS() : int{ //get OS
-		switch (true) {
+		Switch(true) {
             case stristr(PHP_OS, 'DAR'): return 2; //dar
             case stristr(PHP_OS, 'WIN'): return 3; //win
             case stristr(PHP_OS, 'LINUX'): 4; //linux

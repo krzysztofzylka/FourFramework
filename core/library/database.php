@@ -1,5 +1,6 @@
 <?php
 return $this->database = new class(){ //create library
+	public $version = '1.0'; //version
 	public $conn; //pdo object
 	public $isConnect = false; //is connect
 	public $connError = true; //die if error

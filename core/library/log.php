@@ -1,12 +1,13 @@
 <?php
 return $this->log = new class(){
+	public $version = '1.0'; //version
 	private $path; //log path
 	private $fileName = '{year}_{month}_{day}.log'; //log file name
 	public $writeData = '[{date}] {text}'; //data format
 	public function __construct(){ //main
 		$this->path = core::$path['base'].'log/'; //create path file
 		if(!file_exists($this->path)) //if not exists
-			mkdir($this->path, 0777, true); //create dir
+			mkdir($this->path, 0700, true); //create dir
 		$this->fileName = $this->_convertName($this->fileName); //convert file name
 	}
 	public function setLogPath(string $path) : void{ //setLogPath
@@ -19,7 +20,7 @@ return $this->log = new class(){
 		$this->fileName = $this->_convertName($name); //save to var
 		return;
 	}
-	private function _convertName(string $name) : string{ //convert name
+	public function _convertName(string $name) : string{ //convert name
 		core::setError(); //clear error
 		$name = str_replace('{year}', date('Y'), $name); //year
 		$name = str_replace('{month}', date('m'), $name); //month
