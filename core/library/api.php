@@ -5,8 +5,8 @@ return $this->api = new class(){ //create api library
 		$api_pathDir = core::$path['core'].'library/api/'; //dir path
 		$api_path = $api_pathDir.basename($name).'.php'; //file path
 		if(!file_exists($api_path)) //if not exists
-			return core::setError(1, 'api file not exists');
-		return include($api_path);
+			return core::setError(1, 'api file not exists'); //return error 1
+		return include($api_path); //return api object
 	}
 }; 
 ?>

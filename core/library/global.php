@@ -1,6 +1,6 @@
 <?php
 return $this->global = new class(){ //create library
-	public $version = '1.0'; //version
+	public $version = '1.1'; //version
 	private $__globalVar = []; //var data (private)
 	public $__globalList = []; //var list
 	public function read(string $name){ //read var
@@ -19,7 +19,7 @@ return $this->global = new class(){ //create library
 	public function unset(string $name) : void{ //delete var
 		core::setError(); //clear error
 		unset($this->__globalVar[$name]); //delete
-		$this->__globalList = array_diff(__globalList, [$name]); //delete from array
+		$this->__globalList = array_diff($this->__globalList, [$name]); //delete from array
 		return;
 	}
 }

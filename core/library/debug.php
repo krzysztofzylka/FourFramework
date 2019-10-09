@@ -1,6 +1,7 @@
 <?php
 return $this->debug = new class(){ //create library
-	public $version = '1.0'; //version
+	public $version = '1.1'; //version
+	public $consoleLog = True; //write to console log
 	public function print_r($array, bool $var_type=false, string $title='ARRAY'){ //print_r
 		core::setError(); //clear error
 		if(is_object($array)){ //if is array
@@ -17,7 +18,7 @@ return $this->debug = new class(){ //create library
 					echo '<strong>' . $k . '</strong> ';
 					if($var_type===true){
 						if(!is_array($v)){
-							$type = gettype($v);
+							$type = gettype($v); //get type
 							if($type === 'integer')
 								$type = 'int';
 							echo '<i style="background: #79ff4c; border-radius: 4px;">{'.$type.'}</i>';
@@ -39,6 +40,14 @@ return $this->debug = new class(){ //create library
             case stristr(PHP_OS, 'LINUX'): 4; //linux
             default : return 1;
         }
+	}
+	public function consoleLog($data) : bool{ //debug to console log
+		if($this->consoleLog == false) //if consoleLog is disabled
+			return false; //return false
+		if(is_array($data)) //if array
+			$data = implode(',', $data); //implode array
+		echo "<script>console.log('Debug Objects: ".$data."');</script>"; //write to console log
+		return true;
 	}
 }
 ?>

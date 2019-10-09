@@ -6,7 +6,7 @@ return $this->crypt = new class(){ //create library class
 	public function crypt(string $string, $hash=null) : string{ //crypt
 		core::setError(); //clear error
 		if(!@function_exists(openssl_encrypt)) //if openssl not exists
-			die('Error use function crypt (library crypt), you must run ssl module in server');
+			die('Error use function crypt (library crypt), you must run ssl module in server'); //fatal error / die
 		return base64_encode(
 			openssl_encrypt(
 				$string, //string

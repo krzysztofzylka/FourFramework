@@ -1,39 +1,43 @@
 <?php
+//by Krzysztof Żyłka
+//fourframework.hmcloud.pl
 class core{
 	public static $error = [-1, '', '']; //last error
-	public static $info = ['version' => '0.2.1 Alpha','releaseDate' => '09.09.2019','reversion' => '']; //info
+	public static $info = ['version' => '0.2.2 Alpha','releaseDate' => '12.09.2019','reversion' => '']; //info
 	public static $private = []; //private data
-	public static $path = ['core' => 'core/', 'controller' => 'controller/', 'view' => 'view/', 'model' => 'model/', 'module' => 'module/', 'base' => 'core/base/', 'temp' => 'core/base/temp/'];
+	public static $path = ['core' => 'core/', 'controller' => 'controller/', 'view' => 'view/', 'model' => 'model/', 'module' => 'module/', 'base' => 'core/base/', 'temp' => 'core/base/temp/']; //all path
 	public static $controller = []; //all controller array
 	public static $model = []; //all model array
 	public static $module = []; //all module array
 	public static $module_add = []; //array add data for module
 	public static $library = []; //class library
-	public static $debug = [
-		'showError' => True,
-		'saveError' => True,
+	public static $debug = [ //debug array
+		'showError' => True, //show error
+		'saveError' => True, //save error to file
+		'showCoreError' => True //show core error
 	];
 	public static function init(){ //init function
 		self::setError(); //reset error table
 		//init debug
 		if(self::$debug['showError']) //show error
 			error_reporting(E_ALL);
-		if(self::$debug['saveError']){ //save error to file
-			ini_set("log_errors", 1);
-			$path = self::$path['base'].'log/';
-			if(!file_exists($path))
-				mkdir($path, 0700, true);
-			$path .= 'php_error.log';
-			ini_set("error_log", $path);
-		}
 		//get reversion path
-		while(!file_exists(self::$info['reversion']."core/core.php"))
-			self::$info['reversion'] .= '../';
+		while(!file_exists(self::$info['reversion']."core/core.php")) //loop search core.php file
+			self::$info['reversion'] .= '../'; //add reversion to path
 		//add reversion to path and create dir
-		foreach(self::$path as $name => $value){
+		foreach(self::$path as $name => $value){ //path loop
 			self::$path[$name] = self::$info['reversion'].$value; //add reversion to path
 			if(!file_exists(self::$path[$name])) //if not exists
 				mkdir(self::$path[$name], 0444, true); //create dir
+		}
+		//debug
+		if(self::$debug['saveError']){ //save error to file
+			ini_set("log_errors", 1); //set error in ini
+			$path = self::$path['base'].'log/'; //create php log path
+			if(!file_exists($path)) //if not exists
+				mkdir($path, 0700, true); //create dir
+			$path .= 'php_error.log'; //add filename to path
+			ini_set("error_log", $path); //set error log path to ini
 		}
 		//include library class
 		self::$library = include('library.php');
@@ -41,7 +45,9 @@ class core{
 	}
 	public static function setError(int $number=-1, string $name='', string $description=''){ //set error
 		self::$error = [$number, $name, $description]; //set error
-		return false;
+		if(self::$debug['showCoreError'] == true and $number > -1) //if enabled and error number > -1
+			echo '<b>Core error:</b> ('.$number.') [<i>'.$name.'</i>] '.$description; //show error
+		return false; //return false
 	}
 	public static function loadView(string $name){ //load View file
 		self::setError(); //reset error
@@ -68,7 +74,7 @@ class core{
 	public static function loadModel(string $name){ //load Model class
 		self::setError(); //reset error
 		$name = htmlspecialchars(basename($name)); //protect $name
-		if(in_array($name, array_keys(self::$model)))
+		if(in_array($name, array_keys(self::$model))) //search in array
 			return self::setError(3, 'the class has already been loaded', ''); //return error 3
 		$path = self::$path['model'].$name.'.php'; //create file path
 		if(!file_exists($path)) //check file exists
@@ -82,7 +88,7 @@ class core{
 	public static function loadModule(string $name){ //load module
 		self::setError(); //reset error
 		$name = htmlspecialchars(basename($name)); //protect $name
-		if(in_array($name, array_keys(self::$module)))
+		if(in_array($name, array_keys(self::$module))) //search 
 			return self::setError(1, 'the class has already been loaded', ''); //return error 1
 		$path = self::$path['module'].$name.'/'; //create file path
 		if(!file_exists($path.'config.php')) //check config file
