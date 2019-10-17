@@ -1,6 +1,6 @@
 <?php
 return $this->db = new class(){ //create db library
-	public $version = '1.0'; //version
+	public $version = '1.0.1'; //version
 	public $tableVersion = '1.0'; //table version
 	public $cryptTable = false; //crypt db table
 	public $path = ''; //database path
@@ -48,8 +48,8 @@ return $this->db = new class(){ //create db library
 			$data['column']['count']++; //dodawanie licznika
 		}
 		$this->_saveFile($name, $data); //save to file
-		if(file_exists($path))
-			return core::setError(2, 'database is already exists'); //return error
+		if(!file_exists($path))
+			return core::setError(2, 'error create database file'); //return error
 		return true;
 	}
 	public function setDBPath(string $path) : void{ //set db path
@@ -108,18 +108,39 @@ return $this->db = new class(){ //create db library
 		$data = $readData['data']; //get data to var
 		//search
 		if($search <> ''){ //if not exists
-			$explode = explode(' and ', $search); //explode search
-			foreach($explode as $item){ //search loop
-				//=
-				$exp = $this->_searchExplode($item, '='); //search explode item
-				if($exp <> false){ //return <> false
-					foreach($data as $dataID => $dataData){ //foreach data
-						if($dataData[$exp[0]] <> $exp[1]) //search
-							unset($data[$dataID]); //delete item
-					}
+			$data = $this->_search($data, $search);
+			$data = array_values(array_filter($data)); //reindex and clear
+		}
+		return $data;
+	}
+	public function deleteTable(string $name) : bool{ //delete table
+		core::setError(); //clear error
+		$fileName = htmlspecialchars(basename($name)); //generate file name
+		$path = $this->path.$fileName.'.FDB'; //generate file path
+		if(!file_exists($path)) //if not exisits
+			return core::setError(1, 'table file not exists'); //set error 1
+		unlink($path); //delete file
+		return true; //return success
+	}
+	private function _search(array $data, string $search) : array{ //search data
+		$explode = explode(' and ', $search); //explode search
+		foreach($explode as $item){ //search loop
+			//=
+			$exp = $this->_searchExplode($item, '='); //search explode item
+			if($exp <> false){ //return <> false
+				foreach($data as $dataID => $dataData){ //foreach data
+					if($dataData[$exp[0]] <> $exp[1]) //search
+						unset($data[$dataID]); //delete item
 				}
 			}
-			$data = array_values(array_filter($data)); //reindex and clear
+			//%
+			$exp = $this->_searchExplode($item, '%'); //search explode item
+			if($exp <> false){ //return <> false
+				foreach($data as $dataID => $dataData){ //foreach data
+					if(core::$library->string->strpos($dataData[$exp[0]], $exp[1]) == -1) //not find
+						unset($data[$dataID]); //delete item
+				}
+			}
 		}
 		return $data;
 	}
