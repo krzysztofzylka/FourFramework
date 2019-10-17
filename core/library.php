@@ -7,6 +7,7 @@ return new class(){
 			array_push($this->__list, $name); //add to array
 			return include_once($path); //include 
 		}else{ //no found
+			trigger_error($name.' library not found', E_USER_ERROR); //show php error
 			return core::setError(1, 'library file not found'); //return error 1
 		}
 	}
