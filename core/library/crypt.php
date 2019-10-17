@@ -1,8 +1,9 @@
 <?php
 return $this->crypt = new class(){ //create library class
-	public $version = '1.0'; //version
+	public $version = '1.0a'; //version
 	private $method = 'AES-256-CBC'; //method
 	public $salt = '0123456789012345'; //salt
+	public $hashAlgorithm = ['md5', 'sha256', 'pbkdf2', 'sha512', 'crc32', 'ripemd256', 'snefru', 'gost']; //hash algorithm list
 	public function crypt(string $string, $hash=null) : string{ //crypt
 		core::setError(); //clear error
 		if(!@function_exists(openssl_encrypt)) //if openssl not exists
