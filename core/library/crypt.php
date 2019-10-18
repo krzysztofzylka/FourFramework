@@ -1,6 +1,6 @@
 <?php
 return $this->crypt = new class(){ //create library class
-	public $version = '1.0a'; //version
+	public $version = '1.0b'; //version
 	private $method = 'AES-256-CBC'; //method
 	public $salt = '0123456789012345'; //salt
 	public $hashAlgorithm = ['md5', 'sha256', 'pbkdf2', 'sha512', 'crc32', 'ripemd256', 'snefru', 'gost']; //hash algorithm list
@@ -80,11 +80,13 @@ return $this->crypt = new class(){ //create library class
 		return $return; //return string
 	}
 	public function hashCheck(string $string, string $hash) : bool{ //check hash
+		core::setError(); //clear error
 		$algoritm = substr($hash, 1, 3); //get alghoritm
 		$string = $this->hash($string, $algoritm); //crypt string
 		return $string===$hash; //return bool
 	}
 	public function isBase64(string $crypt) : bool{ //is Base64
+		core::setError(); //clear error
 		return (bool) preg_match('/^[a-zA-Z0-9\/\r\n+]*={0,2}$/', $crypt); //return bool
 	}
 }
