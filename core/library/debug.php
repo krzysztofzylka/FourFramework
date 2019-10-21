@@ -1,6 +1,6 @@
 <?php
 return $this->debug = new class(){ //create library
-	public $version = '1.1'; //version
+	public $version = '1.2'; //version
 	public $consoleLog = True; //write to console log
 	public function print_r($array, bool $var_type=false, string $title='ARRAY'){ //print_r
 		core::setError(); //clear error
@@ -41,13 +41,24 @@ return $this->debug = new class(){ //create library
             default : return 1;
         }
 	}
-	public function consoleLog($data) : bool{ //debug to console log
+	public function consoleLog($data, string $title=null) : bool{ //debug to console log
 		if($this->consoleLog == false) //if consoleLog is disabled
 			return false; //return false
 		if(is_array($data)) //if array
-			$data = implode(',', $data); //implode array
-		echo "<script>console.log('Debug Objects: ".$data."');</script>"; //write to console log
+			$data = $this->_consoleLogArrayToString($data);
+		$data = str_replace(PHP_EOL, '\r\n', $data); //replace enter
+		$data = str_replace('	', '', $data); //replace tab
+		echo "<script>console.log('Debug Objects: ".($title<>false?$title.'\r\n':'')." ".$data."');</script>"; //write to console log
 		return true;
+	}
+	private function _consoleLogArrayToString(array $data){
+		$return = "";
+		foreach($data as $name=>$itemData){
+			if(is_array($itemData))
+				$itemData = $this->_consoleLogArrayToString($itemData);
+			$return .= $name.' => ['.$itemData.']'.PHP_EOL;
+		}
+		return $return;
 	}
 }
 ?>
