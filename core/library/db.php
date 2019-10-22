@@ -19,7 +19,7 @@ return $this->db = new class(){ //create db library
 		]
 	];
 	private $activeConnect = null; //active connect
-	private $debug = true;
+	private $debug = false;
 	public function __construct(){ //main function
 		core::setError(); //clear error
 		$this->path = core::$path['base'].'db/'; //create path
