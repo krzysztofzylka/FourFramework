@@ -1,39 +1,25 @@
 <?php
-return $this->crypt = new class(){ //create library class
-	public $version = '1.0b'; //version
-	private $method = 'AES-256-CBC'; //method
-	public $salt = '0123456789012345'; //salt
-	public $hashAlgorithm = ['md5', 'sha256', 'pbkdf2', 'sha512', 'crc32', 'ripemd256', 'snefru', 'gost']; //hash algorithm list
-	public function crypt(string $string, $hash=null) : string{ //crypt
-		core::setError(); //clear error
-		if(!@function_exists(openssl_encrypt)) //if openssl not exists
-			die('Error use function crypt (library crypt), you must run ssl module in server'); //fatal error / die
-		return base64_encode(
-			openssl_encrypt(
-				$string, //string
-				$this->method, //method
-				$hash, //hash
-				0,
-				$this->salt //salt
-			) //crypt
-		); //return
+return $this->crypt = new class(){ 
+	public $version = '1.0c'; 
+	private $method = 'AES-256-CBC'; 
+	public $salt = '0123456789012345'; 
+	public $hashAlgorithm = ['md5', 'sha256', 'pbkdf2', 'sha512', 'crc32', 'ripemd256', 'snefru', 'gost']; 
+	public function crypt(string $string, $hash=null) : string{
+		core::setError();
+		if(!@function_exists(openssl_encrypt)) 
+			die('Error use function crypt (library crypt), you must run ssl module in server'); 
+		return base64_encode(openssl_encrypt($string, $this->method, $hash, 0, $this->salt));
 	}
-	public function decrypt(string $string, $hash=null) : string{ ///decrypt
-		core::setError(); //clear error
-		if(!@function_exists(openssl_encrypt)) //if openssl not exists
-			die('Error use function decrypt (library crypt), you must run ssl module in server'); //error
-		return openssl_decrypt(
-			base64_decode($string), //string
-			$this->method, //method
-			$hash, //hash
-			0,
-			$this->salt //salt
-		); //return
+	public function decrypt(string $string, $hash=null) : string{
+		core::setError(); 
+		if(!@function_exists(openssl_encrypt)) 
+			die('Error use function decrypt (library crypt), you must run ssl module in server'); 
+		return openssl_decrypt(base64_decode($string), $this->method, $hash, 0, $this->salt); 
 	}
-	public function hash(string $string, string $algorithm='pbkdf2') : string{ //hash
-		core::setError(); //clear error
-		$return = '${type}${hash}'; //return type
-		switch($algorithm){ //algorithm
+	public function hash(string $string, string $algorithm='pbkdf2') : string{ 
+		core::setError(); 
+		$return = '${type}${hash}'; 
+		switch($algorithm){ 
 			case '001':
 			case 'md5':
 				$return = str_replace('{type}', '001', $return);
@@ -77,17 +63,17 @@ return $this->crypt = new class(){ //create library class
 				$return = str_replace('{hash}', hash('gost', $string), $return);
 				break;
 		}
-		return $return; //return string
+		return $return; 
 	}
-	public function hashCheck(string $string, string $hash) : bool{ //check hash
-		core::setError(); //clear error
-		$algoritm = substr($hash, 1, 3); //get alghoritm
-		$string = $this->hash($string, $algoritm); //crypt string
-		return $string===$hash; //return bool
+	public function hashCheck(string $string, string $hash) : bool{ 
+		core::setError();
+		$algoritm = substr($hash, 1, 3); 
+		$string = $this->hash($string, $algoritm); 
+		return $string===$hash; 
 	}
-	public function isBase64(string $crypt) : bool{ //is Base64
-		core::setError(); //clear error
-		return (bool) preg_match('/^[a-zA-Z0-9\/\r\n+]*={0,2}$/', $crypt); //return bool
+	public function isBase64(string $crypt) : bool{ 
+		core::setError();
+		return (bool) preg_match('/^[a-zA-Z0-9\/\r\n+]*={0,2}$/', $crypt); 
 	}
 }
 ?>
