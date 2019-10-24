@@ -1,80 +1,81 @@
 <?php
-return $this->db = new class(){ //create db library
-	public $version = '1.0.3'; //version
-	public $tableVersion = '1.1'; //table version
-	public $path = ''; //database path
-	private $connection = []; //connection list
+return $this->db = new class(){ 
+	public $version = '1.0.4'; 
+	public $tableVersion = '1.1'; 
+	public $path = ''; 
+	private $connection = []; 
 	private $_regexp = [
 		'fileName' => '([a-zA-Z0-9\-\_\!\@\#\$\%\^\&\(\)\=]+)',
-		'getData' => '[\'|"|`]?([a-zA-Z0-9]+)[\'|"|`]? ?= ?([\'|"|`]?(.+?)[\'|"|`]?|([a-zA-Z0-9\"\']+))[,|\n]', //'name' = 'tresc', 'name2' = 'tresc2'
-		'createTableData' => '[\'|\"|\`](.+?)[\'|\"|\`] ((int|string|bool)(\([0-9]+\))|text)[ |,]?(autoincrement)?', //'name' (int|String|bool|(int) autoincrement?
-		'addData' => '[\'|\"|\`]?(.+?)[\'|\"|\`]?, ?', //'data', 'data2'
+		'getData' => '[\'|"|`]?([a-zA-Z0-9]+)[\'|"|`]? ?= ?([\'|"|`]?(.+?)[\'|"|`]?|([a-zA-Z0-9\"\']+))[,|\n]', 
+		'createTableData' => '[\'|\"|\`](.+?)[\'|\"|\`] ((int|string|bool)(\([0-9]+\))|text)[ |,]?(autoincrement)?', 
+		'addData' => '[\'|\"|\`]?(.+?)[\'|\"|\`]?, ?', 
 		'request' => [
 			'createTable' => '(CREATE TABLE) [\'|\"|\`]?([a-zA-Z0-9]+)[\'|\"|\`]? {(.+)}',
 			'addDataTo' => '(ADD DATA TO) [\'|"|`]?{$fileName}[\'|"|`]? \((.+)\) VALUES \((.+)\)',
 			'select' => '(SELECT) [\'|"|`]?(.+?)?[\'|"|`]? ?(FROM) ["|\'|`]?{$fileName}["|\'|`]? ?(WHERE (.+))?',
 			'advenced' => '(ADVENCED) (GET|SET) (.+) FROM ["|\'|`]?{$fileName}["|\'|`]? ?(OPTION+ ?(.+))?',
+			'advencedGet' => '(ADVENCED) (GET) ["|\'|`](.+)["|\'|`]',
 			'updateWhere' => '(UPDATE) ["|\'|`]?{$fileName}["|\'|`]? SET (.+) WHERE (.+)',
 			'update' => '(UPDATE) ["|\'|`]?{$fileName}["|\'|`]? SET (.+)'
 		]
 	];
-	private $activeConnect = null; //active connect
-	private $debug = false;
-	public function __construct(){ //main function
-		core::setError(); //clear error
-		$this->path = core::$path['base'].'db/'; //create path
+	private $activeConnect = null; 
+	private $debug = true;
+	public function __construct(){ 
+		core::setError(); 
+		$this->path = core::$path['base'].'db/'; 
 		if(!file_exists($this->path))
-			mkdir($this->path, 0700, true); //create dir
-		foreach($this->_regexp['request'] as $name => $data) //replace regexp
-			$this->_regexp['request'][$name] = preg_replace_callback('/{\$([a-zA-Z0-9]+)}/ms', 'self::___replaceRegexp', $this->_regexp['request'][$name]); //replace regexp
+			mkdir($this->path, 0700, true); 
+		foreach($this->_regexp['request'] as $name => $data) 
+			$this->_regexp['request'][$name] = preg_replace_callback('/{\$([a-zA-Z0-9]+)}/ms', 'self::___replaceRegexp', $this->_regexp['request'][$name]); 
 	}
-	public function request(string $script, string $connect = null){ //request script to database
-		core::setError(); //clear error
-		$connect = $connect??array_keys($this->connection)[0]; //if first connect
-		if($this->___checkConnect($connect) == false) //check connect (is false)
-			return core::setError(1, 'connection error'); //return error
-		foreach($this->_regexp['request'] as $regexp){ //regexp loop
-			preg_match_all('/'.$regexp.'/ms', $script, $matches, PREG_SET_ORDER, 0); //preg match
-			if(count($matches) > 0){ //search
-				$this->activeConnect = $connect; //define active connect
-				$request = $this->_request($matches[0]); //get return request
-				$this->activeConnect = null; //define active connect
-				return $request; //return request
+	public function request(string $script, string $connect = null){ 
+		core::setError(); 
+		$connect = $connect??array_keys($this->connection)[0]; 
+		if($this->___checkConnect($connect) == false) 
+			return core::setError(1, 'connection error'); 
+		foreach($this->_regexp['request'] as $regexp){ 
+			preg_match_all('/'.$regexp.'/ms', $script, $matches, PREG_SET_ORDER, 0); 
+			if(count($matches) > 0){ 
+				$this->activeConnect = $connect; 
+				$request = $this->_request($matches[0]); 
+				$this->activeConnect = null; 
+				return $request; 
 			}
 		}
 	}
-	public function connect(string $name, string $password = null){ //connect to database
-		$name = basename(htmlspecialchars($name)); //protect db name
-		$path = $this->path.$name.'/'; //create path
-		if(!file_exists($path)) //if db not exists
-			return core::setError(1, 'database is not exists'); //return error
-		$pathPass = $path.'passwd.php'; //test pass file path
-		if(!file_exists($pathPass)) //if db not exists
-			return core::setError(2, 'pass file is not exists'); //return error
-		$passMD5 = include($pathPass); //read password
-		if($passMD5 <> md5($password)) //check password
-			return core::setError(3, 'password incorect'); //return error
+	public function connect(string $name, string $password = null){ 
+		$name = basename(htmlspecialchars($name)); 
+		$path = $this->path.$name.'/'; 
+		if(!file_exists($path)) 
+			return core::setError(1, 'database is not exists'); 
+		$pathPass = $path.'passwd.php'; 
+		if(!file_exists($pathPass)) 
+			return core::setError(2, 'pass file is not exists'); 
+		$passMD5 = include($pathPass); 
+		if($passMD5 <> md5($password)) 
+			return core::setError(3, 'password incorect'); 
 		$connArray = [
-			'name' => $name, //name
-			'path' => $path, //path
-			'pass' => md5($password) //password
-		]; //create connection array
-		$uniqueID = core::$library->string->generateString(10, [true, true, false, false]); //generate connection uniqueID
-		$this->connection[$uniqueID] = $connArray; //add connection to array
-		return $uniqueID; //return uniqueID
+			'name' => $name, 
+			'path' => $path, 
+			'pass' => md5($password) 
+		]; 
+		$uniqueID = core::$library->string->generateString(10, [true, true, false, false]); 
+		$this->connection[$uniqueID] = $connArray; 
+		return $uniqueID; 
 	}
-	public function createDatabase(string $name, string $password = null){ //create database
-		$name = basename(htmlspecialchars($name)); //protect db name
-		$path = $this->path.$name.'/'; //create path
-		if(file_exists($path)) //if db exists
-			return core::setError(1, 'database is already exists'); //return error
-		mkdir($path, 0700, true); //create database
-		$pathPass = $path.'passwd.php'; //test pass file path
-		file_put_contents($pathPass, '<?php return "'.md5($password).'"; ?>'); //create pass file
-		return true; //return success
+	public function createDatabase(string $name, string $password = null){ 
+		$name = basename(htmlspecialchars($name)); 
+		$path = $this->path.$name.'/'; 
+		if(file_exists($path)) 
+			return core::setError(1, 'database is already exists'); 
+		mkdir($path, 0700, true); 
+		$pathPass = $path.'passwd.php'; 
+		file_put_contents($pathPass, '<?php return "'.md5($password).'"; ?>'); 
+		return true; 
 	}
-	private function _request($matches){ //request
-		$this->___debug($matches, '_request'); //debug
+	private function _request($matches){ 
+		$this->___debug($matches, '_request'); 
 		switch($matches[1]){
 			case "CREATE TABLE":
 				preg_match_all('/'.$this->_regexp['createTableData'].'/ms', $matches[3], $matchesData, PREG_SET_ORDER, 0);
@@ -94,143 +95,154 @@ return $this->db = new class(){ //create db library
 				return $this->__update($matches[2], $this->___getArrayData($matchesSet, 2), isset($matches[4])?$matches[4]:null);
 				break;
 			case "ADVENCED":
-				// return $this->__advenced($matches
+				switch($matches[2]){
+					case 'GET':
+						switch($matches[3]){
+							case 'tableList':
+								$path = $this->connection[$this->activeConnect]['path'];
+								$scandir = glob($path.'*.{fdb}', GLOB_BRACE);
+								foreach($scandir as $id => $name){
+									$explode = explode('/', $name);
+									$scandir[$id] = str_replace('.fdb', '', $explode[count($explode)-1]);
+								}
+								return $scandir;
+								break;
+							case 'column':
+								$read = $this->____readFile($matches[4]);
+								return $read['column'];
+								break;
+							case 'autoincrement':
+								$read = $this->____readFile($matches[4]);
+								return $read['option']['autoincrement'];
+								break;
+						}
+						break;
+					case 'SET':
+						break;
+				}
 				break;
 		}
 	}
-	private function __createTable(string $name, array $data){ //create table
-		core::setError(); //clear error
-		$name = htmlspecialchars(basename($name)); //protect table name
-		$this->___debug($name, 'name'); //debug
-		$DBpath = $this->connection[$this->activeConnect]['path'].$name.'.fdb'; //generate table file
-		$this->___debug($DBpath, 'DBpath'); //debug
-		if(file_exists($DBpath)) //if table exists
-			return core::setError(101, 'error create table', 'table is already exists'); //return error
-		$table = [ //generate table array
-			'option' => [ //option
-				'name' => $name, //name
-				'version' => $this->tableVersion, //table version
-				'autoincrement' => [ //ai
-					'ai' => false, //ai bool
-					'id' => -1, //ai id
-					'count' => 1 //ai count
+	private function __createTable(string $name, array $data){ 
+		core::setError(); 
+		$name = htmlspecialchars(basename($name)); 
+		$this->___debug($name, 'name'); 
+		$DBpath = $this->connection[$this->activeConnect]['path'].$name.'.fdb'; 
+		$this->___debug($DBpath, 'DBpath'); 
+		if(file_exists($DBpath)) 
+			return core::setError(101, 'error create table', 'table is already exists'); 
+		$table = [ 
+			'option' => [ 
+				'name' => $name, 
+				'version' => $this->tableVersion, 
+				'autoincrement' => [ 
+					'ai' => false, 
+					'id' => -1, 
+					'count' => 1 
 				]
 			],
 			'column' => [
-				'count' => 0 //column count
+				'count' => 0 
 			],
-			'data' => [] //data
+			'data' => [] 
 		];
-		$column = []; //empty column array
-		foreach($data as $item){ //foreach matches data
-			if(count($item) < 5) //array count
-				return core::setError(100, 'error create table', 'error generate column'); //return error
+		$column = []; 
+		foreach($data as $item){ 
+			if(count($item) < 5) 
+				return core::setError(100, 'error create table', 'error generate column'); 
 			$column = [
-				'name' => (string)$item[1], //column name
-				'type' => (string)$item[3], //data type
-				'length' => (int)str_replace(['(', ')'], ['', ''], $item[4]) //max data length
+				'name' => (string)$item[1], 
+				'type' => (string)$item[3], 
+				'length' => (int)str_replace(['(', ')'], ['', ''], $item[4]) 
 			];
-			if(isset($item[5]) and $item[5] == 'autoincrement'){ //check autoincrement
-				$table['option']['autoincrement']['ai'] = true; //set bool
-				$table['option']['autoincrement']['id'] = $table['column']['count']; //set column id
+			if(isset($item[5]) and $item[5] == 'autoincrement'){ 
+				$table['option']['autoincrement']['ai'] = true; 
+				$table['option']['autoincrement']['id'] = $table['column']['count']; 
 			}
-			$table['column'][$table['column']['count']] = $column; //add column to table
-			$table['column']['count']++; //add column count +1
+			$table['column'][$table['column']['count']] = $column; 
+			$table['column']['count']++; 
 		}
-		$this->___debug($table, 'table'); //debug table
-		return $this->____saveFile($name, $table); //save to file
+		$this->___debug($table, 'table'); 
+		return $this->____saveFile($name, $table); 
 	}
-	private function __addData(string $tableName, array $column, array $data){ //add data
-		$tableName = htmlspecialchars(basename($tableName)); //protect table name
-		$column = $this->___getArrayData($column); //replace column
-		$data = $this->___getArrayData($data); //replace data
-		if(count($column) <> count($data)) //check column and data count
-			return core::setError(50, 'data count error'); //return error
-		$this->___debug($tableName, 'tableName'); //debug
-		$this->___debug($column, 'column'); //debug
-		$this->___debug($data, 'data'); //debug
-		$readFile = $this->____readFile($tableName); //read table
-		$newData = []; //new data array
-		$autoincrement = $readFile['option']['autoincrement']; //ai table
-		foreach($readFile['column'] as $id => $item){ //column loop
-			if(is_array($item)){ //if array
-				$search = array_search($item['name'], $column); //search in column
-				if(is_int($search)) //if search
-					$newData[$column[$search]] = $data[$search]; //add data
-				if($autoincrement['ai'] == true and $item['name'] == $readFile['column'][$autoincrement['id']]['name']){ //check if autoincrement
-					$newData[$item['name']] = $autoincrement['count']; //get counter
-					$readFile['option']['autoincrement']['count']++; //add 1 to counter
-					$search = -1; //search ai
+	private function __addData(string $tableName, array $column, array $data){ 
+		$tableName = htmlspecialchars(basename($tableName)); 
+		$column = $this->___getArrayData($column); 
+		$data = $this->___getArrayData($data); 
+		if(count($column) <> count($data)) 
+			return core::setError(50, 'data count error'); 
+		$this->___debug($tableName, 'tableName'); 
+		$this->___debug($column, 'column'); 
+		$this->___debug($data, 'data'); 
+		$readFile = $this->____readFile($tableName); 
+		$newData = []; 
+		$autoincrement = $readFile['option']['autoincrement']; 
+		foreach($readFile['column'] as $id => $item){ 
+			if(is_array($item)){ 
+				$search = array_search($item['name'], $column); 
+				if(is_int($search)) 
+					$newData[$column[$search]] = $data[$search]; 
+				if($autoincrement['ai'] == true and $item['name'] == $readFile['column'][$autoincrement['id']]['name']){ 
+					$newData[$item['name']] = $autoincrement['count']; 
+					$readFile['option']['autoincrement']['count']++; 
+					$search = -1; 
 				}
-				if(is_bool($search)) //if not exists column
-					core::setError(51, 'error search column', 'error find column \''.$item['name'].'\''); //return error
+				if(is_bool($search)) 
+					return core::setError(51, 'error search column', 'error find column \''.$item['name'].'\''); 
 				$columnName = $search==-1?$readFile['column'][$autoincrement['id']]['name']:$column[$search];
-				switch($item['type']){ //switch item type
-					case 'int': //if int
-						$item['type'] = 'integer'; //set integer
+				switch($item['type']){ 
+					case 'int': 
+						$item['type'] = 'integer'; 
 						break;
 				}
-				if(gettype($newData[$item['name']]) <> $item['type']) //data type error
-					return core::setError(52, 'error data type', 'column: '.$item['name'].', type: '.$columnType.' ('.gettype($dane).')'); //return error
+				if(gettype($newData[$item['name']]) <> $item['type']) 
+					return core::setError(52, 'error data type', 'column: '.$item['name'].', type: '.$columnType.' ('.gettype($dane).')'); 
 				if(strlen($newData[$item['name']]) > $item['length'])
-					return core::setError(53, 'error data length', 'column: '.$item['name'].', length: '.strlen($newData[$item['name']]).'/'.$item['length']); //return error
-				// var_dump([
-					// 'search' => $search,
-					// 'item name' => $item['name'],
-					// 'column' => $column,
-					// 'data' => $data,
-					// 'column name' => $columnName,
-					// 'data type' => gettype($newData[$item['name']]),
-					// 'column type' => $item['type'],
-					// 'data length' => strlen($newData[$item['name']]),
-					// 'column length' => $item['length'],
-				// ]);
+					return core::setError(53, 'error data length', 'column: '.$item['name'].', length: '.strlen($newData[$item['name']]).'/'.$item['length']); 
 			}
 		}
-		array_push($readFile['data'], $newData); //add data to array
-		$this->____saveFile($tableName, $readFile); //save data to file
+		array_push($readFile['data'], $newData); 
+		$this->____saveFile($tableName, $readFile); 
 		return true;
 	}
 	private function __selectData(string $tableName, string $where=null){
-		$tableName = htmlspecialchars(basename($tableName)); //protect table name
-		$readFile = $this->____readFile($tableName); //read table
-		$data = $readFile['data']; //get data
-		if($where <> null){ //if where
-			$data = $this->__search($data, $where); //search
-			$data = array_values(array_filter($data)); //reindex and clear
+		$tableName = htmlspecialchars(basename($tableName)); 
+		$readFile = $this->____readFile($tableName); 
+		$data = $readFile['data']; 
+		if($where <> null){ 
+			$data = $this->__search($data, $where); 
+			$data = array_values(array_filter($data)); 
 		}
-		return $data; //return data
+		return $data; 
 	}
 	private function __update(string $tableName, array $set, string $where = null){
-		$tableName = htmlspecialchars(basename($tableName)); //protect table name
-		$readFile = $this->____readFile($tableName); //read table
-		$data = $readFile['data']; //get data
-		if($where <> null) //if where
-			$data = $this->__search($data, $where); //search
+		$tableName = htmlspecialchars(basename($tableName)); 
+		$readFile = $this->____readFile($tableName); 
+		$data = $readFile['data']; 
+		if($where <> null) 
+			$data = $this->__search($data, $where); 
 		$data = array_keys($data);
 		foreach($data as $key)
 			foreach($set as $columnName => $columnText)
 				$readFile['data'][$key][$columnName] = $columnText;
-		$this->____saveFile($tableName, $readFile); //save file
+		$this->____saveFile($tableName, $readFile); 
 		return true;
 	}
-	private function __search(array $data, string $search) : array{ //search data
-		$explode = explode(' and ', $search); //explode search
-		foreach($explode as $item){ //search loop
-			//=
-			$exp = $this->___searchExplode($item, '='); //search explode item
-			if($exp <> false){ //return <> false
-				foreach($data as $dataID => $dataData){ //foreach data
-					if($dataData[$exp[0]] <> $exp[1]) //search
-						unset($data[$dataID]); //delete item
+	private function __search(array $data, string $search) : array{ 
+		$explode = explode(' and ', $search); 
+		foreach($explode as $item){ 
+			$exp = $this->___searchExplode($item, '='); 
+			if($exp <> false){ 
+				foreach($data as $dataID => $dataData){ 
+					if($dataData[$exp[0]] <> $exp[1]) 
+						unset($data[$dataID]); 
 				}
 			}
-			//%
-			$exp = $this->___searchExplode($item, '%'); //search explode item
-			if($exp <> false){ //return <> false
-				foreach($data as $dataID => $dataData){ //foreach data
-					if(core::$library->string->strpos($dataData[$exp[0]], $exp[1]) == -1) //not find
-						unset($data[$dataID]); //delete item
+			$exp = $this->___searchExplode($item, '%'); 
+			if($exp <> false){ 
+				foreach($data as $dataID => $dataData){ 
+					if(core::$library->string->strpos($dataData[$exp[0]], $exp[1]) == -1) 
+						unset($data[$dataID]); 
 				}
 			}
 		}
@@ -239,27 +251,30 @@ return $this->db = new class(){ //create db library
 	private function __advenced(string $tableName, array $data){
 		
 	}
-	private function ___replaceRegexp($matches){ //replace regexp
+	private function ___checkTable(string $tableName){
+		
+	}
+	private function ___replaceRegexp($matches){ 
 		return $this->_regexp[$matches[1]];
 	}
-	private function ___checkConnect($uniqueID){ //check connect
-		if(!isset($this->connection[$uniqueID])) //if not exists
+	private function ___checkConnect($uniqueID){ 
+		if(!isset($this->connection[$uniqueID])) 
 			return false;
-		if(!is_array($this->connection[$uniqueID])) //if not array
+		if(!is_array($this->connection[$uniqueID])) 
 			return false;
 		return true;
 	}
-	private function ___debug($data, $title=''){ //debug
+	private function ___debug($data, $title=''){ 
 		if($this->debug)
-			core::$library->debug->consoleLog($data, $title); //write to console
+			core::$library->debug->consoleLog($data, $title); 
 	}
-	private function ___getArrayData($array, $type=1){ //replace and return 2-nd array data
+	private function ___getArrayData($array, $type=1){ 
 		switch($type){
-			case 1: //only first item
+			case 1: 
 				foreach($array as $id=>$data)
 					$array[$id] = $data[1];
 				break;
-			case 2: //set data
+			case 2: 
 				foreach($array as $id=>$data){
 					$array[$data[1]] = $data[3];
 					unset($array[$id]);
@@ -268,44 +283,44 @@ return $this->db = new class(){ //create db library
 		}
 		return $array;
 	}
-	private function ___searchExplode($string, $exp){ //explode function for search
-		$explode = explode($exp, $string, 2); //explode string
+	private function ___searchExplode($string, $exp){ 
+		$explode = explode($exp, $string, 2); 
 		if($explode[0] == $string)
-			return false; //if error
-		return $explode; //return array
+			return false; 
+		return $explode; 
 	}
-	private function ____saveFile(string $tableName, array $data){ //save table to file
-		$tablePath = $this->connection[$this->activeConnect]['path'].$tableName.'.fdb'; //generate table file
-		$data['column'] = $this->____crypt($data['column']); //crypt column
-		$data['data'] = $this->____crypt($data['data']); //crypt data
-		$data['option']['autoincrement'] = $this->____crypt($data['option']['autoincrement']); //crypt autoincrement
-		$data['option'] = json_encode($data['option']); //encode option
-		$writeFile = $data['option'].PHP_EOL //option
-					.$data['column'].PHP_EOL //column
-					.$data['data']; //data
-		file_put_contents($tablePath, $writeFile); //write to file
+	private function ____saveFile(string $tableName, array $data){ 
+		$tablePath = $this->connection[$this->activeConnect]['path'].$tableName.'.fdb'; 
+		$data['column'] = $this->____crypt($data['column']); 
+		$data['data'] = $this->____crypt($data['data']); 
+		$data['option']['autoincrement'] = $this->____crypt($data['option']['autoincrement']); 
+		$data['option'] = json_encode($data['option']); 
+		$writeFile = $data['option'].PHP_EOL 
+					.$data['column'].PHP_EOL 
+					.$data['data']; 
+		file_put_contents($tablePath, $writeFile); 
 	}
-	private function ____readFile(string $tableName){ //read table from file
-		$tablePath = $this->connection[$this->activeConnect]['path'].$tableName.'.fdb'; //generate table file
-		$readFile = file($tablePath); //read file to array
+	private function ____readFile(string $tableName){ 
+		$tablePath = $this->connection[$this->activeConnect]['path'].$tableName.'.fdb'; 
+		$readFile = file($tablePath); 
 		$readFile = [
-			'option' => json_decode($readFile[0], true), //read option
-			'column' => $this->____decrypt($readFile[1]), //decode column
-			'data' => $this->____decrypt($readFile[2]), //decode data
+			'option' => json_decode($readFile[0], true), 
+			'column' => $this->____decrypt($readFile[1]), 
+			'data' => $this->____decrypt($readFile[2]), 
 		];
-		$readFile['option']['autoincrement'] = $this->____decrypt($readFile['option']['autoincrement']); //decode autoincrement
-		return $readFile; //return array
+		$readFile['option']['autoincrement'] = $this->____decrypt($readFile['option']['autoincrement']); 
+		return $readFile; 
 	}
-	private function ____crypt($data){ //crypt data
-		$password = $this->connection[$this->activeConnect]['pass']; //get password
-		if(is_array($data)) //if array
-			$data = json_encode($data); //array encode
-		return core::$library->crypt->crypt($data, $password); //crypt
+	private function ____crypt($data){ 
+		$password = $this->connection[$this->activeConnect]['pass']; 
+		if(is_array($data)) 
+			$data = json_encode($data); 
+		return core::$library->crypt->crypt($data, $password); 
 	}
-	private function ____decrypt(string $data){ //crypt data
-		$password = $this->connection[$this->activeConnect]['pass']; //get password
-		$data = core::$library->crypt->decrypt($data, $password); //crypt
-		return json_decode($data, true); //array encode
+	private function ____decrypt(string $data){ 
+		$password = $this->connection[$this->activeConnect]['pass']; 
+		$data = core::$library->crypt->decrypt($data, $password); 
+		return json_decode($data, true); 
 	}
 }
 ?>
