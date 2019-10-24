@@ -1,34 +1,34 @@
 <?php
-return $this->stack = new class(){ //create class
-	public $version = '1.0'; //version
-	public $count = 0; //all stack count
-	public function create() : object{ //create stack
-		$this->count++; //count +1
-		return new class(){ //return stack object
-			private $_array = array(); //stack data
-			private $_count = 0; //count element
-			public function push(string $string) : void{ //push data
-				$this->_array[$this->_count] = $string; //add data
-				$this->_count++; //add counter
+return $this->stack = new class(){ 
+	public $version = '1.0'; 
+	public $count = 0; 
+	public function create() : object{ 
+		$this->count++; 
+		return new class(){ 
+			private $_array = array(); 
+			private $_count = 0; 
+			public function push(string $string) : void{ 
+				$this->_array[$this->_count] = $string; 
+				$this->_count++; 
 			}
-			public function isEmpty() : bool{ //isEmpty
-				return $this->_count == 0; //return bool
+			public function isEmpty() : bool{ 
+				return $this->_count == 0; 
 			}
-			public function pop(){ //download data from stack
-				if(!$this->isEmpty()){ //if not empty
-					$this->_count--; //count -1
-					$string = $this->_array[$this->_count]; //get string
-					unset($this->_array[$this->_count]); //delete data from array
-					return $string; //return string
+			public function pop(){ 
+				if(!$this->isEmpty()){ 
+					$this->_count--; 
+					$string = $this->_array[$this->_count]; 
+					unset($this->_array[$this->_count]); 
+					return $string; 
 				}else
-					return null; //return null
+					return null; 
 			}
-			public function count() : int{ //count stack
-				return $this->_count; //return count
+			public function count() : int{ 
+				return $this->_count; 
 			}
-			public function clear() : void{ //clear stack
-				$this->_count = 0; //clear count
-				$this->_array = array(); //clear array
+			public function clear() : void{ 
+				$this->_count = 0; 
+				$this->_array = array(); 
 			}
 		};
 	}
