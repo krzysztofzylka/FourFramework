@@ -1,6 +1,6 @@
 <?php
 return $this->db = new class(){ 
-	public $version = '1.0.4'; 
+	public $version = '1.0.5'; 
 	public $tableVersion = '1.1'; 
 	public $path = ''; 
 	private $connection = []; 
@@ -9,14 +9,17 @@ return $this->db = new class(){
 		'getData' => '[\'|"|`]?([a-zA-Z0-9]+)[\'|"|`]? ?= ?([\'|"|`]?(.+?)[\'|"|`]?|([a-zA-Z0-9\"\']+))[,|\n]', 
 		'createTableData' => '[\'|\"|\`](.+?)[\'|\"|\`] ((int|string|bool)(\([0-9]+\))|text)[ |,]?(autoincrement)?', 
 		'addData' => '[\'|\"|\`]?(.+?)[\'|\"|\`]?, ?', 
+		'search' => '[\'|"|`]?([a-zA-Z0-9]+)[\'|"|`]?(=|%)[\'|"|`]?([a-zA-Z0-9]+)[\'|"|`]?',
 		'request' => [
-			'createTable' => '(CREATE TABLE) [\'|\"|\`]?([a-zA-Z0-9]+)[\'|\"|\`]? {(.+)}',
+			'createTable' => '(CREATE TABLE) [\'|\"|\`]?{$fileName}[\'|\"|\`]? {(.+)}',
 			'addDataTo' => '(ADD DATA TO) [\'|"|`]?{$fileName}[\'|"|`]? \((.+)\) VALUES \((.+)\)',
 			'select' => '(SELECT) [\'|"|`]?(.+?)?[\'|"|`]? ?(FROM) ["|\'|`]?{$fileName}["|\'|`]? ?(WHERE (.+))?',
 			'advenced' => '(ADVENCED) (GET|SET) (.+) FROM ["|\'|`]?{$fileName}["|\'|`]? ?(OPTION+ ?(.+))?',
 			'advencedGet' => '(ADVENCED) (GET) ["|\'|`](.+)["|\'|`]',
 			'updateWhere' => '(UPDATE) ["|\'|`]?{$fileName}["|\'|`]? SET (.+) WHERE (.+)',
-			'update' => '(UPDATE) ["|\'|`]?{$fileName}["|\'|`]? SET (.+)'
+			'update' => '(UPDATE) ["|\'|`]?{$fileName}["|\'|`]? SET (.+)',
+			'deleteWhere' => '(DELETE) FROM [\'|\"|\`]?{$fileName}[\'|\"|\`]? WHERE (.+)',
+			'delete' => '(DELETE) FROM [\'|\"|\`]?{$fileName}[\'|\"|\`]?',
 		]
 	];
 	private $activeConnect = null; 
@@ -35,7 +38,7 @@ return $this->db = new class(){
 		if($this->___checkConnect($connect) == false) 
 			return core::setError(1, 'connection error'); 
 		foreach($this->_regexp['request'] as $regexp){ 
-			preg_match_all('/'.$regexp.'/ms', $script, $matches, PREG_SET_ORDER, 0); 
+			preg_match_all('/'.$regexp.'/ms', $script, $matches, PREG_SET_ORDER, 0);
 			if(count($matches) > 0){ 
 				$this->activeConnect = $connect; 
 				$request = $this->_request($matches[0]); 
@@ -43,6 +46,7 @@ return $this->db = new class(){
 				return $request; 
 			}
 		}
+		return core::setError(2, 'the script is invalid');
 	}
 	public function connect(string $name, string $password = null){ 
 		$name = basename(htmlspecialchars($name)); 
@@ -82,30 +86,35 @@ return $this->db = new class(){
 				return $this->__createTable($matches[2], $matchesData);
 				break;
 			case "ADD DATA TO":
+				$this->___checkTable($matches[2]);
+				if(core::$error[0] > -1) return false;
 				preg_match_all('/'.$this->_regexp['addData'].'/s', $matches[3].',', $matchesDataColumn, PREG_SET_ORDER, 0);
 				preg_match_all('/'.$this->_regexp['addData'].'/s', $matches[4].',', $matchesData, PREG_SET_ORDER, 0);
 				return $this->__addData($matches[2], $matchesDataColumn, $matchesData);
 				var_dump($matches);
 				break;
 			case "SELECT":
+				$this->___checkTable($matches[4]);
+				if(core::$error[0] > -1) return false;
 				return $this->__selectData($matches[4], isset($matches[6])?$matches[6]:null);
 				break;
 			case "UPDATE":
+				$this->___checkTable($matches[2]);
+				if(core::$error[0] > -1) return false;
 				preg_match_all('/'.$this->_regexp['getData'].'/ms', $matches[3].',', $matchesSet, PREG_SET_ORDER, 0);
-				return $this->__update($matches[2], $this->___getArrayData($matchesSet, 2), isset($matches[4])?$matches[4]:null);
+				return $this->__updateData($matches[2], $this->___getArrayData($matchesSet, 2), isset($matches[4])?$matches[4]:null);
+				break;
+			case "DELETE":
+				$this->___checkTable($matches[2]);
+				if(core::$error[0] > -1) return false;
+				return $this->__deleteData($matches[2], isset($matches[3])?$matches[3]:null);
 				break;
 			case "ADVENCED":
 				switch($matches[2]){
 					case 'GET':
 						switch($matches[3]){
 							case 'tableList':
-								$path = $this->connection[$this->activeConnect]['path'];
-								$scandir = glob($path.'*.{fdb}', GLOB_BRACE);
-								foreach($scandir as $id => $name){
-									$explode = explode('/', $name);
-									$scandir[$id] = str_replace('.fdb', '', $explode[count($explode)-1]);
-								}
-								return $scandir;
+								return $this->__tableList();
 								break;
 							case 'column':
 								$read = $this->____readFile($matches[4]);
@@ -122,6 +131,15 @@ return $this->db = new class(){
 				}
 				break;
 		}
+	}
+	private function __tableList(){
+		$path = $this->connection[$this->activeConnect]['path'];
+		$scandir = glob($path.'*.{fdb}', GLOB_BRACE);
+		foreach($scandir as $id => $name){
+			$explode = explode('/', $name);
+			$scandir[$id] = str_replace('.fdb', '', $explode[count($explode)-1]);
+		}
+		return $scandir;
 	}
 	private function __createTable(string $name, array $data){ 
 		core::setError(); 
@@ -211,39 +229,70 @@ return $this->db = new class(){
 		$data = $readFile['data']; 
 		if($where <> null){ 
 			$data = $this->__search($data, $where); 
-			$data = array_values(array_filter($data)); 
+			if(core::$error[0] > -1)
+				return false;
+			$data = array_values(array_filter($data));
 		}
 		return $data; 
 	}
-	private function __update(string $tableName, array $set, string $where = null){
+	private function __deleteData(string $tableName, string $where=null){
+		$tableName = htmlspecialchars(basename($tableName)); 
+		$readFile = $this->____readFile($tableName); 
+		$data = $readFile['data']; 
+		if($where <> null){ 
+			$data = $this->__search($data, $where); 
+			if(core::$error[0] > -1)
+				return false;
+		}
+		$keys = array_keys($data);
+		if(count($keys) == 0)
+			return false;
+		foreach($keys as $id)
+			unset($readFile['data'][$id]);
+		$readFile['data'] = array_values(array_filter($readFile['data']));
+		$this->____saveFile($tableName, $readFile); 
+		return true;
+	}
+	private function __updateData(string $tableName, array $set, string $where = null){
 		$tableName = htmlspecialchars(basename($tableName)); 
 		$readFile = $this->____readFile($tableName); 
 		$data = $readFile['data']; 
 		if($where <> null) 
-			$data = $this->__search($data, $where); 
+			$data = $this->__search($data, $where);
+			if(core::$error[0] > -1)
+				return false;
 		$data = array_keys($data);
 		foreach($data as $key)
-			foreach($set as $columnName => $columnText)
+			foreach($set as $columnName => $columnText){
+				if(!isset($readFile['data'][$key][$columnName]))
+					return core::setError(21, 'column not found', 'name: '.$columnName);
 				$readFile['data'][$key][$columnName] = $columnText;
+			}
 		$this->____saveFile($tableName, $readFile); 
 		return true;
 	}
-	private function __search(array $data, string $search) : array{ 
+	private function __search(array $data, string $search){ 
 		$explode = explode(' and ', $search); 
-		foreach($explode as $item){ 
-			$exp = $this->___searchExplode($item, '='); 
-			if($exp <> false){ 
-				foreach($data as $dataID => $dataData){ 
-					if($dataData[$exp[0]] <> $exp[1]) 
-						unset($data[$dataID]); 
-				}
-			}
-			$exp = $this->___searchExplode($item, '%'); 
-			if($exp <> false){ 
-				foreach($data as $dataID => $dataData){ 
-					if(core::$library->string->strpos($dataData[$exp[0]], $exp[1]) == -1) 
-						unset($data[$dataID]); 
-				}
+		foreach($explode as $item){
+			preg_match_all('/'.$this->_regexp['search'].'/ms', $item, $find, PREG_SET_ORDER, 0);
+			$find = $find[0];
+			switch($find[2]){
+				case '=':
+					foreach($data as $dataID => $dataData){
+						if(!isset($dataData[$find[1]]))
+							return core::setError(21, 'column not found', 'name: '.$find[1]);
+						if($dataData[$find[1]] <> $find[3])
+							unset($data[$dataID]);
+					}
+					break;
+				case '%':
+					foreach($data as $dataID => $dataData){
+						if(!isset($dataData[$find[1]]))
+							return core::setError(21, 'column not found', 'name: '.$find[1]);
+						if(core::$library->string->strpos($dataData[$find[1]], $find[3]) == -1)
+							unset($data[$dataID]);
+					}
+					break;
 			}
 		}
 		return $data;
@@ -252,7 +301,9 @@ return $this->db = new class(){
 		
 	}
 	private function ___checkTable(string $tableName){
-		
+		if(!file_exists($this->connection[$this->activeConnect]['path'].$tableName.'.fdb'))
+			return core::setError(20, 'table is not already exists');
+		return true;
 	}
 	private function ___replaceRegexp($matches){ 
 		return $this->_regexp[$matches[1]];
