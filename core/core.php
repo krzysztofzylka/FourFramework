@@ -3,7 +3,7 @@
 //fourframework.hmcloud.pl
 class core{
 	public static $error = [-1, '', '']; //last error
-	public static $info = ['version' => '0.2.2 Alpha','releaseDate' => '12.09.2019','reversion' => '']; //info
+	public static $info = ['version' => '0.2.3a Alpha','releaseDate' => '26.10.2019','reversion' => '']; //info
 	public static $private = []; //private data
 	public static $path = ['core' => 'core/', 'controller' => 'controller/', 'view' => 'view/', 'model' => 'model/', 'module' => 'module/', 'base' => 'core/base/', 'temp' => 'core/base/temp/']; //all path
 	public static $controller = []; //all controller array
@@ -28,7 +28,7 @@ class core{
 		foreach(self::$path as $name => $value){ //path loop
 			self::$path[$name] = self::$info['reversion'].$value; //add reversion to path
 			if(!file_exists(self::$path[$name])) //if not exists
-				mkdir(self::$path[$name], 0444, true); //create dir
+				mkdir(self::$path[$name], 0700, true); //create dir
 		}
 		//debug
 		if(self::$debug['saveError']){ //save error to file
