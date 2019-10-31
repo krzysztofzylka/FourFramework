@@ -1,6 +1,6 @@
 <?php
 return $this->debug = new class(){ 
-	public $version = '1.2'; 
+	public $version = '1.2a'; 
 	public $consoleLog = True; 
 	public function print_r($array, bool $var_type=false, string $title='ARRAY'){ 
 		core::setError(); 
@@ -34,6 +34,7 @@ return $this->debug = new class(){
 		echo $array;
 	}
 	public function getOS() : int{ 
+		core::setError();
 		Switch(true) {
             case stristr(PHP_OS, 'DAR'): return 2; 
             case stristr(PHP_OS, 'WIN'): return 3; 
@@ -42,6 +43,7 @@ return $this->debug = new class(){
         }
 	}
 	public function consoleLog($data, string $title=null) : bool{ 
+		core::setError();
 		if($this->consoleLog == false) 
 			return false; 
 		if(is_array($data)) 
@@ -52,6 +54,7 @@ return $this->debug = new class(){
 		return true;
 	}
 	private function _consoleLogArrayToString(array $data){
+		core::setError();
 		$return = "";
 		foreach($data as $name=>$itemData){
 			if(is_array($itemData))
