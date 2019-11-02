@@ -1,6 +1,6 @@
 <?php
 return $this->db = new class(){ 
-	public $version = '1.0.6';
+	public $version = '1.0.7';
 	public $tableVersion = '1.1'; 
 	public $path = ''; 
 	private $connection = []; 
@@ -28,14 +28,19 @@ return $this->db = new class(){
 		$this->path = core::$path['base'].'db/'; 
 		if(!file_exists($this->path))
 			mkdir($this->path, 0700, true); 
-		foreach($this->_regexp['request'] as $name => $data) 
-			$this->_regexp['request'][$name] = preg_replace_callback('/{\$([a-zA-Z0-9]+)}/ms', 'self::___replaceRegexp', $this->_regexp['request'][$name]); 
+		//regexp replace
+		foreach($this->_regexp['request'] as $name => $data){
+			foreach($this->_regexp as $kName => $kData)
+				if(!is_array($kData))
+					$data = str_replace('{$'.$kName.'}', $kData, $data);
+			$this->_regexp['request'][$name] = $data;
+		}
 	}
 	public function request(string $script, string $connect = null){ 
 		core::setError();
 		$connect = $connect??array_keys($this->connection)[0]; 
-		if($this->___checkConnect($connect) == false) 
-			return core::setError(1, 'connection error'); 
+		if(!isset($this->connection[$connect]) or !is_array($this->connection[$connect])) 
+			return core::setError(1, 'connection error');
 		foreach($this->_regexp['request'] as $regexp){ 
 			preg_match_all('/'.$regexp.'/ms', $script, $matches, PREG_SET_ORDER, 0);
 			if(count($matches) > 0){ 
@@ -288,14 +293,6 @@ return $this->db = new class(){
 			return core::setError(20, 'table is not already exists');
 		return true;
 	}
-	private function ___replaceRegexp($matches){ 
-		return $this->_regexp[$matches[1]];
-	}
-	private function ___checkConnect($uniqueID){ 
-		if(!isset($this->connection[$uniqueID]) or !is_array($this->connection[$uniqueID])) 
-			return false;
-		return true;
-	}
 	private function ___getArrayData($array, $type=1){ 
 		switch($type){
 			case 1: 
@@ -310,12 +307,6 @@ return $this->db = new class(){
 				break;
 		}
 		return $array;
-	}
-	private function ___searchExplode($string, $exp){ 
-		$explode = explode($exp, $string, 2); 
-		if($explode[0] == $string)
-			return false; 
-		return $explode; 
 	}
 	private function ____saveFile(string $tableName, array $data){ 
 		$password = $this->connection[$this->activeConnect]['pass'];
