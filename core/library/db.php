@@ -1,6 +1,6 @@
 <?php
 return $this->db = new class(){ 
-	public $version = '1.0.7';
+	public $version = '1.0.7a';
 	public $tableVersion = '1.1'; 
 	public $path = ''; 
 	private $connection = []; 
@@ -18,8 +18,7 @@ return $this->db = new class(){
 			'advencedGet' => '(ADVENCED) (GET) ["|\'|`](.+)["|\'|`]',
 			'updateWhere' => '(UPDATE) ["|\'|`]?{$fileName}["|\'|`]? SET (.+) WHERE (.+)',
 			'update' => '(UPDATE) ["|\'|`]?{$fileName}["|\'|`]? SET (.+)',
-			'deleteWhere' => '(DELETE) FROM [\'|\"|\`]?{$fileName}[\'|\"|\`]? WHERE (.+)',
-			'delete' => '(DELETE) FROM [\'|\"|\`]?{$fileName}[\'|\"|\`]?',
+			'delete' => '(DELETE) FROM [\'|\"|\`]?{$fileName}[\'|\"|\`]? ?(WHERE)? ?(.+)?',
 		]
 	];
 	private $activeConnect = null; 
@@ -109,7 +108,7 @@ return $this->db = new class(){
 			case "DELETE":
 				$this->___checkTable($matches[2]);
 				if(core::$error[0] > -1) return false;
-				return $this->__deleteData($matches[2], isset($matches[3])?$matches[3]:null);
+				return $this->__deleteData($matches[2], isset($matches[4])?$matches[4]:null);
 				break;
 			case "ADVENCED":
 				switch($matches[2]){
@@ -253,8 +252,7 @@ return $this->db = new class(){
 			$data = $this->__search($data, $where);
 			if(core::$error[0] > -1)
 				return false;
-		$data = array_keys($data);
-		foreach($data as $key)
+		foreach(array_keys($data) as $key)
 			foreach($set as $columnName => $columnText){
 				if(!isset($readFile['data'][$key][$columnName]))
 					return core::setError(21, 'column not found', 'name: '.$columnName);
@@ -319,9 +317,20 @@ return $this->db = new class(){
 					.$data['data']; 
 		file_put_contents($this->connection[$this->activeConnect]['path'].$tableName.'.fdb', $writeFile);
 	}
-	private function ____readFile(string $tableName){
+	private function ____readFile(string $tableName, string $type = 'all'){
 		$password = $this->connection[$this->activeConnect]['pass'];
 		$readFile = file($this->connection[$this->activeConnect]['path'].$tableName.'.fdb');
+		switch($type){
+			case "option":
+				return json_decode($readFile[0], true);
+				break;
+			case "column":
+				return json_decode(core::$library->crypt->decrypt($readFile[1], $password), true);
+				break;
+			case "data":
+				return json_decode(core::$library->crypt->decrypt($readFile[2], $password), true);
+				break;
+		}
 		$readFile = [
 			'option' => json_decode($readFile[0], true), 
 			'column' => json_decode(core::$library->crypt->decrypt($readFile[1], $password), true),

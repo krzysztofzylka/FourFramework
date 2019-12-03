@@ -10,7 +10,7 @@ return $this->string = new class(){
 	public function strpos(string $string, string $searchString, int $offset = 0) : int{
 		core::setError(); 
 		if($offset < 0) 
-			return core::setError(1, 'integer error', 'offset must be greater than -1'); 
+			return core::setError(1, 'offset error', 'offset must be greater than -1'); 
 		$stringLen = strlen($string); 
 		$searchStringLen = strlen($searchString); 
 		for($i=0; $i<=$stringLen-1; $i++){ 

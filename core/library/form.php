@@ -15,6 +15,7 @@ return $this->form = new class(){
 		}
 	}
 	public function protectAllData($method) : bool{ 
+		core::setError();
 		$method = strtoupper($method); 
 		if(!$this->_methodCheck($method)) 
 			return core::setError(1, 'method not found'); 
@@ -31,6 +32,7 @@ return $this->form = new class(){
 		return true;
 	}
 	private function _methodCheck($name){ 
+		core::setError();
 		$method_list = ['GET', 'POST']; 
 		return array_search($name, $method_list)>-1?true:false; 
 	}
