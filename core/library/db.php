@@ -1,6 +1,6 @@
 <?php
 return $this->db = new class(){ 
-	public $version = '1.0.7a';
+	public $version = '1.0.7b';
 	public $tableVersion = '1.1'; 
 	public $path = ''; 
 	private $connection = []; 
@@ -37,6 +37,8 @@ return $this->db = new class(){
 	}
 	public function request(string $script, string $connect = null){ 
 		core::setError();
+		if(count($this->connection) == 0)
+			return core::setError(1, 'connection error');
 		$connect = $connect??array_keys($this->connection)[0]; 
 		if(!isset($this->connection[$connect]) or !is_array($this->connection[$connect])) 
 			return core::setError(1, 'connection error');
