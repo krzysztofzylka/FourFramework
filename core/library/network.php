@@ -1,9 +1,10 @@
 <?php
 return $this->network = new class(){ 
-	public $version = '1.0a'; 
-	public $method = 0; 
-	private $methodDownloadFile = 0; 
-	public $curlTimeout = 1000; 
+	public $version = '1.1';
+	public $method = 0;
+	private $methodDownloadFile = 0;
+	public $curlTimeout = 1000;
+	public $ignoreHttpCode = false;
 	public function __construct(){ 
 		$this->_getMethod(); 
 	}
@@ -27,16 +28,18 @@ return $this->network = new class(){
 					CURLOPT_TIMEOUT => $this->curlTimeout
 				]); 
 				$getData = curl_exec($curl); 
-				$httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE); 
-				if($httpCode < 200 or $httpCode > 200) 
+				$httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+				if(($httpCode < 200 or $httpCode > 200) and $this->ignoreHttpCode === false) 
 					return core::setError(3, 'error http code', 'Http Code: '.$httpCode); 
 				if($getData === false) 
 					return core::setError(1, 'error download data', curl_error($ch)); 
-				curl_close($curl); 
-				return $getData; 
+				curl_close($curl);
+				if($httpCode <> 200 and $this->ignoreHttpCode === true)
+					core::setError(-1, 'httpErrorCode', $httpCode);
+				return $getData;
 			case 2: 
 				$contents = @file_get_contents($url); 
-				if($contents === false) 
+				if($contents === false)
 					return core::setError(1, 'error download data', ''); 
 				return $contents; 
 		}
