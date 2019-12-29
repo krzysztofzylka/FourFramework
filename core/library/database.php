@@ -1,6 +1,6 @@
 <?php
 return $this->database = new class(){ 
-	public $version = '1.0'; 
+	public $version = '1.1'; 
 	public $conn; 
 	public $isConnect = false; 
 	public $connError = true; 
@@ -38,6 +38,25 @@ return $this->database = new class(){
 		$this->conn->exec("SET NAMES ".$name); 
 		$this->conn->exec("SET CHARACTER SET ".$name); 
 		return true;
+	}
+	public function querySingleRow(string $sql){
+		core::setError(); 
+		if(!$this->isConnect)
+			return core::setError(1, 'connection error'); 
+		$prep = $this->conn->prepare($sql);
+		$prep->execute();
+		$data = $prep->fetch(PDO::FETCH_ASSOC);
+		return $data;
+	}
+	public function countRow(string $sTable, string $sWhere = null) : int{
+		core::setError();
+		if(!$this->isConnect)
+			return core::setError(1, 'connection error');
+		$where = $sWhere<>null?(' WHERE '.$sWhere):'';
+		$prep = $this->conn->prepare('SELECT count(*) as count FROM '.$sTable.''.$where);
+		$prep->execute();
+		$data = $prep->fetch(PDO::FETCH_ASSOC);
+		return $data['count'];
 	}
 	private function __checkConfig(array $config, array $check){ 
 		core::setError(); 
