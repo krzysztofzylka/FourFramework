@@ -1,7 +1,8 @@
 <?php
 return $this->form = new class(){ 
-	public $version = '1.0'; 
+	public $version = '1.0a'; 
 	public function list(string $method){ 
+		core::setError(); 
 		$method = strtoupper($method); 
 		if(!$this->_methodCheck($method)) 
 			return core::setError(1, 'method not found'); 
