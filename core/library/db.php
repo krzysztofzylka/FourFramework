@@ -1,14 +1,15 @@
 <?php
 return $this->db = new class(){ 
-	public $version = '1.0.7b';
+	public $version = '1.0.7c';
 	public $tableVersion = '1.1'; 
 	public $path = ''; 
 	private $connection = []; 
 	private $_regexp = [
 		'fileName' => '([a-zA-Z0-9\-\_\!\@\#\$\%\^\&\(\)\=]+)',
 		'getData' => '[\'|"|`]?([a-zA-Z0-9]+)[\'|"|`]? ?= ?([\'|"|`]?(.+?)[\'|"|`]?|([a-zA-Z0-9\"\']+))[,|\n]', 
-		'createTableData' => '[\'|\"|\`](.+?)[\'|\"|\`] ((int|string|bool)(\([0-9]+\))|text)[ |,]?(autoincrement)?', 
-		'addData' => '[\'|\"|\`]?(.+?)[\'|\"|\`]?, ?', 
+		'createTableData' => '[\'|\"|\`]([a-zA-Z0-9]+)[\'|\"|\`] ((int|string|bool|integer|bool)(\([0-9]+\))|text)[ |,]?(autoincrement)?', 
+		'addData' => '[\'|\"|\`]?(.+?)[\'|\"|\`]?, ?',
+		'comma' => '[\'|\"|\`]?(.+?)[\'|\"|\`]?, ?',
 		'search' => '[\'|"|`]?([a-zA-Z0-9]+)[\'|"|`]?(=|%)[\'|"|`]?([a-zA-Z0-9]+)[\'|"|`]?',
 		'request' => [
 			'createTable' => '(CREATE TABLE) [\'|\"|\`]?{$fileName}[\'|\"|\`]? {(.+)}',
@@ -43,7 +44,7 @@ return $this->db = new class(){
 		if(!isset($this->connection[$connect]) or !is_array($this->connection[$connect])) 
 			return core::setError(1, 'connection error');
 		foreach($this->_regexp['request'] as $regexp){ 
-			preg_match_all('/'.$regexp.'/ms', $script, $matches, PREG_SET_ORDER, 0);
+			preg_match_all('/'.$regexp.'/msi', $script, $matches, PREG_SET_ORDER, 0);
 			if(count($matches) > 0){ 
 				$this->activeConnect = $connect; 
 				$request = $this->_request($matches[0]); 
@@ -99,7 +100,7 @@ return $this->db = new class(){
 			case "SELECT":
 				$this->___checkTable($matches[3]);
 				if(core::$error[0] > -1) return false;
-				return $this->__selectData($matches[3], isset($matches[5])?$matches[5]:null);
+				return $this->__selectData($matches[3], isset($matches[5])?$matches[5]:null, $matches[2]==''?'*':$matches[2]);
 				break;
 			case "UPDATE":
 				$this->___checkTable($matches[2]);
@@ -218,15 +219,26 @@ return $this->db = new class(){
 		$this->____saveFile($tableName, $readFile); 
 		return true;
 	}
-	private function __selectData(string $tableName, string $where=null){
+	private function __selectData(string $tableName, string $where=null, string $wData = '*'){
 		$data = $this->____readFile(htmlspecialchars(basename($tableName)))['data'];
-		if($where <> null){ 
-			$data = $this->__search($data, $where); 
+		if($where <> null){
+			$data = $this->__search($data, $where);
 			if(core::$error[0] > -1)
 				return false;
 			$data = array_values(array_filter($data));
 		}
-		return $data; 
+		if($wData <> '*'){
+			preg_match_all('/'.$this->_regexp['comma'].'/ms', $wData.',', $find, PREG_SET_ORDER, 0);
+			$delete = [];
+			foreach($find as $arr)
+				array_push($delete, $arr[1]);
+			for($i=0; $i<=count($data)-1; $i++)
+				foreach($data[$i] as $name => $dItem)
+					if(array_search($name, $delete) === false)
+						unset($data[$i][$name]); 
+				
+		}
+		return $data;
 	}
 	private function __deleteData(string $tableName, string $where=null){
 		$tableName = htmlspecialchars(basename($tableName)); 
