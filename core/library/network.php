@@ -1,6 +1,6 @@
 <?php
 return $this->network = new class(){ 
-	public $version = '1.1';
+	public $version = '1.2';
 	public $method = 0;
 	private $methodDownloadFile = 0;
 	public $curlTimeout = 1000;
@@ -102,7 +102,7 @@ return $this->network = new class(){
 	public function ping(string $url) : int{ 
 		core::setError(); 
 		$starttime = microtime(true); 
-		$socket = @fsockopen($domain, 80, $errno, $errstr, 10); 
+		$socket = @fsockopen($url, 80, $errno, $errstr, 10); 
 		$stoptime = microtime(true); 
 		$status = 0;
 		if(!$socket)
