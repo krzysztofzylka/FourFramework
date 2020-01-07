@@ -1,6 +1,6 @@
 <?php
 return $this->string = new class(){ 
-	public $version = '1.1'; 
+	public $version = '1.1a'; 
 	public function between(string $string, string $start, string $end, int $offset=0) : string{ 
 		core::setError(); 
 		$strpos1 = core::$library->string->strpos($string, '"', 0+(2*$offset))+1; 
@@ -32,6 +32,8 @@ return $this->string = new class(){
 	}
 	public function generateString(int $length = 15, array $data = [true, true, true, true]) : string{ 
 		core::setError(); 
+		if($length < 1)
+			return core::setError('length error', 'length must be greate than 1');
 		$return = ''; 
 		$string = ''; 
 		if($data[0] === true) $string .= '0123456789'; 
