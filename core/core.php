@@ -3,7 +3,7 @@
 //programista.vxm.pl/fourframework
 class core{
 	public static $error = [-1, '', ''];
-	public static $info = ['version' => '0.2.4 Alpha','releaseDate' => '02.11.2019','reversion' => ''];
+	public static $info = ['version' => '0.2.5 Alpha','releaseDate' => '07.01.2020','reversion' => ''];
 	public static $private = [];
 	public static $path = ['core' => 'core/', 'controller' => 'controller/', 'view' => 'view/', 'model' => 'model/', 'module' => 'module/', 'base' => 'core/base/', 'temp' => 'core/base/temp/', 'library' => 'core/library/'];
 	public static $controller = [];
@@ -43,10 +43,14 @@ class core{
 		self::$library = include('library.php');
 		return true;
 	}
-	public static function setError(int $number=-1, string $name='', string $description=''){
+	public static function setError(int $number=-1, string $name='', $description=''){
 		self::$error = [$number, $name, $description];
-		if(self::$debug['showCoreError'] == true and $number > -1)
-			echo '<b>Core error:</b> ('.$number.') [<i>'.$name.'</i>] '.$description;
+		if(self::$debug['showCoreError'] == true and $number > -1){
+			echo '<b>Core error:</b> ('.$number.') [<i>'.$name.'</i>] ';
+			if(is_array($description))
+				print_r($description);
+			else echo $description.'<br />';
+		}
 		return false;
 	}
 	public static function loadView(string $name){
