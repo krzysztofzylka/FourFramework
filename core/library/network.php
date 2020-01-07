@@ -1,6 +1,6 @@
 <?php
 return $this->network = new class(){ 
-	public $version = '1.2';
+	public $version = '1.2a';
 	public $method = 0;
 	private $methodDownloadFile = 0;
 	public $curlTimeout = 1000;
@@ -49,7 +49,7 @@ return $this->network = new class(){
 		core::setError(); 
 		$readData = $this->getData($url); 
 		if(!$readData)
-			return core::setError(1, 'error read data from url', ['url' => $url, 'getDataError' => core::error]); 
+			return core::setError(1, 'error read data from url', ['url' => $url, 'getDataError' => core::$error]); 
 		return json_decode($readData, true); 
 	}
 	public function downloadFile(string $url, string $path){ 
