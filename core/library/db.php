@@ -1,16 +1,17 @@
 <?php
 return $this->db = new class(){ 
-	public $version = '1.0.7c';
+	public $version = '1.0.8';
 	public $tableVersion = '1.1'; 
 	public $path = ''; 
 	private $connection = []; 
 	private $_regexp = [
 		'fileName' => '([a-zA-Z0-9\-\_\!\@\#\$\%\^\&\(\)\=]+)',
 		'getData' => '[\'|"|`]?([a-zA-Z0-9]+)[\'|"|`]? ?= ?([\'|"|`]?(.+?)[\'|"|`]?|([a-zA-Z0-9\"\']+))[,|\n]', 
-		'createTableData' => '[\'|\"|\`]([a-zA-Z0-9]+)[\'|\"|\`] ((int|string|bool|integer|bool)(\([0-9]+\))|text)[ |,]?(autoincrement)?', 
+		'createTableData' => '[\'|\"|\`]([a-zA-Z0-9]+)[\'|\"|\`] (([a-zA-Z0-9]+)(\([0-9]+\))|text|bool)[ |,]?(autoincrement)?', 
 		'addData' => '[\'|\"|\`]?(.+?)[\'|\"|\`]?, ?',
 		'comma' => '[\'|\"|\`]?(.+?)[\'|\"|\`]?, ?',
 		'search' => '[\'|"|`]?([a-zA-Z0-9]+)[\'|"|`]?(=|%)[\'|"|`]?([a-zA-Z0-9]+)[\'|"|`]?',
+		'ext' => '[\'|"|`]?',
 		'request' => [
 			'createTable' => '(CREATE TABLE) [\'|\"|\`]?{$fileName}[\'|\"|\`]? {(.+)}',
 			'addDataTo' => '(ADD DATA TO) [\'|"|`]?{$fileName}[\'|"|`]? \((.+)\) VALUES \((.+)\)',
@@ -22,6 +23,7 @@ return $this->db = new class(){
 			'delete' => '(DELETE) FROM [\'|\"|\`]?{$fileName}[\'|\"|\`]? ?(WHERE)? ?(.+)?',
 		]
 	];
+	private $acceptType = ['string', 'int', 'integer', 'bool', 'boolean', 'text'];
 	private $activeConnect = null; 
 	public function __construct(){ 
 		core::setError(); 
@@ -166,7 +168,13 @@ return $this->db = new class(){
 			'data' => [] 
 		];
 		$column = []; 
-		foreach($data as $item){ 
+		foreach($data as $item){
+			if(count($item) == 3){
+				$item[3] = $item[2];
+				$item[4] = 0;
+			}
+			if(array_search($item[3], $this->acceptType) === false)
+				return core::setError(102, 'error create table', 'error column type'); 
 			if(count($item) < 5) 
 				return core::setError(100, 'error create table', 'error generate column'); 
 			$column = [
@@ -208,10 +216,16 @@ return $this->db = new class(){
 					case 'int': 
 						$item['type'] = 'integer'; 
 						break;
+					case 'boolean':
+					case 'bool':
+						$item['type'] = 'boolean'; 
+						$newData[$item['name']] = boolval($newData[$item['name']]);
+						$item['length'] = 1;
+						break;
 				}
-				if(gettype($newData[$item['name']]) <> $item['type']) 
-					return core::setError(52, 'error data type', 'column: '.$item['name'].', type: '.$columnType.' ('.gettype($dane).')'); 
-				if(strlen($newData[$item['name']]) > $item['length'])
+				if(gettype($newData[$item['name']]) <> $item['type'] and $item['type'] <> 'text') 
+					return core::setError(52, 'error data type', 'column: '.$item['name'].', type: '.$item['type'].' ('.gettype($newData[$item['name']]).')'); 
+				if(strlen($newData[$item['name']]) > $item['length'] and $item['type'] <> 'text')
 					return core::setError(53, 'error data length', 'column: '.$item['name'].', length: '.strlen($newData[$item['name']]).'/'.$item['length']); 
 			}
 		}
