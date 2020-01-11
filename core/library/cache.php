@@ -1,12 +1,13 @@
 <?php
 return $this->cache = new class(){ 
-	public $version = '1.0a'; 
+	public $version = '1.1'; 
 	private $dir = ''; 
 	public function __construct(){ 
 		core::setError(); 
 		$this->dir = core::$path['base'].'cache/'; 
 		if(!file_exists($this->dir)) 
 			mkdir($this->dir); 
+		$this->__checkAllCache();
 	}
 	public function funcCache(string $name, string $function, int $time = 3600){ 
 		core::setError(); 
@@ -85,6 +86,27 @@ return $this->cache = new class(){
 			return false; 
 		}
 		return true; 
+	}
+	private function __checkAllCache(){
+		core::setError(); 
+		$config = $this->_loadConfig();
+		$update = false;
+		$fileList = ['.', '..', 'config.cfg'];
+		foreach($config as $name => $data){
+			if($data['time'] < time() or !file_exists($this->dir.$data['file'])){
+				if(file_exists($this->dir.$data['file']))
+					unlink($this->dir.$data['file']);
+				unset($config[$name]);
+				$update = true;
+			}
+			array_push($fileList, $data['file']);
+		}
+		$scanDir = scanDir($this->dir);
+		$scanDir = array_diff($scanDir, $fileList);
+		foreach($scanDir as $fileName)
+			unlink($this->dir.$fileName);
+		if($update)
+			$this->_writeConfig($config); 
 	}
 }
 ?>
