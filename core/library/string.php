@@ -1,6 +1,6 @@
 <?php
 return $this->string = new class(){ 
-	public $version = '1.1a'; 
+	public $version = '1.2'; 
 	public function between(string $string, string $start, string $end, int $offset=0) : string{ 
 		core::setError(); 
 		$strpos1 = core::$library->string->strpos($string, '"', 0+(2*$offset))+1; 
@@ -51,6 +51,55 @@ return $this->string = new class(){
 		if(!get_magic_quotes_gpc())
 			$string = addslashes($string); 
 		return $string; 
+	}
+	public function explode($delim, string $string, int $limit = -1){
+		$skipChars = ['`', '"', '\''];
+		if(is_array($delim))
+			$endChars = $delim;
+		else
+			$endChars = [$delim];
+		$return = [];
+		$findString = '';
+		$skip = false;
+		$skipChar = null;
+		$skipDeactive = false;
+		$count = 0;
+		for($i=0; $i<strlen($string); $i++){
+			$char = $string[$i];
+			if($char === '\\' and $string[$i+1] === $skipChar)
+				$skipDeactive = true;
+			$prevChar = $i>0?$string[$i-1]:null;
+			if((array_search($char, $endChars)===false) and $skip === false){
+				$skipSearch = array_search($char, $skipChars);
+				if($skipSearch >= -1){
+					$skipChar = $skipChars[$skipSearch];
+					$skip = true;
+				}
+				$findString .= $char;
+			}elseif($skip === true){
+				$findString .= $char;
+				if($char === $skipChar){
+					if($skipDeactive === false){
+						$skipChar = null;
+						$skip = false;
+					}else
+						$skipDeactive = false;
+				}
+			}else{
+				array_push($return, $findString);
+				$count++;
+				if($count+1 == $limit){
+					$lastString = substr($string, $i+1);
+					array_push($return, $lastString);
+					return $return;
+				}
+				$findString = '';
+			}
+		}
+		if($count == $limit)
+			return $return;
+		array_push($return, $findString);
+		return $return;
 	}
 };
 ?>
