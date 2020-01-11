@@ -1,6 +1,6 @@
 <?php
 return $this->db = new class(){ 
-	public $version = '1.0.8';
+	public $version = '1.0.9';
 	public $tableVersion = '1.1'; 
 	public $path = ''; 
 	private $connection = []; 
@@ -10,7 +10,7 @@ return $this->db = new class(){
 		'createTableData' => '[\'|\"|\`]([a-zA-Z0-9]+)[\'|\"|\`] (([a-zA-Z0-9]+)(\([0-9]+\))|text|bool)[ |,]?(autoincrement)?', 
 		'addData' => '[\'|\"|\`]?(.+?)[\'|\"|\`]?, ?',
 		'comma' => '[\'|\"|\`]?(.+?)[\'|\"|\`]?, ?',
-		'search' => '[\'|"|`]?([a-zA-Z0-9]+)[\'|"|`]?(=|%)[\'|"|`]?([a-zA-Z0-9]+)[\'|"|`]?',
+		'search' => '[\'|"|`]?([a-zA-Z0-9]+)[\'|"|`]? ?(=|%) ?[\'|\"|\`](.*)[\'|\"|\`]',
 		'ext' => '[\'|"|`]?',
 		'request' => [
 			'createTable' => '(CREATE TABLE) [\'|\"|\`]?{$fileName}[\'|\"|\`]? {(.+)}',
@@ -97,7 +97,6 @@ return $this->db = new class(){
 				preg_match_all('/'.$this->_regexp['addData'].'/s', $matches[3].',', $matchesDataColumn, PREG_SET_ORDER, 0);
 				preg_match_all('/'.$this->_regexp['addData'].'/s', $matches[4].',', $matchesData, PREG_SET_ORDER, 0);
 				return $this->__addData($matches[2], $matchesDataColumn, $matchesData);
-				var_dump($matches);
 				break;
 			case "SELECT":
 				$this->___checkTable($matches[3]);
@@ -291,7 +290,9 @@ return $this->db = new class(){
 	}
 	private function __search(array $data, string $search){ 
 		foreach(explode(' and ', $search) as $item){
-			preg_match_all('/'.$this->_regexp['search'].'/ms', $item, $find, PREG_SET_ORDER, 0);
+			preg_match_all("/".$this->_regexp['search']."/msi", $item, $find, PREG_SET_ORDER, 0);
+			if(!isset($find[0]))
+				return core::setError(22, 'error input search data', $search);
 			$find = $find[0];
 			switch($find[2]){
 				case '=':
