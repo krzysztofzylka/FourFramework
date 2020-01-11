@@ -3,9 +3,22 @@
 //programista.vxm.pl/fourframework
 class core{
 	public static $error = [-1, '', ''];
-	public static $info = ['version' => '0.2.5 Alpha','releaseDate' => '07.01.2020','reversion' => ''];
+	public static $info = [
+		'version' => '0.2.6 Alpha',
+		'releaseDate' => '11.01.2020',
+		'frameworkPath' => null
+	];
 	public static $private = [];
-	public static $path = ['core' => 'core/', 'controller' => 'controller/', 'view' => 'view/', 'model' => 'model/', 'module' => 'module/', 'base' => 'core/base/', 'temp' => 'core/base/temp/', 'library' => 'core/library/'];
+	public static $path = [
+		'core' => 'core\\',
+		'controller' => 'controller\\',
+		'view' => 'view\\',
+		'model' => 'model\\',
+		'module' => 'module\\',
+		'base' => 'core\\base\\',
+		'temp' => 'core\\base\\temp\\',
+		'library' => 'core\\library\\'
+	];
 	public static $controller = [];
 	public static $model = [];
 	public static $module = [];
@@ -19,14 +32,15 @@ class core{
 	];
 	public static function init(){
 		self::setError();
+		//generate fourframework path
+		$frameworkPath = __DIR__.'\\';
+		$frameworkPath = substr($frameworkPath, 0, strlen($frameworkPath)-strlen('core\\'));
+		self::$info['frameworkPath'] = $frameworkPath;
 		//error
 		if(self::$debug['showError'])
 			error_reporting(E_ALL);
-		//rev and create directory
-		while(!file_exists(self::$info['reversion']."core/core.php"))
-			self::$info['reversion'] .= '../';
 		foreach(self::$path as $name => $value){
-			self::$path[$name] = self::$info['reversion'].$value;
+			self::$path[$name] = self::$info['frameworkPath'].$value;
 			if(!file_exists(self::$path[$name]))
 				mkdir(self::$path[$name], 0700, true);
 		}
