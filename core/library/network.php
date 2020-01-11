@@ -1,11 +1,14 @@
 <?php
 return $this->network = new class(){ 
-	public $version = '1.2a';
+	public $version = '1.3';
 	public $method = 0;
 	private $methodDownloadFile = 0;
 	public $curlTimeout = 1000;
 	public $ignoreHttpCode = false;
+	public $userAgent = null;
+	public $JSONAssoc = true;
 	public function __construct(){ 
+		$this->userAgent = 'FourFramework ('.core::$info['version'].'/Library:'.$this->version.')';
 		$this->_getMethod(); 
 	}
 	private function _getMethod() : void{ 
@@ -25,7 +28,8 @@ return $this->network = new class(){
 				curl_setopt_array($curl, [
 					CURLOPT_RETURNTRANSFER => true,
 					CURLOPT_URL => $url,
-					CURLOPT_TIMEOUT => $this->curlTimeout
+					CURLOPT_TIMEOUT => $this->curlTimeout,
+					CURLOPT_USERAGENT => $this->userAgent
 				]); 
 				$getData = curl_exec($curl); 
 				$httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
@@ -50,7 +54,7 @@ return $this->network = new class(){
 		$readData = $this->getData($url); 
 		if(!$readData)
 			return core::setError(1, 'error read data from url', ['url' => $url, 'getDataError' => core::$error]); 
-		return json_decode($readData, true); 
+		return json_decode($readData, $this->JSONAssoc); 
 	}
 	public function downloadFile(string $url, string $path){ 
 		core::setError(); 
@@ -65,7 +69,8 @@ return $this->network = new class(){
 				$ch = curl_init($url); 
 				curl_setopt_array($ch, [
 					CURLOPT_FILE => $fp,
-					CURLOPT_TIMEOUT => $this->curlTimeout 
+					CURLOPT_TIMEOUT => $this->curlTimeout,
+					CURLOPT_USERAGENT => $this->userAgent
 				]); 
 				$data = curl_exec($ch);
 				if(curl_errno($ch)){ 
