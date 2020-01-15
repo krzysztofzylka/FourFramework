@@ -3,8 +3,9 @@
 //programista.vxm.pl/fourframework
 class core{
 	public static $error = [-1, '', ''];
+	public static $extended = null;
 	public static $info = [
-		'version' => '0.2.6 Alpha',
+		'version' => '0.2.7 Alpha',
 		'releaseDate' => '11.01.2020',
 		'frameworkPath' => null
 	];
@@ -27,8 +28,7 @@ class core{
 	public static $debug = [
 		'showError' => True,
 		'saveError' => True,
-		'showCoreError' => True,
-		'globalLog' => True
+		'showCoreError' => True
 	];
 	public static function init(){
 		self::setError();
@@ -58,6 +58,7 @@ class core{
 		return true;
 	}
 	public static function setError(int $number=-1, string $name='', $description=''){
+		self::$extended = null;
 		self::$error = [$number, $name, $description];
 		if(self::$debug['showCoreError'] == true and $number > -1){
 			echo '<b>Core error:</b> ('.$number.') [<i>'.$name.'</i>] ';
