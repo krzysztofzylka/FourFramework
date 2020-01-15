@@ -1,6 +1,6 @@
 <?php
 return $this->string = new class(){ 
-	public $version = '1.2'; 
+	public $version = '1.3'; 
 	public function between(string $string, string $start, string $end, int $offset=0) : string{ 
 		core::setError(); 
 		$strpos1 = core::$library->string->strpos($string, '"', 0+(2*$offset))+1; 
@@ -52,54 +52,68 @@ return $this->string = new class(){
 			$string = addslashes($string); 
 		return $string; 
 	}
-	public function explode($delim, string $string, int $limit = -1){
+	public function explode(string $delim, string $string, int $limit = -1, array $option = []) : array{
+		core::setError();
+		if(!isset($option['removeQuotes']))
+			$option['removeQuotes'] = false;
 		$skipChars = ['`', '"', '\''];
-		if(is_array($delim))
-			$endChars = $delim;
-		else
-			$endChars = [$delim];
 		$return = [];
 		$findString = '';
 		$skip = false;
+		$skipChars = ['`', '"', '\''];
 		$skipChar = null;
 		$skipDeactive = false;
-		$count = 0;
 		for($i=0; $i<strlen($string); $i++){
 			$char = $string[$i];
-			if($char === '\\' and $string[$i+1] === $skipChar)
-				$skipDeactive = true;
-			$prevChar = $i>0?$string[$i-1]:null;
-			if((array_search($char, $endChars)===false) and $skip === false){
-				$skipSearch = array_search($char, $skipChars);
-				if($skipSearch >= -1){
-					$skipChar = $skipChars[$skipSearch];
-					$skip = true;
-				}
-				$findString .= $char;
-			}elseif($skip === true){
-				$findString .= $char;
-				if($char === $skipChar){
-					if($skipDeactive === false){
-						$skipChar = null;
-						$skip = false;
-					}else
-						$skipDeactive = false;
+			$charString = '';
+			for($x=0; $x<strlen($delim); $x++)
+				if(strlen($string) > $i+$x)
+					$charString .= $string[$i+$x];
+			if($charString == $delim and $skip === false){
+				$i = $i+strlen($delim)-1;
+				if($findString <> ''){
+					array_push($return, $findString);
+					$findString = '';
 				}
 			}else{
-				array_push($return, $findString);
-				$count++;
-				if($count+1 == $limit){
-					$lastString = substr($string, $i+1);
-					array_push($return, $lastString);
-					return $return;
+				if($char === '\\' and $string[$i+1] === $skipChar)
+					$skipDeactive = true;
+				if(!(array_search($char, $skipChars)===false) and $skip === false){
+					$skipChar = $skipChars[array_search($char, $skipChars)];
+					$skip = true;
+				}elseif($char === $skipChar and $skip === true){
+					if($skipDeactive === true)
+						$skipDeactive = false;
+					else
+						$skip = false;
 				}
-				$findString = '';
+				$findString.= $char;
 			}
 		}
-		if($count == $limit)
-			return $return;
 		array_push($return, $findString);
+		if($option['removeQuotes'])
+			foreach($return as $id => $item)
+				$return[$id] = $this->removeQuotes($item);
 		return $return;
+	}
+	public function removeQuotes(string $string){
+		$list = ['`', '"', '\''];
+		$searchFirstInt = array_search($string[0], $list);
+		$searchFirst = $searchFirstInt>-1;
+		$searchLast = $searchFirst===true?substr($string, strlen($string)-1)==$list[$searchFirstInt]:false;
+		if($searchFirst and $searchLast)
+			return substr($string, 1, strlen($string)-2);
+		return $string;
+	}
+	public function countString(string $string, string $search){
+		$count = 0;
+		while(true){
+			$strpos = $this->strpos($string, $search, $count);
+			if($strpos == -1)
+				break;
+			$count++;
+		}
+		return $count;
 	}
 };
 ?>
