@@ -1,7 +1,8 @@
 <?php
 return $this->db = new class(){
-	public $version = '1.1.0';
+	public $version = '1.1.1';
 	public $tableVersion = '1.1';
+	public $lastInsertID = null;
 	private $path = '';
 	private $connection = [];
 	private $acceptType = ['string', 'int', 'integer', 'bool', 'boolean', 'text'];
@@ -15,10 +16,13 @@ return $this->db = new class(){
 		'(UPDATE) (.+) SET (.+)', //update
 		'(DELETE) FROM (.+) [WHERE]+ (.*)?', //delete where
 		'(DELETE) FROM (.+)', //delete
-		'(ADVENCED) (GET) (.+) FROM (.+)', //ADVENCED FROM
-		'(ADVENCED) (GET) (.+)', //ADVENCED
+		'(ADVENCED) (GET) (.+) FROM (.+)', //ADVENCED GET FROM
+		'(ADVENCED) (GET) (.+)', //ADVENCED GET
+		'(ADVENCED) (SET) (.+) FROM (.+)', //ADVENCED SET FROM
+		'(ADVENCED) (SET) (.+)', //ADVENCED SET
+		'(ALTER TABLE) (.+) (ADD) (.+)' //ALTER TABLE ADD COLUMN
 	];
-	private $advencedLog = false;
+	private $advencedLog = true;
 	public function __construct(){
 		core::setError();
 		$this->path = core::$path['base'].'db\\';
@@ -106,35 +110,83 @@ return $this->db = new class(){
 				break;
 			case 'ADVENCED':
 				$matches[2] = core::$library->string->removeQuotes($matches[2]);
-				return $this->__advenced($matches[2], isset($matches[3])?core::$library->string->removeQuotes($matches[3]):null);
+				return $this->__advenced($matches[2], $matches[1], isset($matches[3])?core::$library->string->removeQuotes($matches[3]):null);
+				break;
+			case 'ALTER TABLE':
+				$matches[1] = core::$library->string->removeQuotes($matches[1]);
+				return $this->__alterTable($matches[1], $matches[2], $matches[3]);
 				break;
 			default:
 				return core::setError(2, 'the script is invalid');
 				break;
 		}
 	}
-	private function __advenced(string $get, string $tableName = null){
+	private function __alterTable(string $tableName, string $type, string $code){
 		core::setError();
-		$this->___log(['$get' => $get, '$tableName' => $tableName]);
-		switch($get){
-			case 'tableList':
-				$scandir = glob($this->connection[$this->activeConnect]['path'].'*.{fdb}', GLOB_BRACE);
-				foreach($scandir as $id => $path)
-					$scandir[$id] = str_replace('.fdb', '', basename($path));
-				return $scandir;
-				break;
-			case 'column':
-				if($this->___checkTable($tableName) === false)
-					return false;
-				$read = $this->____readFile($tableName);
-				return $read['column'];
-				break;
-			case 'autoincrement':
-				if($this->___checkTable($tableName) === false)
-					return false;
-				$read = $this->____readFile($tableName);
-				return $read['option']['autoincrement'];
-				break;
+		$this->___log(['$tableName' => $tableName, '$type' => $type, '$code' => $code]);
+		if($this->___checkTable($tableName) === false)
+			return false;
+		$readFile = $this->____readFile($tableName);
+		preg_match_all('/[\'|\"|\`]([a-zA-Z0-9]+)[\'|\"|\`] (([a-zA-Z0-9]+)(\([0-9]+\))|text|bool)[ |,]?(autoincrement)?/msi', $code, $code, PREG_SET_ORDER, 0);
+		if(array_search($code[0][3], $this->acceptType) === false)
+			return core::setError(102, 'error add column', 'error column type');
+		if(core::$library->array->searchByKey($readFile['column'], 'name', $code[0][1]) > -1)
+			return core::setError(103, 'error add column', 'column is already exists');
+		$column = ['name' => $code[0][1], 'type' => $code[0][3], 'length' => (int)str_replace(['(', ')'], ['', ''], $code[0][4])];
+		array_push($readFile['column'], $column);
+		for($i=0; $i<count($readFile['data']); $i++){
+			switch($code[0][3]){
+				case 'bool':
+				case 'boolean':
+					$column['length'] = 1;
+					$data = (int)0;
+					break;
+				case 'int':
+				case 'integer':
+					$data = (int)0;
+					break;
+				case 'text':
+					$column['length'] = 0;
+					$data = (string)'';
+					break;
+				case 'string':
+				default:
+					$data = (string)'';
+					break;
+			}
+			$readFile['data'][$i][$column['name']] = $data;
+		}
+		$this->____saveFile($tableName, $readFile);
+		return true;
+	}
+	private function __advenced(string $opt, string $type, string $tableName = null){
+		core::setError();
+		$this->___log(['$opt' => $opt, '$tableName' => $tableName, '$type' => $type]);
+		switch($type){
+			case 'GET':
+				switch($opt){
+					case 'tableList':
+						$scandir = glob($this->connection[$this->activeConnect]['path'].'*.{fdb}', GLOB_BRACE);
+						foreach($scandir as $id => $path)
+							$scandir[$id] = str_replace('.fdb', '', basename($path));
+						return $scandir;
+						break;
+					case 'column':
+						if($this->___checkTable($tableName) === false)
+							return false;
+						$read = $this->____readFile($tableName);
+						return $read['column'];
+						break;
+					case 'autoincrement':
+						if($this->___checkTable($tableName) === false)
+							return false;
+						$read = $this->____readFile($tableName);
+						return $read['option']['autoincrement'];
+						break;
+					default:
+						return core::setError(2, 'the script is invalid');
+						break;
+				}
 			default:
 				return core::setError(2, 'the script is invalid');
 				break;
@@ -151,8 +203,11 @@ return $this->db = new class(){
 			$data = $this->__search($data, $where);
 		foreach(array_keys($data) as $key)
 			foreach($setData as $newData){
+				$newData = core::$library->array->trim($newData);
+				$newData[0] = core::$library->string->removeQuotes($newData[0]);
+				$newData[1] = core::$library->string->removeQuotes($newData[1]);
 				if(!isset($readFile['data'][$key][$newData[0]]))
-					return core::setError(21, 'column not found', 'name: '.$columnName);
+					return core::setError(21, 'column not found', 'name: '.$newData[0]);
 				$readFile['data'][$key][$newData[0]] = $newData[1];
 			}
 		$this->____saveFile($tableName, $readFile);
@@ -178,6 +233,7 @@ return $this->db = new class(){
 		core::setError();
 		preg_match_all('/[\'|\"|\`]([a-zA-Z0-9]+)[\'|\"|\`] (([a-zA-Z0-9]+)(\([0-9]+\))|text|bool)[ |,]?(autoincrement)?/msi', $data, $data, PREG_SET_ORDER, 0);
 		$name = htmlspecialchars(basename($name));
+		$this->___log(['$name' => $name, '$data' => $data]);
 		if(file_exists($this->connection[$this->activeConnect]['path'].$name.'.fdb'))
 			return core::setError(101, 'error create table', 'table is already exists');
 		$table = [
@@ -195,6 +251,7 @@ return $this->db = new class(){
 			],
 			'data' => []
 		];
+		$this->___log(['$table' => $table]);
 		$column = [];
 		foreach($data as $item){
 			if(count($item) == 3){
@@ -248,8 +305,10 @@ return $this->db = new class(){
 				if(is_bool($search))
 					return core::setError(51, 'error search column', 'error find column \''.$item['name'].'\'');
 				switch($item['type']){
+					case 'integer':
 					case 'int':
 						$item['type'] = 'integer';
+						$newData[$item['name']] = (int)$newData[$item['name']];
 						break;
 					case 'boolean':
 					case 'bool':
@@ -265,6 +324,10 @@ return $this->db = new class(){
 			}
 		}
 		array_push($readFile['data'], $newData);
+		if($autoincrement['ai'] == true)
+			$this->lastInsertID = $autoincrement['count'];
+		else
+			$this->lastInsertID = null;
 		$this->____saveFile($tableName, $readFile);
 		return true;
 	}
@@ -301,6 +364,7 @@ return $this->db = new class(){
 			$find = array_values($itemMatches[0]);
 			$find[0] = core::$library->string->removeQuotes($find[0]);
 			$find[2] = core::$library->string->removeQuotes($find[2]);
+			$this->___log(['$find[0]' => $find[0], '$find[2]' => $find[2]]);
 			switch($find[1]){
 				case '=':
 					foreach($data as $dataID => $dataData){
@@ -319,8 +383,8 @@ return $this->db = new class(){
 					}
 					break;
 			}
-			return $data;
 		}
+		return $data;
 	}
 	private function ___checkTable(string $tableName){
 		if(!file_exists($this->connection[$this->activeConnect]['path'].$tableName.'.fdb'))
