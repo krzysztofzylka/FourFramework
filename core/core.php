@@ -5,20 +5,20 @@ class core{
 	public static $error = [-1, '', ''];
 	public static $extended = null;
 	public static $info = [
-		'version' => '0.2.7 Alpha',
-		'releaseDate' => '11.01.2020',
+		'version' => '0.2.7a Alpha',
+		'releaseDate' => '20.01.2020',
 		'frameworkPath' => null
 	];
 	public static $private = [];
 	public static $path = [
-		'core' => 'core\\',
-		'controller' => 'controller\\',
-		'view' => 'view\\',
-		'model' => 'model\\',
-		'module' => 'module\\',
-		'base' => 'core\\base\\',
-		'temp' => 'core\\base\\temp\\',
-		'library' => 'core\\library\\'
+		'core' => 'core/',
+		'controller' => 'controller/',
+		'view' => 'view/',
+		'model' => 'model/',
+		'module' => 'module/',
+		'base' => 'core/base/',
+		'temp' => 'core/base/temp/',
+		'library' => 'core/library/'
 	];
 	public static $controller = [];
 	public static $model = [];
@@ -33,8 +33,8 @@ class core{
 	public static function init(){
 		self::setError();
 		//generate fourframework path
-		$frameworkPath = __DIR__.'\\';
-		$frameworkPath = substr($frameworkPath, 0, strlen($frameworkPath)-strlen('core\\'));
+		$frameworkPath = __DIR__.'/';
+		$frameworkPath = substr($frameworkPath, 0, strlen($frameworkPath)-strlen('core/'));
 		self::$info['frameworkPath'] = $frameworkPath;
 		//error
 		if(self::$debug['showError'])
