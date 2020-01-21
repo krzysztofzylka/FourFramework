@@ -1,7 +1,8 @@
 <?php
 return $this->debug = new class(){ 
-	public $version = '1.2a'; 
+	public $version = '1.3'; 
 	public $consoleLog = True; 
+	private $memoryLastUsage = 0;
 	public function print_r($array, bool $var_type=false, string $title='ARRAY'){ 
 		core::setError(); 
 		if(is_object($array)){ 
@@ -52,6 +53,15 @@ return $this->debug = new class(){
 		$data = str_replace('	', '', $data); 
 		echo "<script>console.log('Debug Objects: ".($title<>false?$title.'\r\n':'')." ".$data."');</script>"; 
 		return true;
+	}
+	public function memoryUsage(bool $renew = true, bool $convert = false){
+		core::setError();
+		$memusage = memory_get_usage();
+		$return = $renew===false?($memusage-$this->memoryLastUsage):$memusage;
+		$this->memoryLastUsage = $memusage;
+		if($convert === true)
+			return core::$library->memory->formatBytes($return);
+		return $return;
 	}
 	private function _consoleLogArrayToString(array $data){
 		core::setError();
