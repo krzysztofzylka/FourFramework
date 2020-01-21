@@ -1,11 +1,11 @@
 <?php
 return $this->db = new class(){
-	public $version = '1.1.1';
+	public $version = '1.1.2';
 	public $tableVersion = '1.1';
 	public $lastInsertID = null;
 	private $path = '';
 	private $connection = [];
-	private $acceptType = ['string', 'int', 'integer', 'bool', 'boolean', 'text'];
+	private $acceptType = ['string', 'integer', 'boolean', 'text'];
 	private $activeConnect = null;
 	private $regex = [
 		'(SELECT) ?(.+?) ?FROM (.*) [WHERE]+ ?(.*)?', //select where
@@ -20,19 +20,21 @@ return $this->db = new class(){
 		'(ADVENCED) (GET) (.+)', //ADVENCED GET
 		'(ADVENCED) (SET) (.+) FROM (.+)', //ADVENCED SET FROM
 		'(ADVENCED) (SET) (.+)', //ADVENCED SET
-		'(ALTER TABLE) (.+) (ADD) (.+)' //ALTER TABLE ADD COLUMN
+		'(ALTER TABLE) (.+) (ADD) (.+)', //ALTER TABLE ADD COLUMN
+		'(REPAIR TABLE) (.+)' //REPAIR TABLE
 	];
-	private $advencedLog = true;
+	private $advencedLog = false; //false
+	private $saveDBFile = true; //true
 	public function __construct(){
 		core::setError();
-		$this->path = core::$path['base'].'db\\';
+		$this->path = core::$path['base'].'db/';
 		if(!file_exists($this->path))
 			mkdir($this->path, 0700, true);
 	}
 	public function connect(string $name, string $password = null){
 		core::setError();
 		$name = basename(htmlspecialchars($name));
-		$path = $this->path.$name.'\\';
+		$path = $this->path.$name.'/';
 		if(!file_exists($path))
 			return core::setError(1, 'database is not exists');
 		$pathPass = $path.'passwd.php';
@@ -47,6 +49,8 @@ return $this->db = new class(){
 			'path' => $path,
 			'pass' => md5($password)
 		];
+		if($this->activeConnect === null)
+			$this->activeConnect = $uniqueID;
 		return $uniqueID;
 	}
 	public function request(string $script, string $connect = null){
@@ -116,6 +120,10 @@ return $this->db = new class(){
 				$matches[1] = core::$library->string->removeQuotes($matches[1]);
 				return $this->__alterTable($matches[1], $matches[2], $matches[3]);
 				break;
+			case 'REPAIR TABLE':
+				$matches[1] = core::$library->string->removeQuotes($matches[1]);
+				return $this->__repairTable($matches[1]);
+				break;
 			default:
 				return core::setError(2, 'the script is invalid');
 				break;
@@ -126,37 +134,27 @@ return $this->db = new class(){
 		$this->___log(['$tableName' => $tableName, '$type' => $type, '$code' => $code]);
 		if($this->___checkTable($tableName) === false)
 			return false;
-		$readFile = $this->____readFile($tableName);
-		preg_match_all('/[\'|\"|\`]([a-zA-Z0-9]+)[\'|\"|\`] (([a-zA-Z0-9]+)(\([0-9]+\))|text|bool)[ |,]?(autoincrement)?/msi', $code, $code, PREG_SET_ORDER, 0);
-		if(array_search($code[0][3], $this->acceptType) === false)
-			return core::setError(102, 'error add column', 'error column type');
-		if(core::$library->array->searchByKey($readFile['column'], 'name', $code[0][1]) > -1)
-			return core::setError(103, 'error add column', 'column is already exists');
-		$column = ['name' => $code[0][1], 'type' => $code[0][3], 'length' => (int)str_replace(['(', ')'], ['', ''], $code[0][4])];
-		array_push($readFile['column'], $column);
-		for($i=0; $i<count($readFile['data']); $i++){
-			switch($code[0][3]){
-				case 'bool':
-				case 'boolean':
-					$column['length'] = 1;
-					$data = (int)0;
-					break;
-				case 'int':
-				case 'integer':
-					$data = (int)0;
-					break;
-				case 'text':
-					$column['length'] = 0;
-					$data = (string)'';
-					break;
-				case 'string':
-				default:
-					$data = (string)'';
-					break;
-			}
-			$readFile['data'][$i][$column['name']] = $data;
+		switch($type){
+			case 'ADD': //add column
+				$readFile = $this->____readFile($tableName);
+				$code = $this->___columnDataExplode($code);
+				if(core::$error[0] > -1)
+					return core::setError(102, 'error add column', 'error column type');
+				$this->___log(['$code' => $code]);
+				if(core::$library->array->searchByKey($readFile['column'], 'name', $code['name']) > -1)
+					return core::setError(103, 'error add column', 'column is already exists');
+				$column = ['name' => $code['name'], 'type' => $code['type'], 'length' => $code['length']];
+				$this->___log(['$column' => $column]);
+				array_push($readFile['column'], $column);
+				for($i=0; $i<count($readFile['data']); $i++)
+					$readFile['data'][$i][$column['name']] = $code['data'];
+				$readFile['column']['count']++;
+				$this->____saveFile($tableName, $readFile);
+				break;
+			default:
+				return core::setError(2, 'the script is invalid');
+				break;
 		}
-		$this->____saveFile($tableName, $readFile);
 		return true;
 	}
 	private function __advenced(string $opt, string $type, string $tableName = null){
@@ -231,8 +229,14 @@ return $this->db = new class(){
 	}
 	private function __createTable(string $name, string $data){ 
 		core::setError();
-		preg_match_all('/[\'|\"|\`]([a-zA-Z0-9]+)[\'|\"|\`] (([a-zA-Z0-9]+)(\([0-9]+\))|text|bool)[ |,]?(autoincrement)?/msi', $data, $data, PREG_SET_ORDER, 0);
 		$name = htmlspecialchars(basename($name));
+		$data = core::$library->string->explode(',', $data);
+		$data = core::$library->array->trim($data);
+		foreach($data as $id => $item){
+			$data[$id] = $this->___columnDataExplode($item);
+			if(core::$error[0] > -1)
+				return core::setError(102, 'error add column', 'error column type');
+		}
 		$this->___log(['$name' => $name, '$data' => $data]);
 		if(file_exists($this->connection[$this->activeConnect]['path'].$name.'.fdb'))
 			return core::setError(101, 'error create table', 'table is already exists');
@@ -251,29 +255,20 @@ return $this->db = new class(){
 			],
 			'data' => []
 		];
-		$this->___log(['$table' => $table]);
 		$column = [];
 		foreach($data as $item){
-			if(count($item) == 3){
-				$item[3] = $item[2];
-				$item[4] = 0;
-			}
-			if(array_search($item[3], $this->acceptType) === false)
-				return core::setError(102, 'error create table', 'error column type');
-			if(count($item) < 5)
-				return core::setError(100, 'error create table', 'error generate column');
-			$column = [
-				'name' => (string)$item[1],
-				'type' => (string)$item[3],
-				'length' => (int)str_replace(['(', ')'], ['', ''], $item[4])
-			];
-			if(isset($item[5]) and $item[5] == 'autoincrement'){
+			array_push($table['column'], [
+				'name' => (string)$item['name'],
+				'type' => (string)$item['type'],
+				'length' => $item['length']
+			]);
+			if($item['autoincrement'] === true){
 				$table['option']['autoincrement']['ai'] = true;
 				$table['option']['autoincrement']['id'] = $table['column']['count'];
 			}
-			$table['column'][$table['column']['count']] = $column;
-			$table['column']['count']++;
 		}
+		$table['column']['count'] = count($table['column'])-1;
+		$this->___log(['$table' => $table]);
 		return $this->____saveFile($name, $table);
 	}
 	private function __addData(string $tableName, string $column, string $data){
@@ -336,6 +331,7 @@ return $this->db = new class(){
 		if($this->___checkTable($tableName) === false)
 			return false;
 		$data = $this->____readFile(htmlspecialchars(basename($tableName)))['data'];
+		$column = $this->____readFile(htmlspecialchars(basename($tableName)))['column'];
 		if($where <> null)
 			$data = $this->__search($data, $where);
 		if($wData <> '*'){
@@ -351,6 +347,7 @@ return $this->db = new class(){
 						unset($data[$id][$arrayName]);
 		}
 		$data = array_values($data);
+		$data = $this->___convertDataType($data, $column);
 		$this->___log(['$tableName' => $tableName, '$where' => $where, '$wData' => $wData, '$data' => $data]);
 		return $data;
 	}
@@ -386,7 +383,31 @@ return $this->db = new class(){
 		}
 		return $data;
 	}
+	private function __repairTable(string $tableName){
+		core::setError();
+		if($this->___checkTable($tableName) === false)
+			return false;
+		$readTable = $this->____readFile(htmlspecialchars(basename($tableName)));
+		$readTable['data'] = $this->___convertDataType($readTable['data'], $readTable['column']);
+		foreach($readTable['column'] as $id => $item){
+			switch($item['type']){
+				case 'int':
+					$readTable['column'][$id]['type'] = 'integer';
+					break;
+				case 'bool':
+					$readTable['column'][$id]['type'] = 'boolean';
+					break;
+			}
+		}
+		$this->___log(['$readTable' => $readTable]);
+		$this->____saveFile($tableName, $readTable);
+		return true;
+	}
 	private function ___checkTable(string $tableName){
+		core::setError();
+		$this->___log(['activeConnect' => $this->activeConnect]);
+		if($this->activeConnect === null)
+			return core::setError(3, 'connection not exists');
 		if(!file_exists($this->connection[$this->activeConnect]['path'].$tableName.'.fdb'))
 			return core::setError(20, 'table is not already exists');
 		return true;
@@ -399,8 +420,72 @@ return $this->db = new class(){
 		var_dump($data);
 		echo '</pre>';
 	}
+	private function ___columnDataExplode(string $data){
+		core::setError();
+		$return = ['name' => null, 'type' => null, 'length' => null, 'autoincrement' => null, 'data' => null];
+		$explode = core::$library->string->explode(' ', $data);
+		$return['name'] = core::$library->string->removeQuotes($explode[0]);
+		if(count($explode) >= 2){
+			$length = core::$library->string->between($explode[1], '(', ')', 0);
+			if($length === null)
+				$return['length'] = 0;
+			else{
+				$return['length'] = (int)$length;
+				$explode[1] = str_replace('('.$length.')', '', $explode[1]);
+			}
+			switch($explode[1]){
+				case 'bool':
+				case 'boolean':
+					$explode[1] = 'boolean';
+					$return['length'] = 1;
+					$return['data'] = (int)0;
+					break;
+				case 'int':
+				case 'integer':
+					$explode[1] = 'integer';
+					$return['data'] = (int)0;
+					break;
+				default:
+					$return['data'] = (string)"";
+					break;
+			}
+			$return['type'] = $explode[1];
+			$search = array_search($return['type'], $this->acceptType);
+			if($search === false)
+				return core::setError(1, 'Error column data type', 'type: '.$return['type']);
+		}
+		if(count($explode) == 3){
+			if($explode[2] == 'autoincrement')
+				$return['autoincrement'] = true;
+			else
+				$return['autoincrement'] = false;
+		}else
+			$return['autoincrement'] = false;
+		return $return;
+	}
+	private function ___convertDataType(array $data, array $column){
+		foreach($column as $item){
+			switch($item['type']){
+				case 'string':
+					break;
+				case 'int':
+				case 'integer':
+					foreach($data as $id => $item2)
+						$data[$id][$item['name']] = (int)$item2[$item['name']];
+					break;
+				case 'bool':
+				case 'boolean':
+					foreach($data as $id => $item2)
+						$data[$id][$item['name']] = boolval($item2[$item['name']]);
+					break;
+			}
+		}
+		return $data;
+	}
 	private function ____saveFile(string $tableName, array $data){ 
 		core::setError();
+		if($this->saveDBFile === false)
+			return false;
 		$password = $this->connection[$this->activeConnect]['pass'];
 		$data['column'] = core::$library->crypt->crypt(json_encode($data['column']), $password);
 		$data['data'] = core::$library->crypt->crypt(json_encode($data['data']), $password);
