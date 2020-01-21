@@ -1,6 +1,6 @@
 <?php
 return $this->array = new class(){ 
-	public $version = '1.0a'; 
+	public $version = '1.1'; 
 	public function trim($array){
 		core::setError();
 		if(!is_array($array))
@@ -28,6 +28,22 @@ return $this->array = new class(){
 			}
 		}
 		return -1;
+	}
+	public function sort2D(array $array, string $name, string $type='ASC') : array{
+		$GLOBALS['module_sort2D_name'] = $name;
+		switch($type){
+			case 'ASC':
+				usort($array, function($a, $b) {
+					return $a[$GLOBALS['module_sort2D_name']] <=> $b[$GLOBALS['module_sort2D_name']];
+				});
+				break;
+			case 'DESC':
+				usort($array, function($a, $b) {
+					return $a[$GLOBALS['module_sort2D_name']] <= $b[$GLOBALS['module_sort2D_name']];
+				});
+				break;
+		}
+		return $array;
 	}
 };
 ?>
