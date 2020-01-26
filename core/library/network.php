@@ -1,6 +1,6 @@
 <?php
 return $this->network = new class(){ 
-	public $version = '1.3';
+	public $version = '1.4';
 	public $method = 0;
 	private $methodDownloadFile = 0;
 	public $curlTimeout = 1000;
@@ -17,6 +17,63 @@ return $this->network = new class(){
 			$this->method = 1; 
 		elseif(function_exists('file_get_contents')) 
 			$this->method = 2; 
+	}
+	public function get(string $url, array $option = []){
+		core::setError();
+		if(!isset($option['userAgent']))
+			$option['userAgent'] = 'FourFramework ('.core::$info['version'].'/Library:'.$this->version.')';
+		if(!isset($option['timeout']))
+			$option['timeout'] = 1000;
+		if(!isset($option['ignoreHttpCode']))
+			$option['ignoreHttpCode'] = false;
+		if(!isset($option['JSONData']))
+			$option['JSONData'] = false;
+		if(!isset($option['JSONAssoc']))
+			$option['JSONAssoc'] = true;
+		if(!isset($option['saveToFile']))
+			$option['saveToFile'] = false;
+		switch($this->method){
+			case 1: //curl
+				$curl = curl_init();
+				$opt = [ //opt
+					CURLOPT_RETURNTRANSFER => true,
+					CURLOPT_URL => $url,
+					CURLOPT_TIMEOUT => $option['timeout'],
+					CURLOPT_USERAGENT => $option['userAgent']
+				];
+				if($option['saveToFile'] <> false){ //download
+					$fp = fopen($option['saveToFile'], 'w'); 
+					$opt[CURLOPT_FILE] = $fp; //set opt
+				}
+				curl_setopt_array($curl, $opt); //set array opt
+				$getData = curl_exec($curl);
+				$httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+				if($httpCode < 200 and $httpcode > 200) //httpcode
+					if($option['ignoreHttpCode'] === false)
+						return core::setError(2, 'error http code', 'Http Code: '.$httpCode);
+				if(curl_errno($curl)){
+					if($option['saveToFile'] <> false){ //download
+						fclose($fp);
+						unlink($option['saveToFile']);
+					}
+					return core::setError(3, 'error download data', curl_error($curl));
+				}
+				if($option['saveToFile'] <> false){ //download
+					fclose($fp);
+					return true;
+				}elseif($option['JSONData'] === true) //json
+					return json_decode($getData, $option['JSONAssoc']);
+				else //other
+					return $getData;
+				break;
+			default: //other
+				$contents = @file_get_contents($url);
+				if($contents === false)
+					return core::setError(1, 'error download data', '');
+				return $contents;
+				break;
+		}
+		return false;
 	}
 	public function getData(string $url){ 
 		core::setError(); 
