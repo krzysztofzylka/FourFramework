@@ -1,9 +1,11 @@
 <?php
 return $this->crypt = new class(){ 
-	public $version = '1.0c'; 
+	public $version = '1.1'; 
 	private $method = 'AES-256-CBC'; 
 	public $salt = '0123456789012345'; 
-	public $hashAlgorithm = ['md5', 'sha256', 'pbkdf2', 'sha512', 'crc32', 'ripemd256', 'snefru', 'gost']; 
+	public $hashSalt = 'FourFramework2020!+#';
+	public $otherFunction = null;
+	public $hashAlgorithm = ['md5', 'sha256', 'pbkdf2', 'sha512', 'crc32', 'ripemd256', 'snefru', 'gost', 'md5SALT', 'otherFunc']; 
 	public function crypt(string $string, $hash=null) : string{
 		core::setError();
 		if(!@function_exists(openssl_encrypt)) 
@@ -33,7 +35,7 @@ return $this->crypt = new class(){
 			case '003':
 			case 'pbkdf2':
 				if(!function_exists("hash_pbkdf2"))
-					return $this->core->returnError(1, 'unknown function');
+					return core::setError(1, 'unknown function');
 				$return = str_replace('{type}', '003', $return);
 				$return = str_replace('{hash}', hash_pbkdf2("sha256", $string, $this->salt, 4096, 20), $return);
 				break;
@@ -61,6 +63,27 @@ return $this->crypt = new class(){
 			case 'gost':
 				$return = str_replace('{type}', '008', $return);
 				$return = str_replace('{hash}', hash('gost', $string), $return);
+				break;
+			case '009':
+			case 'md5SALT':
+				$return = str_replace('{type}', '009', $return);
+				$hash = '';
+				for($i=0; $i<=strlen($string); $i++){
+					$hash .= substr($string, $i, 1);
+					$saltChr = substr($this->hashSalt, $i, 1);
+					if($saltChr == '')
+						$saltChr = substr($this->hashSalt, 0, 1);
+					$hash .= $saltChr;
+				}
+				$hash = substr($this->hashSalt, 0, ord($string[0]).strlen($this->hashSalt)/2).$hash.substr($this->hashSalt, strlen($this->hashSalt)/2);
+				$return = str_replace('{hash}', md5($hash), $return);
+				break;
+			case '010':
+			case 'otherFunc':
+				if(!function_exists($this->otherFunction))
+					return core::setError(2, 'hash function not exists');
+				$return = str_replace('{type}', '010', $return);
+				$return = str_replace('{hash}', call_user_func($this->otherFunction, $string), $return);
 				break;
 		}
 		return $return; 
