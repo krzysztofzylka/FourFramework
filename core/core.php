@@ -5,8 +5,8 @@ class core{
 	public static $error = [-1, '', ''];
 	public static $extended = null;
 	public static $info = [
-		'version' => '0.2.7a Alpha',
-		'releaseDate' => '20.01.2020',
+		'version' => '0.2.8 Alpha',
+		'releaseDate' => '29.01.2020',
 		'frameworkPath' => null
 	];
 	public static $private = [];
@@ -18,7 +18,8 @@ class core{
 		'module' => 'module/',
 		'base' => 'core/base/',
 		'temp' => 'core/base/temp/',
-		'library' => 'core/library/'
+		'library' => 'core/library/',
+		'log' => 'core/log/'
 	];
 	public static $controller = [];
 	public static $model = [];
@@ -30,28 +31,28 @@ class core{
 		'saveError' => True,
 		'showCoreError' => True
 	];
-	public static function init(){
+	public static function init(array $option = []){
 		self::setError();
+		if(!isset($option['autoCreatePath']))
+			$option['autoCreatePath'] = true;
 		//generate fourframework path
 		$frameworkPath = __DIR__.'/';
-		$frameworkPath = substr($frameworkPath, 0, strlen($frameworkPath)-strlen('core/'));
+		$frameworkPath = substr($frameworkPath, 0, strlen($frameworkPath)-5);
 		self::$info['frameworkPath'] = $frameworkPath;
 		//error
 		if(self::$debug['showError'])
 			error_reporting(E_ALL);
-		foreach(self::$path as $name => $value){
-			self::$path[$name] = self::$info['frameworkPath'].$value;
-			if(!file_exists(self::$path[$name]))
-				mkdir(self::$path[$name], 0700, true);
+		if($option['autoCreatePath'] === true){
+			foreach(self::$path as $name => $value){
+				self::$path[$name] = str_replace('/', "\\", self::$info['frameworkPath'].$value);
+				if(!file_exists(self::$path[$name]))
+					mkdir(self::$path[$name], 0700, true);
+			}
 		}
 		//debug
 		if(self::$debug['saveError']){
 			ini_set("log_errors", 1);
-			$path = self::$path['base'].'log/';
-			if(!file_exists($path))
-				mkdir($path, 0700, true);
-			$path .= 'php_error.log';
-			ini_set("error_log", $path);
+			ini_set("error_log", self::$path['log'].'php_error.log');
 		}
 		//include library class
 		self::$library = include('library.php');
