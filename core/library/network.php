@@ -1,6 +1,6 @@
 <?php
 return $this->network = new class(){ 
-	public $version = '1.5';
+	public $version = '1.5a';
 	public $method = 0;
 	public function __construct(){ 
 		$this->_getMethod(); 
@@ -61,6 +61,10 @@ return $this->network = new class(){
 					return $getData;
 				break;
 			default: //other
+				if($option['saveToFile'] <> false){
+					file_put_contents($option['saveToFile'], fopen($url, 'r'));
+					return true;
+				}
 				$contents = @file_get_contents($url);
 				if($contents === false)
 					return core::setError(1, 'error download data', '');
