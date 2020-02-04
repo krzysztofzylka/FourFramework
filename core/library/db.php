@@ -1,6 +1,6 @@
 <?php
 return $this->db = new class(){
-	public $version = '1.1.2';
+	public $version = '1.1.3';
 	public $tableVersion = '1.1';
 	public $lastInsertID = null;
 	private $path = '';
@@ -23,8 +23,8 @@ return $this->db = new class(){
 		'(ALTER TABLE) (.+) (ADD) (.+)', //ALTER TABLE ADD COLUMN
 		'(REPAIR TABLE) (.+)' //REPAIR TABLE
 	];
-	private $advencedLog = false; //false
-	private $saveDBFile = true; //true
+	private $advencedLog = true; //false
+	private $saveDBFile = false; //true
 	public function __construct(){
 		core::setError();
 		$this->path = core::$path['base'].'db/';
@@ -79,6 +79,29 @@ return $this->db = new class(){
 		mkdir($path, 0700, true);
 		file_put_contents($path.'passwd.php', '<?php return "'.md5($password).'"; ?>');
 		return true;
+	}
+	public function databaseList(){
+		$return = [];
+		$path = core::$path['base'].'db/';
+		$scan = scandir($path);
+		$scan = array_diff($scan, ['.', '..', '.htaccess']);
+		foreach($scan as $name){
+			$dbPath = $path.$name.'/';
+			if(file_exists($dbPath.'passwd.php')){
+				$tabele = [];
+				$scanTable = scandir($dbPath);
+				// $scanTable = array_diff($scanTable, ['.', '..', '.htaccess', 'passwd.php']);
+				foreach($scanTable as $id => $tableName){
+					if(substr($tableName, strlen($tableName)-3) == 'fdb')
+						array_push($tabele, substr($tableName, 0, strlen($tableName)-4));
+				}
+				$return[$name] = [
+					'name' => $name,
+					'table' => $tabele
+				];
+			}
+		}
+		return $return;
 	}
 	private function _request(array $matches){
 		core::setError();
@@ -275,6 +298,7 @@ return $this->db = new class(){
 		core::setError();
 		if($this->___checkTable($tableName) === false)
 			return false;
+		$this->lastInsertID = null;
 		$column = core::$library->array->trim(core::$library->string->explode(',', $column));
 		foreach($column as $id => $string)
 			$column[$id] = core::$library->string->removeQuotes($string);
@@ -285,44 +309,14 @@ return $this->db = new class(){
 		if(count($column) <> count($data))
 			return core::setError(50, 'data count error');
 		$readFile = $this->____readFile($tableName);
-		$newData = [];
 		$autoincrement = $readFile['option']['autoincrement'];
-		foreach($readFile['column'] as $id => $item){
-			if(is_array($item)){
-				$search = array_search($item['name'], $column);
-				if(is_int($search))
-					$newData[$column[$search]] = $data[$search];
-				if($autoincrement['ai'] == true and $item['name'] == $readFile['column'][$autoincrement['id']]['name']){
-					$newData[$item['name']] = $autoincrement['count'];
-					$readFile['option']['autoincrement']['count']++;
-					$search = -1;
-				}
-				if(is_bool($search))
-					return core::setError(51, 'error search column', 'error find column \''.$item['name'].'\'');
-				switch($item['type']){
-					case 'integer':
-					case 'int':
-						$item['type'] = 'integer';
-						$newData[$item['name']] = (int)$newData[$item['name']];
-						break;
-					case 'boolean':
-					case 'bool':
-						$item['type'] = 'boolean'; 
-						$newData[$item['name']] = boolval($newData[$item['name']]);
-						$item['length'] = 1;
-						break;
-				}
-				if(gettype($newData[$item['name']]) <> $item['type'] and $item['type'] <> 'text')
-					return core::setError(52, 'error data type', 'column: '.$item['name'].', type: '.$item['type'].' ('.gettype($newData[$item['name']]).')');
-				if(strlen($newData[$item['name']]) > $item['length'] and $item['type'] <> 'text')
-					return core::setError(53, 'error data length', 'column: '.$item['name'].', length: '.strlen($newData[$item['name']]).'/'.$item['length']);
-			}
-		}
-		array_push($readFile['data'], $newData);
+		$arrayData = array_combine($column, $data);
+		$tableItem = $this->___checkTableItem($arrayData, $readFile['column'], $autoincrement);
+		$this->___log(['___checkTableItem' => $tableItem]);
+		$readFile['option']['autoincrement']['count']++;
+		array_push($readFile['data'], $tableItem);
 		if($autoincrement['ai'] == true)
 			$this->lastInsertID = $autoincrement['count'];
-		else
-			$this->lastInsertID = null;
 		$this->____saveFile($tableName, $readFile);
 		return true;
 	}
@@ -403,6 +397,41 @@ return $this->db = new class(){
 		$this->____saveFile($tableName, $readTable);
 		return true;
 	}
+	private function ___checkTableItem(array $arrData, array $column, array $ai){
+		$this->___log(['$arrData' => $arrData, '$column' => $column, '$ai' => $ai]);
+		$return = [];
+		foreach($column as $id => $item){
+			if($item['name'] === null)
+				continue;
+			if($ai['ai'] === true and $id === $ai['id']){
+				$return[$item['name']] = (int)$ai['count'];
+				continue;
+			}
+			if(!isset($arrData[$item['name']]))
+				return core::setError(51, 'error search column', 'error find column \''.$item['name'].'\'');
+			switch($item['type']){
+				case 'integer':
+				case 'int':
+					$item['type'] = 'integer';
+					$return[$item['name']] = (int)$return[$item['name']];
+					break;
+				case 'boolean':
+				case 'bool':
+					$item['type'] = 'boolean'; 
+					$return[$item['name']] = boolval($return[$item['name']]);
+					$item['length'] = 1;
+					break;
+				default:
+					$return[$item['name']] = $arrData[$item['name']];
+					break;
+			}
+			if(gettype($return[$item['name']]) <> $item['type'] and $item['type'] <> 'text')
+				return core::setError(52, 'error data type', 'column: '.$item['name'].', type: '.$item['type'].' ('.gettype($return[$item['name']]).')');
+			if(strlen($return[$item['name']]) > $item['length'] and $item['type'] <> 'text')
+				return core::setError(53, 'error data length', 'column: '.$item['name'].', length: '.strlen($return[$item['name']]).'/'.$item['length']);
+		}
+		return $return;
+	}
 	private function ___checkTable(string $tableName){
 		core::setError();
 		$this->___log(['activeConnect' => $this->activeConnect]);
@@ -464,19 +493,26 @@ return $this->db = new class(){
 		return $return;
 	}
 	private function ___convertDataType(array $data, array $column){
+		core::setError();
 		foreach($column as $item){
 			switch($item['type']){
 				case 'string':
 					break;
 				case 'int':
 				case 'integer':
-					foreach($data as $id => $item2)
+					foreach($data as $id => $item2){
+						if(!isset($data[$id][$item['name']]))
+							return core::setError(21, 'column not found', 'name: '.$item['name']);
 						$data[$id][$item['name']] = (int)$item2[$item['name']];
+					}
 					break;
 				case 'bool':
 				case 'boolean':
-					foreach($data as $id => $item2)
+					foreach($data as $id => $item2){
+						if(!isset($data[$id][$item['name']]))
+							return core::setError(21, 'column not found', 'name: '.$item['name']);
 						$data[$id][$item['name']] = boolval($item2[$item['name']]);
+					}
 					break;
 			}
 		}
