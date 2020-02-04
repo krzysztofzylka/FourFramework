@@ -3,13 +3,11 @@
 //programista.vxm.pl/fourframework
 class core{
 	public static $error = [-1, '', ''];
-	public static $extended = null;
 	public static $info = [
-		'version' => '0.2.8 Alpha',
-		'releaseDate' => '29.01.2020',
+		'version' => '0.2.9 Alpha',
+		'releaseDate' => '04.02.2020',
 		'frameworkPath' => null
 	];
-	public static $private = [];
 	public static $path = [
 		'core' => 'core/',
 		'controller' => 'controller/',
@@ -19,7 +17,7 @@ class core{
 		'base' => 'core/base/',
 		'temp' => 'core/base/temp/',
 		'library' => 'core/library/',
-		'log' => 'core/log/'
+		'log' => 'core/base/log/'
 	];
 	public static $controller = [];
 	public static $model = [];
@@ -31,10 +29,13 @@ class core{
 		'saveError' => True,
 		'showCoreError' => True
 	];
+	private static $loadMultipleModule = false;
 	public static function init(array $option = []){
 		self::setError();
 		if(!isset($option['autoCreatePath']))
 			$option['autoCreatePath'] = true;
+		if(isset($option['multipleModule']))
+			self::$loadMultipleModule = boolval($option['multipleModule']);
 		//generate fourframework path
 		$frameworkPath = __DIR__.'/';
 		$frameworkPath = substr($frameworkPath, 0, strlen($frameworkPath)-5);
@@ -42,12 +43,10 @@ class core{
 		//error
 		if(self::$debug['showError'])
 			error_reporting(E_ALL);
-		if($option['autoCreatePath'] === true){
-			foreach(self::$path as $name => $value){
-				self::$path[$name] = str_replace('/', "\\", self::$info['frameworkPath'].$value);
-				if(!file_exists(self::$path[$name]))
-					mkdir(self::$path[$name], 0700, true);
-			}
+		foreach(self::$path as $name => $value){
+			self::$path[$name] = str_replace('/', "\\", self::$info['frameworkPath'].$value);
+			if(!file_exists(self::$path[$name]) and $option['autoCreatePath'] === true)
+				mkdir(self::$path[$name], 0700, true);
 		}
 		//debug
 		if(self::$debug['saveError']){
@@ -59,7 +58,6 @@ class core{
 		return true;
 	}
 	public static function setError(int $number=-1, string $name='', $description=''){
-		self::$extended = null;
 		self::$error = [$number, $name, $description];
 		if(self::$debug['showCoreError'] == true and $number > -1){
 			echo '<b>Core error:</b> ('.$number.') [<i>'.$name.'</i>] ';
@@ -108,15 +106,25 @@ class core{
 	public static function loadModule(string $name){
 		self::setError();
 		$name = htmlspecialchars(basename($name));
-		if(in_array($name, array_keys(self::$module)))
+		if(in_array($name, array_keys(self::$module)) and self::$loadMultipleModule === false)
 			return self::setError(1, 'the class has already been loaded', '');
 		$path = self::$path['module'].$name.'/';
 		if(!file_exists($path.'config.php'))
 			return self::setError(2, 'config file config.php not found', '');
+		$arrayName = $name;
 		$config = include($path.'config.php');
 		$config['name'] = $name;
 		$config['path'] = $path;
-		self::$module_add[$config['name']]['config'] = $config;
+		if(in_array($name, array_keys(self::$module)) and self::$loadMultipleModule === true){
+			$i = 2;
+			while(true){
+				$arrayName = $name.'_k'.$i;
+				if(!isset(self::$module[$arrayName]))
+					break;
+				$i++;
+			}
+		}
+		self::$module_add[$arrayName]['config'] = $config;
 		if(!is_array($config))
 			return self::setError(3, 'config file config.php error', 'the data returned is not a table');
 		if(isset($config['include']) and is_array($config['include']))
@@ -125,8 +133,8 @@ class core{
 		if(isset($config['moduleFile']) and !file_exists($path.$config['moduleFile']))
 			return self::setError(4, 'module file not found', $path.$config['moduleFile']);
 		else
-			self::$module[$config['name']] = include($path.$config['moduleFile']);
-		return self::$module[$config['name']];
+			self::$module[$arrayName] = include($path.$config['moduleFile']);
+		return self::$module[$arrayName];
 	}
 	public static function debug(bool $show = false) : array{
 		self::setError();
