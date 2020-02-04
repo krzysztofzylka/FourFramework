@@ -1,6 +1,6 @@
 <?php
 return $this->db = new class(){
-	public $version = '1.1.3';
+	public $version = '1.1.3a';
 	public $tableVersion = '1.1';
 	public $lastInsertID = null;
 	private $path = '';
@@ -23,8 +23,8 @@ return $this->db = new class(){
 		'(ALTER TABLE) (.+) (ADD) (.+)', //ALTER TABLE ADD COLUMN
 		'(REPAIR TABLE) (.+)' //REPAIR TABLE
 	];
-	private $advencedLog = true; //false
-	private $saveDBFile = false; //true
+	private $advencedLog = false; //false
+	private $saveDBFile = true; //true
 	public function __construct(){
 		core::setError();
 		$this->path = core::$path['base'].'db/';
