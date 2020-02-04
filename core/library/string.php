@@ -1,6 +1,6 @@
 <?php
 return $this->string = new class(){ 
-	public $version = '1.4'; 
+	public $version = '1.4a'; 
 	public function between(string $string, string $start, string $end, int $offset=0){ 
 		core::setError(); 
 		$strpos1 = core::$library->string->strpos($string, $start, 0+(2*$offset))+1; 
@@ -99,6 +99,7 @@ return $this->string = new class(){
 		return $return;
 	}
 	public function removeQuotes(string $string){
+		core::setError();
 		if(strlen($string) == 0)
 			return $string;
 		$list = ['`', '"', '\''];
@@ -110,6 +111,7 @@ return $this->string = new class(){
 		return $string;
 	}
 	public function countString(string $string, string $search){
+		core::setError();
 		$count = 0;
 		while(true){
 			$strpos = $this->strpos($string, $search, $count);
