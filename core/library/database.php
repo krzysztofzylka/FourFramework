@@ -1,9 +1,10 @@
 <?php
 return $this->database = new class(){ 
-	public $version = '1.1'; 
+	public $version = '1.2'; 
 	public $conn; 
 	public $isConnect = false; 
 	public $connError = true; 
+	public $connType = null;
 	public function connect(array $config){ 
 		core::setError(); 
 		if(!isset($config['type'])) 
@@ -16,6 +17,12 @@ return $this->database = new class(){
 						return core::setError(4, 'no find config: '.$check); 
 					$this->conn = new PDO('mysql:host='.$config['host'].';dbname='.$config['name'].'', $config['user'], $config['password']);
 					break; 
+				case 'sqlite':
+					$check = $this->__checkConfig($config, ['path']);
+					if($check !== true)
+						return core::setError(4, 'no find config: '.$check);
+					$this->conn = new PDO('sqlite:'.$config['path']);
+					break;
 				default:
 					return core::setError(3, 'no find config: type'); 
 					break; 
@@ -24,6 +31,7 @@ return $this->database = new class(){
 				return core::setError(5, 'error connect to database'); 
 			$this->isConnect = true; 
 			$this->setCharset(); 
+			$this->connType = $config['type'];
 			return $this->conn; 
 		}catch(PDOException $error){ 
 			if($this->connError) 
