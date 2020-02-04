@@ -1,6 +1,6 @@
 <?php
 return $this->array = new class(){ 
-	public $version = '1.1'; 
+	public $version = '1.1a'; 
 	public function trim($array){
 		core::setError();
 		if(!is_array($array))
@@ -30,6 +30,7 @@ return $this->array = new class(){
 		return -1;
 	}
 	public function sort2D(array $array, string $name, string $type='ASC') : array{
+		core::setError();
 		$GLOBALS['module_sort2D_name'] = $name;
 		switch($type){
 			case 'ASC':
@@ -43,6 +44,7 @@ return $this->array = new class(){
 				});
 				break;
 		}
+		unset($GLOBALS['module_sort2D_name']);
 		return $array;
 	}
 };
