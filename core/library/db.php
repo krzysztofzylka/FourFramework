@@ -1,6 +1,6 @@
 <?php
 return $this->db = new class(){
-	public $version = '1.1.3a';
+	public $version = '1.1.4';
 	public $tableVersion = '1.1';
 	public $lastInsertID = null;
 	private $path = '';
@@ -312,6 +312,8 @@ return $this->db = new class(){
 		$autoincrement = $readFile['option']['autoincrement'];
 		$arrayData = array_combine($column, $data);
 		$tableItem = $this->___checkTableItem($arrayData, $readFile['column'], $autoincrement);
+		if(core::$error[0] > -1)
+			return false;
 		$this->___log(['___checkTableItem' => $tableItem]);
 		$readFile['option']['autoincrement']['count']++;
 		array_push($readFile['data'], $tableItem);
@@ -324,8 +326,8 @@ return $this->db = new class(){
 		core::setError();
 		if($this->___checkTable($tableName) === false)
 			return false;
-		$data = $this->____readFile(htmlspecialchars(basename($tableName)))['data'];
-		$column = $this->____readFile(htmlspecialchars(basename($tableName)))['column'];
+		$data = $this->____readFile(htmlspecialchars(basename($tableName)), 'data');
+		$column = $this->____readFile(htmlspecialchars(basename($tableName)), 'column');
 		if($where <> null)
 			$data = $this->__search($data, $where);
 		if($wData <> '*'){
@@ -538,13 +540,21 @@ return $this->db = new class(){
 		$readFile = file($this->connection[$this->activeConnect]['path'].$tableName.'.fdb');
 		switch($type){
 			case "option":
-				return json_decode($readFile[0], true);
+				$option = json_decode($readFile[0], true);
+				$option['autoincrement'] = json_decode(core::$library->crypt->decrypt($readFile['option']['autoincrement'], $password), true);
+				return $option;
 				break;
 			case "column":
-				return json_decode(core::$library->crypt->decrypt($readFile[1], $password), true);
+				$column = json_decode(core::$library->crypt->decrypt($readFile[1], $password), true);
+				if($column === null or $column === false)
+					return [];
+				return $column;
 				break;
 			case "data":
-				return json_decode(core::$library->crypt->decrypt($readFile[2], $password), true);
+				$data = json_decode(core::$library->crypt->decrypt($readFile[2], $password), true);
+				if($data === null or $data === false)
+					return [];
+				return $data;
 				break;
 		}
 		$readFile = [
@@ -552,6 +562,10 @@ return $this->db = new class(){
 			'column' => json_decode(core::$library->crypt->decrypt($readFile[1], $password), true),
 			'data' => json_decode(core::$library->crypt->decrypt($readFile[2], $password), true)
 		];
+		if($readFile['column'] === null or $readFile['column'] === false)
+			$readFile['column'] = [];
+		if($readFile['data'] === null or $readFile['data'] === false)
+			$readFile['data'] = [];
 		$readFile['option']['autoincrement'] = json_decode(core::$library->crypt->decrypt($readFile['option']['autoincrement'], $password), true);
 		return $readFile; 
 	}
