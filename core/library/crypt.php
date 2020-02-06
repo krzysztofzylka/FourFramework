@@ -1,6 +1,6 @@
 <?php
 return $this->crypt = new class(){ 
-	public $version = '1.1'; 
+	public $version = '1.2'; 
 	private $method = 'AES-256-CBC'; 
 	public $salt = '0123456789012345'; 
 	public $hashSalt = 'FourFramework2020!+#';
@@ -97,6 +97,22 @@ return $this->crypt = new class(){
 	public function isBase64(string $crypt) : bool{ 
 		core::setError();
 		return (bool) preg_match('/^[a-zA-Z0-9\/\r\n+]*={0,2}$/', $crypt); 
+	}
+	public function md5_dir($path){
+		core::setError();
+		if (!is_dir($path))
+			return core::setError(1, 'path not exists');
+		$filemd5s = array();
+		$d = dir($path);
+		while(false !== ($entry = $d->read()))
+			if($entry != '.' && $entry != '..') {
+				if (is_dir($path.'/'.$entry))
+					$filemd5s[] = $this->md5_dir($path.'/'.$entry);
+				else
+					$filemd5s[] = md5_file($path.'/'.$entry);
+			}
+		$d->close();
+		return md5(implode('', $filemd5s));
 	}
 }
 ?>
