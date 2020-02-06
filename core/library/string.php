@@ -1,10 +1,10 @@
 <?php
 return $this->string = new class(){ 
-	public $version = '1.4a'; 
+	public $version = '1.4b'; 
 	public function between(string $string, string $start, string $end, int $offset=0){ 
 		core::setError(); 
-		$strpos1 = core::$library->string->strpos($string, $start, 0+(2*$offset))+1; 
-		$strpos2 = core::$library->string->strpos($string, $end, 0+(2*$offset)+($start==$end?1:0));
+		$strpos1 = core::$library->string->strpos($string, $start, 0+$offset)+1; 
+		$strpos2 = core::$library->string->strpos($string, $end, 0+$offset);
 		if($strpos1 < 0 or $strpos2 < 0)
 			return null;
 		return substr($string, $strpos1, $strpos2-$strpos1); 
