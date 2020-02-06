@@ -1,6 +1,6 @@
 <?php
 return $this->file = new class(){ 
-	public $version = '1.1'; 
+	public $version = '1.2'; 
 	public function fileCount(string $path){ 
 		core::setError();
 		if(!file_exists($path))
@@ -47,6 +47,13 @@ return $this->file = new class(){
 		if(!copy($file['tmp_name'], $newPath))
 			return core::setError(5, 'error copy file');
 		return true;
+	}
+	public function dirSize(string $path){
+		core::setError();
+		$size = 0;
+		foreach (glob(rtrim($path, '/').'/*', GLOB_NOSORT) as $each)
+			$size += is_file($each) ? filesize($each) : $this->dirSize($each);
+		return $size;
 	}
 }
 ?>
