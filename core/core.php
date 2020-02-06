@@ -2,9 +2,9 @@
 //by Krzysztof Żyłka
 //programista.vxm.pl/fourframework
 class core{
-	public static $error = [-1, '', ''];
+	public static $error = [-1, '', '', null];
 	public static $info = [
-		'version' => '0.2.9 Alpha',
+		'version' => '0.2.10 Alpha',
 		'releaseDate' => '04.02.2020',
 		'frameworkPath' => null
 	];
@@ -27,7 +27,8 @@ class core{
 	public static $debug = [
 		'showError' => True,
 		'saveError' => True,
-		'showCoreError' => True
+		'showCoreError' => True,
+		'saveCoreError' => True,
 	];
 	private static $loadMultipleModule = false;
 	public static function init(array $option = []){
@@ -51,15 +52,21 @@ class core{
 		//debug
 		if(self::$debug['saveError']){
 			ini_set("log_errors", 1);
-			ini_set("error_log", self::$path['log'].'php_error.log');
+			ini_set("error_log", self::$path['log'].'php_error_'.date('Ym').'.log');
 		}
 		//include library class
 		self::$library = include('library.php');
 		return true;
 	}
 	public static function setError(int $number=-1, string $name='', $description=''){
-		self::$error = [$number, $name, $description];
-		if(self::$debug['showCoreError'] == true and $number > -1){
+		self::$error = [$number, $name, $description, $number>-1?debug_backtrace():null];
+		if(self::$debug['saveCoreError'] === true and $number > -1){
+			$path = self::$path['log'].'core_error_'.date('Ymd').'.log';
+			$date = date('Y_m_d h:m:s');
+			$data = '['.$date.'] ['.$number.'] ['.htmlspecialchars($name).'] ['.htmlspecialchars($description).'] ['.base64_encode(json_encode(self::$error[3])).']'.PHP_EOL;
+			file_put_contents($path, $data, FILE_APPEND);
+		}
+		if(self::$debug['showCoreError'] === true and $number > -1){
 			echo '<b>Core error:</b> ('.$number.') [<i>'.$name.'</i>] ';
 			if(is_array($description))
 				print_r($description);
