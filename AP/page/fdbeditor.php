@@ -20,7 +20,8 @@ if(isset($_SESSION['fdbConnect']))
 						<i class="fas fa-database"></i> Baza danych
 					</div>
 					<div class="card-body">
-						<a href="?page=fdbeditor&fdb=utworz_baze"><button type="button" class="btn btn-block btn-primary btn-xs" style='margin-bottom: 5px;'><i class="fas fa-plus"></i> Utwórz nową bazę danych</button></a>
+						<a href="<?php echo !isset($_SESSION['fdbConnect'])?'#':'?page=fdbeditor&fdb=script' ?>"><button type="button" style='margin-bottom: 5px;' class="btn btn-block btn-secondary btn-xs <?php echo isset($_SESSION['fdbConnect'])?'':'disabled' ?>"><i class="fas fa-scroll"></i> Wykonaj skrypt</button></a>
+						<a href="<?php echo isset($_SESSION['fdbConnect'])?'#':'?page=fdbeditor&fdb=utworz_baze' ?>"><button type="button" class="btn btn-block btn-primary btn-xs <?php echo isset($_SESSION['fdbConnect'])?'disabled':'' ?>" style='margin-bottom: 5px;'><i class="fas fa-plus"></i> Utwórz nową bazę danych</button></a>
 						<a href="<?php echo isset($_SESSION['fdbConnect'])?'#':'?page=fdbeditor&fdb=polacz' ?>"><button type="button" class="btn btn-block btn-default btn-xs <?php echo !isset($_SESSION['fdbConnect'])?'':'disabled' ?>" style='margin-bottom: 5px;'><i class="fas fa-plug"></i> Połącz z bazą danych</button></a>
 						<a href="<?php echo !isset($_SESSION['fdbConnect'])?'#':'?page=fdbeditor&fdb=rozlacz' ?>"><button type="button" class="btn btn-block btn-info btn-xs <?php echo isset($_SESSION['fdbConnect'])?'':'disabled' ?>"><i class="fas fa-sign-out"></i> Rozłącz z bazą</button></a>
 					</div>
@@ -32,6 +33,7 @@ if(isset($_SESSION['fdbConnect']))
 					<div class="card-body">
 						<?php
 						if(isset($_SESSION['fdbConnect'])){
+							echo '<a href="?page=fdbeditor&fdb=tabela_mod"><button type="button" class="btn btn-block btn-secondary btn-xs" style="margin-bottom: 5px;"><i class="fas fa-plus"></i> Utwórz tabelę</button></a>';
 							echo '<a href="?page=fdbeditor&fdb=tabele"><button type="button" class="btn btn-block btn-info btn-xs" style="margin-bottom: 5px;">Lista tabel</button></a>';
 							$list = core::$library->db->request('ADVENCED GET tableList', $_GLOBALS['fdbEditor']);
 							foreach($list as $name){

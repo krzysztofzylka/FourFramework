@@ -9,7 +9,7 @@ core::$library->database->connect($config);
 $account = core::loadModule('account');
 if(!$account->checkUser())
 	header('location: login.php');
-$_GLOBALS['wersja'] = '1.0';
+$_GLOBALS['wersja'] = '1.0a';
 ?>
 <!DOCTYPE html>
 <html lang="pl">
@@ -20,6 +20,7 @@ $_GLOBALS['wersja'] = '1.0';
 		<title>Admin Panel - FourFramework</title>
 		<link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
 		<link rel="stylesheet" href="dist/css/adminlte.min.css">
+		<script src='https://code.jquery.com/jquery-3.4.1.min.js'></script>
 	</head>
 	<body class="hold-transition sidebar-mini">
 		<div class="wrapper">
