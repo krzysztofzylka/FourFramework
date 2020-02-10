@@ -1,0 +1,9 @@
+deny from all
+<Files *.css>
+Order deny,allow
+Allow from all
+</Files>
+<Files *.js>
+Order deny,allow
+Allow from all
+</Files>

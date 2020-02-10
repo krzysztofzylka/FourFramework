@@ -1,6 +1,6 @@
 <?php
 return $this->db = new class(){
-	public $version = '1.1.4';
+	public $version = '1.1.5';
 	public $tableVersion = '1.1';
 	public $lastInsertID = null;
 	private $path = '';
@@ -220,8 +220,10 @@ return $this->db = new class(){
 		$this->___log(['$tableName' => $tableName, '$setData' => $setData, '$where' => $where]);
 		$readFile = $this->____readFile($tableName);
 		$data = $readFile['data'];
-		if($where <> null)
+		if($where <> null){
 			$data = $this->__search($data, $where);
+			if(core::$error[0] > -1) return false; //check error
+		}
 		foreach(array_keys($data) as $key)
 			foreach($setData as $newData){
 				$newData = core::$library->array->trim($newData);
@@ -242,8 +244,10 @@ return $this->db = new class(){
 		$this->___log(['$tableName' => $tableName, '$where' => $where]);
 		$readFile = $this->____readFile($tableName);
 		$data = $readFile['data'];
-		if($where <> null)
+		if($where <> null){
 			$data = $this->__search($data, $where);
+			if(core::$error[0] > -1) return false; //check error
+		}
 		foreach(array_keys($data) as $key)
 			unset($readFile['data'][$key]);
 		$readFile['data'] = array_values(array_filter($readFile['data']));
@@ -312,8 +316,7 @@ return $this->db = new class(){
 		$autoincrement = $readFile['option']['autoincrement'];
 		$arrayData = array_combine($column, $data);
 		$tableItem = $this->___checkTableItem($arrayData, $readFile['column'], $autoincrement);
-		if(core::$error[0] > -1)
-			return false;
+		if(core::$error[0] > -1) return false; //check error
 		$this->___log(['___checkTableItem' => $tableItem]);
 		$readFile['option']['autoincrement']['count']++;
 		array_push($readFile['data'], $tableItem);
@@ -328,8 +331,10 @@ return $this->db = new class(){
 			return false;
 		$data = $this->____readFile(htmlspecialchars(basename($tableName)), 'data');
 		$column = $this->____readFile(htmlspecialchars(basename($tableName)), 'column');
-		if($where <> null)
+		if($where <> null){
 			$data = $this->__search($data, $where);
+			if(core::$error[0] > -1) return false; //check error
+		}
 		if($wData <> '*'){
 			$find = core::$library->array->trim(core::$library->string->explode(',', $wData));
 			foreach($find as $id => $string)
@@ -344,6 +349,7 @@ return $this->db = new class(){
 		}
 		$data = array_values($data);
 		$data = $this->___convertDataType($data, $column);
+		if(core::$error[0] > -1) return false; //check error
 		$this->___log(['$tableName' => $tableName, '$where' => $where, '$wData' => $wData, '$data' => $data]);
 		return $data;
 	}
@@ -385,6 +391,7 @@ return $this->db = new class(){
 			return false;
 		$readTable = $this->____readFile(htmlspecialchars(basename($tableName)));
 		$readTable['data'] = $this->___convertDataType($readTable['data'], $readTable['column']);
+		if(core::$error[0] > -1) return false; //check error
 		foreach($readTable['column'] as $id => $item){
 			switch($item['type']){
 				case 'int':
@@ -415,12 +422,12 @@ return $this->db = new class(){
 				case 'integer':
 				case 'int':
 					$item['type'] = 'integer';
-					$return[$item['name']] = (int)$return[$item['name']];
+					$return[$item['name']] = (int)$arrData[$item['name']];
 					break;
 				case 'boolean':
 				case 'bool':
 					$item['type'] = 'boolean'; 
-					$return[$item['name']] = boolval($return[$item['name']]);
+					$return[$item['name']] = boolval($arrData[$item['name']]);
 					$item['length'] = 1;
 					break;
 				default:
@@ -428,9 +435,9 @@ return $this->db = new class(){
 					break;
 			}
 			if(gettype($return[$item['name']]) <> $item['type'] and $item['type'] <> 'text')
-				return core::setError(52, 'error data type', 'column: '.$item['name'].', type: '.$item['type'].' ('.gettype($return[$item['name']]).')');
+				return core::setError(52, 'error data type', 'column: '.$item['name'].', type: '.$item['type'].' ('.gettype($arrData[$item['name']]).')');
 			if(strlen($return[$item['name']]) > $item['length'] and $item['type'] <> 'text')
-				return core::setError(53, 'error data length', 'column: '.$item['name'].', length: '.strlen($return[$item['name']]).'/'.$item['length']);
+				return core::setError(53, 'error data length', 'column: '.$item['name'].', length: '.strlen($arrData[$item['name']]).'/'.$item['length']);
 		}
 		return $return;
 	}

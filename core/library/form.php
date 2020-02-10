@@ -1,6 +1,7 @@
 <?php
 return $this->form = new class(){ 
-	public $version = '1.0a'; 
+	public $version = '1.1'; 
+	private $jqueryPOSTScript = false;
 	public function list(string $method){ 
 		core::setError(); 
 		$method = strtoupper($method); 
@@ -14,6 +15,23 @@ return $this->form = new class(){
 				return array_keys($_POST); 
 				break;
 		}
+	}
+	public function jqueryPOSTScript(){
+		if($this->jqueryPOSTScript === true)
+			return false;
+		echo "<script>
+		function UrlPostData(data){
+			$('body').append('<form id=\"FFModUrlPostDataForm\" method=\"POST\"></form>');
+			var exp = data.split(\"&\");
+			exp.forEach(function(item) {
+				var exp2 = item.split(\"=\", 2);
+				$('#FFModUrlPostDataForm').append('<input type=\"hidden\" name=\"'+exp2[0]+'\" value=\"'+exp2[1]+'\">');
+			});
+			$('#FFModUrlPostDataForm').submit();
+		}
+		</script>";
+		$this->jqueryPOSTScript = true;
+		return true;
 	}
 	public function protectAllData($method) : bool{ 
 		core::setError();
@@ -37,5 +55,6 @@ return $this->form = new class(){
 		$method_list = ['GET', 'POST']; 
 		return array_search($name, $method_list)>-1?true:false; 
 	}
+	
 }; 
 ?>
