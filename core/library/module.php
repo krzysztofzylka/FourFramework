@@ -36,7 +36,7 @@ return $this->module = new class(){
 			return core::setError(2, 'Module dont have admin panel');
 		$file = $module['path'].$module['config']['adminPanel'];
 		if(!file_exists($file))
-			return core::setError(3, 'AdminPanel file not found', ['path' => $file]);
+			return core::setError(2, 'AdminPanel file not found', ['path' => $file]);
 		include($file);
 	}
 };
