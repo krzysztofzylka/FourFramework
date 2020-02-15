@@ -1,6 +1,6 @@
 <?php
 return $this->network = new class(){ 
-	public $version = '1.5a';
+	public $version = '1.5b';
 	public $method = 0;
 	public function __construct(){ 
 		$this->_getMethod(); 
@@ -75,8 +75,8 @@ return $this->network = new class(){
 	}
 	public function getCurrentPageURL() : string{ 
 		core::setError(); 
-		$url  = @( $_SERVER["HTTPS"] != 'on' ) ? 'http://'.$_SERVER["SERVER_NAME"] :  'https://';
-		$url .= ( $_SERVER["SERVER_PORT"] <> 80 ) ? ":".$_SERVER["SERVER_PORT"] : "";
+		$url  = @( $_SERVER["HTTPS"] != 'on' ) ? 'http://'.$_SERVER["SERVER_NAME"] :  'https://'.$_SERVER["SERVER_NAME"];
+		$url .= ( $_SERVER["SERVER_PORT"] <> 80 and $_SERVER["SERVER_PORT"] <> 443  ) ? ":".$_SERVER["SERVER_PORT"] : "";
 		$url .= $_SERVER["REQUEST_URI"];
 		return $url;
 	}
