@@ -1,6 +1,6 @@
 <?php
 return $this->db = new class(){
-	public $version = '1.1.5';
+	public $version = '1.1.6';
 	public $tableVersion = '1.1';
 	public $lastInsertID = null;
 	private $path = '';
@@ -55,17 +55,17 @@ return $this->db = new class(){
 	}
 	public function request(string $script, string $connect = null){
 		core::setError();
-		if((count($this->connection) == 0) and (!isset($this->connection[$connect]) or !is_array($this->connection[$connect])))
+		if((count($this->connection) == 0) and (!isset($this->connection[$connect]) or !is_array($this->connection[$connect]))) //jeżeli nie połączono z żadną bazą danych
 			return core::setError(1, 'connection error'); //error 1
-		$connect = $connect??array_keys($this->connection)[0];
-		foreach($this->regex as $regexp){
+		$connect = $connect??array_keys($this->connection)[0]; //pobieranie połączenia (jeżeli nie wybrano to wybranie pierwszego połączenia)
+		foreach($this->regex as $regexp){ //pętla regexp
 			preg_match_all('/'.$regexp.'/msi', $script, $matches, PREG_SET_ORDER, 0);
-			if(count($matches) > 0){
-				$this->activeConnect = $connect;
-				unset($matches[0][0]);
-				$matches[0] = array_values($matches[0]);
-				$request = $this->_request($matches[0]);
-				$this->activeConnect = null; 
+			if(count($matches) > 0){ //jeżeli znaleziono
+				$this->activeConnect = $connect; //ustalenie aktywnego połączenia dla wywołania funkcji
+				unset($matches[0][0]); //czyszczenie pierwszego elementu regexp (pełny skrypt)
+				$matches[0] = array_values($matches[0]); //pobranie wartości z tablicy
+				$request = $this->_request($matches[0]); //wywołanie funkcji _request
+				$this->activeConnect = null; //czyszczenie aktywnego połączenia
 				return $request;
 			}
 		}
@@ -73,7 +73,7 @@ return $this->db = new class(){
 	}
 	public function createDatabase(string $name, string $password = null){
 		core::setError();
-		$path = $this->path.basename(htmlspecialchars($name)).'\\';
+		$path = $this->path.basename(htmlspecialchars($name)).'/';
 		if(file_exists($path))
 			return core::setError(1, 'database is already exists');
 		mkdir($path, 0700, true);
@@ -81,6 +81,7 @@ return $this->db = new class(){
 		return true;
 	}
 	public function databaseList(){
+		core::setError();
 		$return = [];
 		$path = core::$path['base'].'db/';
 		$scan = scandir($path);
@@ -105,12 +106,11 @@ return $this->db = new class(){
 	}
 	private function _request(array $matches){
 		core::setError();
-		$this->___log(['$matches' => $matches]);
+		$this->___log(['$matches' => $matches], '_request');
 		switch($matches[0]){
 			case 'SELECT':
-				$matches[1] = trim($matches[1]);
-				if($matches[1] === '')
-					$matches[1] = '*';
+				$matches = core::$library->array->trim($matches);
+				if($matches[1] === '') $matches[1] = '*';
 				return $this->__selectData($matches[2], isset($matches[3])?$matches[3]:null, $matches[1]);
 				break;
 			case 'ADD DATA TO':
@@ -154,7 +154,7 @@ return $this->db = new class(){
 	}
 	private function __alterTable(string $tableName, string $type, string $code){
 		core::setError();
-		$this->___log(['$tableName' => $tableName, '$type' => $type, '$code' => $code]);
+		$this->___log(['$tableName' => $tableName, '$type' => $type, '$code' => $code], '__alterTable');
 		if($this->___checkTable($tableName) === false)
 			return false;
 		switch($type){
@@ -163,11 +163,11 @@ return $this->db = new class(){
 				$code = $this->___columnDataExplode($code);
 				if(core::$error[0] > -1)
 					return core::setError(102, 'error add column', 'error column type');
-				$this->___log(['$code' => $code]);
+				$this->___log(['$code' => $code], '__alterTable');
 				if(core::$library->array->searchByKey($readFile['column'], 'name', $code['name']) > -1)
 					return core::setError(103, 'error add column', 'column is already exists');
 				$column = ['name' => $code['name'], 'type' => $code['type'], 'length' => $code['length']];
-				$this->___log(['$column' => $column]);
+				$this->___log(['$column' => $column], '__alterTable');
 				array_push($readFile['column'], $column);
 				for($i=0; $i<count($readFile['data']); $i++)
 					$readFile['data'][$i][$column['name']] = $code['data'];
@@ -182,7 +182,7 @@ return $this->db = new class(){
 	}
 	private function __advenced(string $opt, string $type, string $tableName = null){
 		core::setError();
-		$this->___log(['$opt' => $opt, '$tableName' => $tableName, '$type' => $type]);
+		$this->___log(['$opt' => $opt, '$tableName' => $tableName, '$type' => $type], '__advenced');
 		switch($type){
 			case 'GET':
 				switch($opt){
@@ -217,11 +217,13 @@ return $this->db = new class(){
 		core::setError();
 		if($this->___checkTable($tableName) === false)
 			return false;
-		$this->___log(['$tableName' => $tableName, '$setData' => $setData, '$where' => $where]);
+		$this->___log(['$tableName' => $tableName, '$setData' => $setData, '$where' => $where], '__updateData');
 		$readFile = $this->____readFile($tableName);
 		$data = $readFile['data'];
-		if($where <> null)
+		if($where <> null){
 			$data = $this->__search($data, $where);
+			if(core::$error[0] > -1) return false; //check error
+		}
 		foreach(array_keys($data) as $key)
 			foreach($setData as $newData){
 				$newData = core::$library->array->trim($newData);
@@ -236,14 +238,16 @@ return $this->db = new class(){
 	}
 	private function __deleteData(string $tableName, string $where=null){
 		core::setError();
-		$this->___log(['$tableName' => $tableName, $where => $where]);
+		$this->___log(['$tableName' => $tableName, $where => $where], '__deleteData');
 		if($this->___checkTable($tableName) === false)
 			return false;
-		$this->___log(['$tableName' => $tableName, '$where' => $where]);
+		$this->___log(['$tableName' => $tableName, '$where' => $where], '__deleteData');
 		$readFile = $this->____readFile($tableName);
 		$data = $readFile['data'];
-		if($where <> null)
+		if($where <> null){
 			$data = $this->__search($data, $where);
+			if(core::$error[0] > -1) return false; //check error
+		}
 		foreach(array_keys($data) as $key)
 			unset($readFile['data'][$key]);
 		$readFile['data'] = array_values(array_filter($readFile['data']));
@@ -260,7 +264,7 @@ return $this->db = new class(){
 			if(core::$error[0] > -1)
 				return core::setError(102, 'error add column', 'error column type');
 		}
-		$this->___log(['$name' => $name, '$data' => $data]);
+		$this->___log(['$name' => $name, '$data' => $data], '__createTable');
 		if(file_exists($this->connection[$this->activeConnect]['path'].$name.'.fdb'))
 			return core::setError(101, 'error create table', 'table is already exists');
 		$table = [
@@ -291,7 +295,7 @@ return $this->db = new class(){
 			}
 		}
 		$table['column']['count'] = count($table['column'])-1;
-		$this->___log(['$table' => $table]);
+		$this->___log(['$table' => $table], '__createTable');
 		return $this->____saveFile($name, $table);
 	}
 	private function __addData(string $tableName, string $column, string $data){
@@ -299,22 +303,23 @@ return $this->db = new class(){
 		if($this->___checkTable($tableName) === false)
 			return false;
 		$this->lastInsertID = null;
+		//column
 		$column = core::$library->array->trim(core::$library->string->explode(',', $column));
 		foreach($column as $id => $string)
 			$column[$id] = core::$library->string->removeQuotes($string);
+		//data
 		$data = core::$library->array->trim(core::$library->string->explode(',', $data));
 		foreach($data as $id => $string)
 			$data[$id] = core::$library->string->removeQuotes($string);
-		$this->___log(['$tableName' => $tableName, '$data' => $data, '$column' => $column]);
+		$this->___log(['$tableName' => $tableName, '$data' => $data, '$column' => $column], '__addData');
 		if(count($column) <> count($data))
 			return core::setError(50, 'data count error');
 		$readFile = $this->____readFile($tableName);
 		$autoincrement = $readFile['option']['autoincrement'];
 		$arrayData = array_combine($column, $data);
 		$tableItem = $this->___checkTableItem($arrayData, $readFile['column'], $autoincrement);
-		if(core::$error[0] > -1)
-			return false;
-		$this->___log(['___checkTableItem' => $tableItem]);
+		if(core::$error[0] > -1) return false; //check error
+		$this->___log(['___checkTableItem' => $tableItem], '__addData');
 		$readFile['option']['autoincrement']['count']++;
 		array_push($readFile['data'], $tableItem);
 		if($autoincrement['ai'] == true)
@@ -326,38 +331,37 @@ return $this->db = new class(){
 		core::setError();
 		if($this->___checkTable($tableName) === false)
 			return false;
-		$data = $this->____readFile(htmlspecialchars(basename($tableName)), 'data');
-		$column = $this->____readFile(htmlspecialchars(basename($tableName)), 'column');
-		if($where <> null)
+		$data = $this->____readFile(htmlspecialchars(basename($tableName)), 'data'); //read data
+		$column = $this->____readFile(htmlspecialchars(basename($tableName)), 'column'); //read column
+		//jeżeli where
+		if($where <> null){
 			$data = $this->__search($data, $where);
-		if($wData <> '*'){
-			$find = core::$library->array->trim(core::$library->string->explode(',', $wData));
-			foreach($find as $id => $string)
-				$find[$id] = core::$library->string->removeQuotes($string);
-			$noDelete = [];
-			foreach($find as $arr)
-				array_push($noDelete, $arr);
-			foreach($data as $id => $array)
-				foreach($array as $arrayName => $string)
-					if(array_search($arrayName, $noDelete) === false)
-						unset($data[$id][$arrayName]);
+			if(core::$error[0] > -1) return false; //check error
 		}
+		//zwracanie tylko poszczególnych kolumn
+		if($wData <> '*')
+			foreach(array_keys($data) as $key)
+				foreach(array_keys($data[$key]) as $dataKey)
+					if(is_bool(array_search($dataKey, core::$library->array->trim(core::$library->string->explode(',', $wData)))))
+						unset($data[$key][$dataKey]);
 		$data = array_values($data);
 		$data = $this->___convertDataType($data, $column);
-		$this->___log(['$tableName' => $tableName, '$where' => $where, '$wData' => $wData, '$data' => $data]);
+		if(core::$error[0] > -1) return false; //check error
+		$this->___log(['$tableName' => $tableName, '$where' => $where, '$wData' => $wData, '$data' => $data], '__selectData');
 		return $data;
 	}
 	private function __search(array $data, string $where){
 		core::setError();
 		$explode = core::$library->string->explode(' and ', $where);
-		$this->___log(['data' => $data, '$where' => $where, '$explode' => $explode]);
+		$this->___log(['data' => $data, '$where' => $where, '$explode' => $explode], '__search');
 		foreach($explode as $item){
-			preg_match_all("/(.+) ?([=|&]) ?(.+)/msi", $item, $itemMatches, PREG_SET_ORDER, 0);
+			preg_match_all("/(.+) ?([=|&|>|<]) ?(.+)/msi", $item, $itemMatches, PREG_SET_ORDER, 0);
 			unset($itemMatches[0][0]);
 			$find = array_values($itemMatches[0]);
+			$find = core::$library->array->trim($find); //czyszenie danych w tablicy
 			$find[0] = core::$library->string->removeQuotes($find[0]);
 			$find[2] = core::$library->string->removeQuotes($find[2]);
-			$this->___log(['$find[0]' => $find[0], '$find[2]' => $find[2]]);
+			$this->___log(['$find' => $find], '__search');
 			switch($find[1]){
 				case '=':
 					foreach($data as $dataID => $dataData){
@@ -375,8 +379,25 @@ return $this->db = new class(){
 							unset($data[$dataID]);
 					}
 					break;
+				case '>':
+					foreach($data as $dataID => $dataData){
+						if(!isset($dataData[$find[0]]))
+							return core::setError(21, 'column not found', 'name: '.$find[0]);
+						if($dataData[$find[0]] < $find[2])
+							unset($data[$dataID]);
+					}
+					break;
+				case '<':
+					foreach($data as $dataID => $dataData){
+						if(!isset($dataData[$find[0]]))
+							return core::setError(21, 'column not found', 'name: '.$find[0]);
+						if($dataData[$find[0]] > $find[2])
+							unset($data[$dataID]);
+					}
+					break;
 			}
 		}
+		$this->___log(['$data' => $data], '__search');
 		return $data;
 	}
 	private function __repairTable(string $tableName){
@@ -385,6 +406,7 @@ return $this->db = new class(){
 			return false;
 		$readTable = $this->____readFile(htmlspecialchars(basename($tableName)));
 		$readTable['data'] = $this->___convertDataType($readTable['data'], $readTable['column']);
+		if(core::$error[0] > -1) return false; //check error
 		foreach($readTable['column'] as $id => $item){
 			switch($item['type']){
 				case 'int':
@@ -400,6 +422,7 @@ return $this->db = new class(){
 		return true;
 	}
 	private function ___checkTableItem(array $arrData, array $column, array $ai){
+		core::setError();
 		$this->___log(['$arrData' => $arrData, '$column' => $column, '$ai' => $ai]);
 		$return = [];
 		foreach($column as $id => $item){
@@ -413,12 +436,10 @@ return $this->db = new class(){
 				return core::setError(51, 'error search column', 'error find column \''.$item['name'].'\'');
 			switch($item['type']){
 				case 'integer':
-				case 'int':
 					$item['type'] = 'integer';
 					$return[$item['name']] = (int)$arrData[$item['name']];
 					break;
 				case 'boolean':
-				case 'bool':
 					$item['type'] = 'boolean'; 
 					$return[$item['name']] = boolval($arrData[$item['name']]);
 					$item['length'] = 1;
@@ -428,9 +449,9 @@ return $this->db = new class(){
 					break;
 			}
 			if(gettype($return[$item['name']]) <> $item['type'] and $item['type'] <> 'text')
-				return core::setError(52, 'error data type', 'column: '.$item['name'].', type: '.$item['type'].' ('.gettype($return[$item['name']]).')');
+				return core::setError(52, 'error data type', 'column: '.$item['name'].', type: '.$item['type'].' ('.gettype($arrData[$item['name']]).')');
 			if(strlen($return[$item['name']]) > $item['length'] and $item['type'] <> 'text')
-				return core::setError(53, 'error data length', 'column: '.$item['name'].', length: '.strlen($return[$item['name']]).'/'.$item['length']);
+				return core::setError(53, 'error data length', 'column: '.$item['name'].', length: '.strlen($arrData[$item['name']]).'/'.$item['length']);
 		}
 		return $return;
 	}
@@ -443,13 +464,11 @@ return $this->db = new class(){
 			return core::setError(20, 'table is not already exists');
 		return true;
 	}
-	private function ___log($data){
+	private function ___log($data, $title=''){
 		core::setError();
 		if($this->advencedLog === false)
 			return false;
-		echo '<pre>';
-		var_dump($data);
-		echo '</pre>';
+		core::$library->debug->print_r($data, false, 'fdbAdvInfo: '.$title);
 	}
 	private function ___columnDataExplode(string $data){
 		core::setError();
@@ -465,13 +484,11 @@ return $this->db = new class(){
 				$explode[1] = str_replace('('.$length.')', '', $explode[1]);
 			}
 			switch($explode[1]){
-				case 'bool':
 				case 'boolean':
 					$explode[1] = 'boolean';
 					$return['length'] = 1;
 					$return['data'] = (int)0;
 					break;
-				case 'int':
 				case 'integer':
 					$explode[1] = 'integer';
 					$return['data'] = (int)0;
@@ -500,7 +517,6 @@ return $this->db = new class(){
 			switch($item['type']){
 				case 'string':
 					break;
-				case 'int':
 				case 'integer':
 					foreach($data as $id => $item2){
 						if(!isset($data[$id][$item['name']]))
@@ -508,7 +524,6 @@ return $this->db = new class(){
 						$data[$id][$item['name']] = (int)$item2[$item['name']];
 					}
 					break;
-				case 'bool':
 				case 'boolean':
 					foreach($data as $id => $item2){
 						if(!isset($data[$id][$item['name']]))
@@ -536,38 +551,28 @@ return $this->db = new class(){
 	}
 	private function ____readFile(string $tableName, string $type = 'all'){
 		core::setError();
-		$password = $this->connection[$this->activeConnect]['pass'];
 		$readFile = file($this->connection[$this->activeConnect]['path'].$tableName.'.fdb');
+		$returnData = ['option' => null, 'column' => null, 'data' => null];
 		switch($type){
+			case "all":
 			case "option":
-				$option = json_decode($readFile[0], true);
-				$option['autoincrement'] = json_decode(core::$library->crypt->decrypt($readFile['option']['autoincrement'], $password), true);
-				return $option;
-				break;
+				$returnData['option'] = json_decode(trim($readFile[0]), true);
+				$returnData['option']['autoincrement'] = json_decode($this->____decrypt($returnData['option']['autoincrement']), true);
+				if($type === "option") return $returnData['option'];
 			case "column":
-				$column = json_decode(core::$library->crypt->decrypt($readFile[1], $password), true);
-				if($column === null or $column === false)
-					return [];
-				return $column;
-				break;
+				$returnData['column'] = json_decode($this->____decrypt(trim($readFile[1])), true);
+				if(!is_array($returnData['column'])) $returnData['column'] = []; //naprawa
+				if($type === "column") return $returnData['column'];
 			case "data":
-				$data = json_decode(core::$library->crypt->decrypt($readFile[2], $password), true);
-				if($data === null or $data === false)
-					return [];
-				return $data;
-				break;
+				$returnData['data'] = json_decode($this->____decrypt(trim($readFile[2])), true);
+				if(!is_array($returnData['data'])) $returnData['data'] = []; //naprawa
+				if($type === "data") return $returnData['data'];
 		}
-		$readFile = [
-			'option' => json_decode($readFile[0], true), 
-			'column' => json_decode(core::$library->crypt->decrypt($readFile[1], $password), true),
-			'data' => json_decode(core::$library->crypt->decrypt($readFile[2], $password), true)
-		];
-		if($readFile['column'] === null or $readFile['column'] === false)
-			$readFile['column'] = [];
-		if($readFile['data'] === null or $readFile['data'] === false)
-			$readFile['data'] = [];
-		$readFile['option']['autoincrement'] = json_decode(core::$library->crypt->decrypt($readFile['option']['autoincrement'], $password), true);
-		return $readFile; 
+		return $returnData;
+	}
+	private function ____decrypt($string){
+		$password = $this->connection[$this->activeConnect]['pass']; //pobranie hasła
+		return core::$library->crypt->decrypt($string, $password);
 	}
 }
 ?>
