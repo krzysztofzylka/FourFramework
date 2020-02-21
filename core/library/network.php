@@ -1,6 +1,6 @@
 <?php
 return $this->network = new class(){ 
-	public $version = '1.5b';
+	public $version = '1.6';
 	public $method = 0;
 	public function __construct(){ 
 		$this->_getMethod(); 
@@ -73,11 +73,18 @@ return $this->network = new class(){
 		}
 		return false;
 	}
-	public function getCurrentPageURL() : string{ 
-		core::setError(); 
+	public function getCurrentPageURL(array $option = []) : string{ 
+		core::setError();
+		if(!isset($option['request_uri']))
+			$option['request_uri'] = true;
+		if(!isset($option['dirOnly']))
+			$option['dirOnly'] = false;
 		$url  = @( $_SERVER["HTTPS"] != 'on' ) ? 'http://'.$_SERVER["SERVER_NAME"] :  'https://'.$_SERVER["SERVER_NAME"];
 		$url .= ( $_SERVER["SERVER_PORT"] <> 80 and $_SERVER["SERVER_PORT"] <> 443  ) ? ":".$_SERVER["SERVER_PORT"] : "";
-		$url .= $_SERVER["REQUEST_URI"];
+		if($option['request_uri'])
+			$url .= $_SERVER["REQUEST_URI"];
+		if($option['dirOnly'])
+			$url = str_replace(basename($_SERVER['PHP_SELF']).($_SERVER['QUERY_STRING'] === ''?'':'?'.$_SERVER['QUERY_STRING']), '', $url);
 		return $url;
 	}
 	public function getClientIP() : string{
