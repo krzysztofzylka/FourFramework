@@ -1,6 +1,6 @@
 <?php
 return $this->crypt = new class(){ 
-	public $version = '1.2'; 
+	public $version = '1.3'; 
 	private $method = 'AES-256-CBC'; 
 	public $salt = '0123456789012345'; 
 	public $hashSalt = 'FourFramework2020!+#';
@@ -90,9 +90,11 @@ return $this->crypt = new class(){
 	}
 	public function hashCheck(string $string, string $hash) : bool{ 
 		core::setError();
-		$algoritm = substr($hash, 1, 3); 
-		$string = $this->hash($string, $algoritm); 
-		return $string===$hash; 
+		$algoritm = substr($hash, 1, 3);
+		if(substr($hash, 0, 1) <> '$' and substr($hash, 4, 1) <> '$')
+			return core::setError(1, 'hash syntax error');
+		$string = $this->hash($string, $algoritm);
+		return $string===$hash;
 	}
 	public function isBase64(string $crypt) : bool{ 
 		core::setError();
