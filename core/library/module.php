@@ -1,6 +1,6 @@
 <?php
 return $this->module = new class(){ 
-	public $version = '1.0';
+	public $version = '1.0a';
 	public function getConfig(string $name){
 		core::setError();
 		if(!isset(core::$module_add[$name]))
@@ -36,7 +36,7 @@ return $this->module = new class(){
 			return core::setError(2, 'Module dont have admin panel');
 		$file = $module['path'].$module['config']['adminPanel'];
 		if(!file_exists($file))
-			return core::setError(2, 'AdminPanel file not found', ['path' => $file]);
+			return core::setError(3, 'AdminPanel file not found', ['path' => $file]);
 		include($file);
 	}
 };
