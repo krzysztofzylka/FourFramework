@@ -1,24 +1,33 @@
 <?php
 return $this->string = new class(){ 
-	public $version = '1.4b'; 
+	public $version = '1.5'; 
 	public function between(string $string, string $start, string $end, int $offset=0){ 
-		core::setError(); 
-		$strpos1 = core::$library->string->strpos($string, $start, 0+$offset)+1; 
-		$strpos2 = core::$library->string->strpos($string, $end, 0+$offset);
-		if($strpos1 < 0 or $strpos2 < 0)
-			return null;
-		return substr($string, $strpos1, $strpos2-$strpos1); 
+		core::setError();
+		if($offset < -1) return core::setError(1, 'offset error'); //jeżeli offset jest mniejsze niż -1
+		$return = []; //zmienna dla zwracania danych
+		$adding = $start===$end?1:0;
+		$multiple = $offset===-1?true:false;
+		if($multiple) $offset = 0;
+		do{
+			$strpos1 = $this->strpos($string, $start, $offset*($adding===1?2:1))+1; 
+			$strpos2 = $this->strpos($string, $end, $adding+(($adding===1?2:1)*$offset));
+			if($strpos1 < 0 or $strpos2 < 0) break; //jeżeli nie znaleziono
+			array_push($return, substr($string, $strpos1, $strpos2-$strpos1));
+			if(!$multiple) break; //jeżęli pobranie tylko pierwszego elementu
+			$offset++;
+		}while(true);
+		if(!$multiple) return $return[0]; //zwracanie pierwszego elementu
+		return $return; //zwracanie tablicy
 	}
 	public function strpos(string $string, string $searchString, int $offset = 0) : int{
 		core::setError(); 
-		if($offset < 0) 
-			return core::setError(1, 'offset error', 'offset must be greater than -1'); 
+		if($offset < 0) return core::setError(1, 'offset error', 'offset must be greater than -1'); //bład jeżeli offset jest mniejszy od 0
 		$stringLen = strlen($string); 
 		$searchStringLen = strlen($searchString); 
 		for($i=0; $i<=$stringLen-1; $i++){ 
-			if($string[$i] == $searchString[0]){ 
+			if(strval($string[$i]) == strval($searchString[0])){ 
 				if($i+$searchStringLen > $stringLen) 
-					continue; 
+					break; 
 				$generateString = ''; 
 				for($x=0; $x<=$searchStringLen-1; $x++) 
 					$generateString .= $string[$i+$x]; 
@@ -49,9 +58,9 @@ return $this->string = new class(){
 	}
 	public function clean(string $string) : string{ 
 		core::setError(); 
+		$string = trim($string);
 		$string = strip_tags($string); 
-		if(!get_magic_quotes_gpc())
-			$string = addslashes($string); 
+		$string = addslashes($string); 
 		return $string; 
 	}
 	public function explode(string $delim, string $string, int $limit = -1, array $option = []) : array{
