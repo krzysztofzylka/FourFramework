@@ -1,6 +1,6 @@
 <?php
 return $this->network = new class(){ 
-	public $version = '1.6';
+	public $version = '1.7';
 	public $method = 0;
 	public function __construct(){ 
 		$this->_getMethod(); 
@@ -79,19 +79,19 @@ return $this->network = new class(){
 			$option['request_uri'] = true;
 		if(!isset($option['dirOnly']))
 			$option['dirOnly'] = false;
-		$url  = @( $_SERVER["HTTPS"] != 'on' ) ? 'http://'.$_SERVER["SERVER_NAME"] :  'https://'.$_SERVER["SERVER_NAME"];
-		$url .= ( $_SERVER["SERVER_PORT"] <> 80 and $_SERVER["SERVER_PORT"] <> 443  ) ? ":".$_SERVER["SERVER_PORT"] : "";
-		if($option['request_uri'])
-			$url .= $_SERVER["REQUEST_URI"];
+		$url = $_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['HTTP_HOST']; //<http/https>://{host}:{port}
+		if($option['request_uri'] === false)
+			return $url.'/'; //request_uri
+		$url .= $_SERVER['REQUEST_URI']; //<dir>/<dir>/<...>/<file>
 		if($option['dirOnly'])
-			$url = str_replace(basename($_SERVER['PHP_SELF']).($_SERVER['QUERY_STRING'] === ''?'':'?'.$_SERVER['QUERY_STRING']), '', $url);
+			return $url = str_replace(basename($url), '', $url); //dirOnly
 		return $url;
 	}
 	public function getClientIP() : string{
 		core::setError();
-		if (!empty($_SERVER['HTTP_CLIENT_IP']))
+		if(!empty($_SERVER['HTTP_CLIENT_IP']))
 			return $_SERVER['HTTP_CLIENT_IP'];
-		elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR']))
+		elseif(!empty($_SERVER['HTTP_X_FORWARDED_FOR']))
 			return $_SERVER['HTTP_X_FORWARDED_FOR'];
 		else
 			return $_SERVER['REMOTE_ADDR'];
