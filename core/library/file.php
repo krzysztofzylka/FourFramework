@@ -1,6 +1,6 @@
 <?php
 return $this->file = new class(){ 
-	public $version = '1.2'; 
+	public $version = '1.3'; 
 	public function fileCount(string $path){ 
 		core::setError();
 		if(!file_exists($path))
@@ -54,6 +54,26 @@ return $this->file = new class(){
 		foreach (glob(rtrim($path, '/').'/*', GLOB_NOSORT) as $each)
 			$size += is_file($each) ? filesize($each) : $this->dirSize($each);
 		return $size;
+	}
+	public function protectLongFileSize(string $path, int $maxFileSize = 102400, bool $createEmptyFile = false) : bool{
+		core::setError();
+		if(!file_exists($path))
+			return core::setError(1, 'File not found');
+		if(filesize($path) < $maxFileSize) return false;
+		return false;
+		$pathInfo = pathinfo($path); //pobranie informacji o ścieżce
+		$count = 1; //zmianna z licznikiem (dodatek _<int> do pliku)
+		while(true){ //pętla wyszukiwania pliku
+			$newPath = $pathInfo['dirname'].'/'.$pathInfo['filename'].'_'.$count.'.'.$pathInfo['extension']; //generowanie nowej ścieżki
+			if(!file_exists($newPath)){
+				rename($path, $newPath); //zmiana nazwy pliku
+				if($createEmptyFile) //jeżeli funkcja ma tworzyć nowy pusty plik
+					file_put_contents($path, '');
+				return true;
+			}
+			$count++;
+		}
+		return false;
 	}
 }
 ?>
