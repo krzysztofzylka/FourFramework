@@ -1,11 +1,11 @@
 <?php
 return $this->log = new class(){
-	public $version = '1.0'; 
+	public $version = '1.0a'; 
 	private $path; 
 	private $fileName = '{year}_{month}_{day}.log'; 
 	public $writeData = '[{date}] {text}'; 
 	public function __construct(){ 
-		$this->path = core::$path['base'].'log/'; 
+		$this->path = core::$path['log']; 
 		if(!file_exists($this->path)) 
 			mkdir($this->path, 0700, true); 
 		$this->fileName = $this->_convertName($this->fileName); 
