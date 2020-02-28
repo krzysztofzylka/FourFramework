@@ -4,9 +4,10 @@
 class core{
 	public static $error = [-1, '', '', null];
 	public static $info = [
-		'version' => '0.2.10 Alpha',
-		'releaseDate' => '04.02.2020',
-		'frameworkPath' => null
+		'version' => '0.2.11 Alpha',
+		'releaseDate' => '28.02.2020',
+		'frameworkPath' => null,
+		'reversion' => ''
 	];
 	public static $path = [
 		'core' => 'core/',
@@ -37,6 +38,20 @@ class core{
 			$option['autoCreatePath'] = true;
 		if(isset($option['multipleModule']))
 			self::$loadMultipleModule = boolval($option['multipleModule']);
+		if(!isset($option['moveToHttps']))
+			$option['moveToHttps'] = false;
+		//zabezpieczenie przenoszące na https jeżeli strona została odpalona na http
+		if($option['moveToHttps']){
+			if(@($_SERVER["HTTPS"] != 'on'))
+				header('location: https://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']);
+		}
+		//generowanie ścieżki reversion
+		$inc = get_included_files();
+		$first = str_replace('\\', '/', $inc[0]); //pobranie scieżki pierwszego wczytanego pliku
+		$last = str_replace('core/core.php', '', str_replace('\\', '/', $inc[count($inc)-1])); //pobranie scieżki include (rdzeń) oraz usunięcie nazwy oraz folderu rdzenia
+		$string = str_replace($last, '', $first);
+		$repeatCounter = count(explode("/", $string))-1;
+		self::$info['reversion'] = str_repeat('../', $repeatCounter);
 		//generate fourframework path
 		$frameworkPath = __DIR__.'/';
 		$frameworkPath = substr($frameworkPath, 0, strlen($frameworkPath)-5);
@@ -45,23 +60,32 @@ class core{
 		if(self::$debug['showError'])
 			error_reporting(E_ALL);
 		foreach(self::$path as $name => $value){
-			self::$path[$name] = str_replace('/', "\\", self::$info['frameworkPath'].$value);
+			self::$path[$name] = str_replace('\\', "/", self::$info['frameworkPath'].$value);
 			if(!file_exists(self::$path[$name]) and $option['autoCreatePath'] === true)
 				mkdir(self::$path[$name], 0700, true);
 		}
 		//debug
 		if(self::$debug['saveError']){
 			ini_set("log_errors", 1);
-			ini_set("error_log", self::$path['log'].'php_error_'.date('Ym').'.log');
+			$errorPath = self::$path['log'].'php_error_'.date('Ym').'.log';
+			ini_set("error_log", $errorPath);
 		}
 		//include library class
 		self::$library = include('library.php');
+		//zabezpieczenie przed zbyt dużym plikiem php_error
+		if(self::$debug['saveError']){
+			$errorPath = self::$path['log'].'php_error_'.date('Ym').'.log';
+			self::$library->file->protectLongFileSize($errorPath, 102400);
+		}
 		return true;
 	}
 	public static function setError(int $number=-1, string $name='', $description=''){
 		self::$error = [$number, $name, $description, $number>-1?debug_backtrace():null];
 		if(self::$debug['saveCoreError'] === true and $number > -1){
 			$path = self::$path['log'].'core_error_'.date('Ymd').'.log';
+			//Zabezpieczenie przed zbyt dużym plikiem > 100mb
+			core::$library->file->protectLongFileSize($path, 102400);
+			//generowanie danych do pliku
 			$date = date('Y_m_d h:m:s');
 			$data = '['.$date.'] ['.$number.'] ['.htmlspecialchars($name).'] ['.htmlspecialchars($description).'] ['.base64_encode(json_encode(self::$error[3])).']'.PHP_EOL;
 			file_put_contents($path, $data, FILE_APPEND);
