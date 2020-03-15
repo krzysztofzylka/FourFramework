@@ -1,13 +1,13 @@
 <?php
 return $this->db = new class(){
-	public $version = '1.1.6';
-	public $tableVersion = '1.1';
-	public $lastInsertID = null;
-	private $path = '';
-	private $connection = [];
-	private $acceptType = ['string', 'integer', 'boolean', 'text'];
-	private $activeConnect = null;
-	private $regex = [
+	public $version = '1.1.7dev';
+	public $tableVersion = '1.1'; //wersja bazy danych pliku fdb
+	public $lastInsertID = null; //ID ostatnio dodanego pliku (jeżeli tabela ma kolumne autoincrement)
+	public $path = '';																			//private
+	public $connection = [];																	//private
+	public $acceptType = ['string', 'integer', 'boolean', 'text'];								//private
+	public $activeConnect = null;																//private
+	public $regex = [																			//private
 		'(SELECT) ?(.+?) ?FROM (.*) [WHERE]+ ?(.*)?', //select where
 		'(SELECT) ?(.+?) ?FROM (.*) ?', //select
 		'(ADD DATA TO) (.+) \((.+)\) VALUES \((.+)\)', //add data to
@@ -23,39 +23,46 @@ return $this->db = new class(){
 		'(ALTER TABLE) (.+) (ADD) (.+)', //ALTER TABLE ADD COLUMN
 		'(REPAIR TABLE) (.+)' //REPAIR TABLE
 	];
-	private $advencedLog = false; //false
-	private $saveDBFile = true; //true
+	public $advencedLog = false; //false (zaawansowane logi (wyświetlenie print_r))				//private
+	public $saveDBFile = true; //true (Zapis danych do pliku po modyfikacji - dla testów)		//private
 	public function __construct(){
 		core::setError();
 		$this->path = core::$path['base'].'db/';
 		if(!file_exists($this->path))
 			mkdir($this->path, 0700, true);
 	}
+	//funkcje główne
 	public function connect(string $name, string $password = null){
 		core::setError();
-		$name = basename(htmlspecialchars($name));
+		$name = basename(htmlspecialchars($name)); //ochrona nazwy
+		$password = htmlspecialchars($password); //ochrona hasła
+		//generowanie ścieżki do bazy oraz sprawdzenie czy baza istnieje
 		$path = $this->path.$name.'/';
-		if(!file_exists($path))
-			return core::setError(1, 'database is not exists');
+		if(!file_exists($path)) return core::setError(1, 'database is not exists');
+		//generowanie ścieżki do pliku (passwd.php), sprawdzenie poprawności, import oraz sprawdzenie czy hasło się zgadza
 		$pathPass = $path.'passwd.php';
-		if(!file_exists($pathPass))
-			return core::setError(2, 'pass file is not exists');
+		if(!file_exists($pathPass)) return core::setError(2, 'pass file is not exists');
 		$dbPass = include($pathPass);
-		if($dbPass <> md5($password))
-			return core::setError(3, 'password incorect');
-		$uniqueID = core::$library->string->generateString(10, [true, true, false, false]);
+		if($dbPass <> md5($password)) return core::setError(3, 'password incorect');
+		//generowanie unikalnego ID połączenia oraz zapis informacji do tablicy
+		while(true){
+			$uniqueID = core::$library->string->generateString(10, [true, true, false, false]);
+			if(!isset($this->connection[$uniqueID])) break; //jeżeli unikatowy to zamykanie pętli
+		}
 		$this->connection[$uniqueID] = [
 			'name' => $name,
 			'path' => $path,
 			'pass' => md5($password)
 		];
+		//zmiana aktywnego połączenia na aktualny unikatowy identyfikator
 		if($this->activeConnect === null)
 			$this->activeConnect = $uniqueID;
-		return $uniqueID;
+		return $uniqueID; //zwracanie unikalnego ID
 	}
 	public function request(string $script, string $connect = null){
 		core::setError();
-		if((count($this->connection) == 0) and (!isset($this->connection[$connect]) or !is_array($this->connection[$connect]))) //jeżeli nie połączono z żadną bazą danych
+		//jeżeli nie połączono z żadną bazą danych
+		if((count($this->connection) == 0) and (!isset($this->connection[$connect]) or !is_array($this->connection[$connect])))
 			return core::setError(1, 'connection error'); //error 1
 		$connect = $connect??array_keys($this->connection)[0]; //pobieranie połączenia (jeżeli nie wybrano to wybranie pierwszego połączenia)
 		foreach($this->regex as $regexp){ //pętla regexp
@@ -73,6 +80,7 @@ return $this->db = new class(){
 	}
 	public function createDatabase(string $name, string $password = null){
 		core::setError();
+		$password = htmlspecialchars($password); //ochrona hasła
 		$path = $this->path.basename(htmlspecialchars($name)).'/';
 		if(file_exists($path))
 			return core::setError(1, 'database is already exists');
@@ -104,7 +112,7 @@ return $this->db = new class(){
 		}
 		return $return;
 	}
-	private function _request(array $matches){
+	public function _request(array $matches){													//private
 		core::setError();
 		$this->___log(['$matches' => $matches], '_request');
 		switch($matches[0]){
@@ -152,7 +160,8 @@ return $this->db = new class(){
 				break;
 		}
 	}
-	private function __alterTable(string $tableName, string $type, string $code){
+	//skrypty zarządzające bazą
+	public function __alterTable(string $tableName, string $type, string $code){				//private
 		core::setError();
 		$this->___log(['$tableName' => $tableName, '$type' => $type, '$code' => $code], '__alterTable');
 		if($this->___checkTable($tableName) === false)
@@ -180,7 +189,7 @@ return $this->db = new class(){
 		}
 		return true;
 	}
-	private function __advenced(string $opt, string $type, string $tableName = null){
+	public function __advenced(string $opt, string $type, string $tableName = null){			//private
 		core::setError();
 		$this->___log(['$opt' => $opt, '$tableName' => $tableName, '$type' => $type], '__advenced');
 		switch($type){
@@ -213,7 +222,7 @@ return $this->db = new class(){
 				break;
 		}
 	}
-	private function __updateData(string $tableName, array $setData, string $where=null){
+	public function __updateData(string $tableName, array $setData, string $where=null){		//private
 		core::setError();
 		if($this->___checkTable($tableName) === false)
 			return false;
@@ -236,7 +245,7 @@ return $this->db = new class(){
 		$this->____saveFile($tableName, $readFile);
 		return true;
 	}
-	private function __deleteData(string $tableName, string $where=null){
+	public function __deleteData(string $tableName, string $where=null){						//private
 		core::setError();
 		$this->___log(['$tableName' => $tableName, $where => $where], '__deleteData');
 		if($this->___checkTable($tableName) === false)
@@ -254,7 +263,7 @@ return $this->db = new class(){
 		$this->____saveFile($tableName, $readFile);
 		return count($data);
 	}
-	private function __createTable(string $name, string $data){ 
+	public function __createTable(string $name, string $data){ 									//private
 		core::setError();
 		$name = htmlspecialchars(basename($name));
 		$data = core::$library->string->explode(',', $data);
@@ -298,7 +307,7 @@ return $this->db = new class(){
 		$this->___log(['$table' => $table], '__createTable');
 		return $this->____saveFile($name, $table);
 	}
-	private function __addData(string $tableName, string $column, string $data){
+	public function __addData(string $tableName, string $column, string $data){					//private
 		core::setError();
 		if($this->___checkTable($tableName) === false)
 			return false;
@@ -327,7 +336,7 @@ return $this->db = new class(){
 		$this->____saveFile($tableName, $readFile);
 		return true;
 	}
-	private function __selectData(string $tableName, string $where=null, string $wData='*'){
+	public function __selectData(string $tableName, string $where=null, string $wData='*'){		//private
 		core::setError();
 		if($this->___checkTable($tableName) === false)
 			return false;
@@ -350,7 +359,8 @@ return $this->db = new class(){
 		$this->___log(['$tableName' => $tableName, '$where' => $where, '$wData' => $wData, '$data' => $data], '__selectData');
 		return $data;
 	}
-	private function __search(array $data, string $where){
+	//funkcje dodatkowe
+	public function __search(array $data, string $where){ //wyszukiwarka danych					//private
 		core::setError();
 		$explode = core::$library->string->explode(' and ', $where);
 		$this->___log(['data' => $data, '$where' => $where, '$explode' => $explode], '__search');
@@ -400,7 +410,7 @@ return $this->db = new class(){
 		$this->___log(['$data' => $data], '__search');
 		return $data;
 	}
-	private function __repairTable(string $tableName){
+	public function __repairTable(string $tableName){ //funkcja naprawy tabeli					//private
 		core::setError();
 		if($this->___checkTable($tableName) === false)
 			return false;
@@ -421,7 +431,7 @@ return $this->db = new class(){
 		$this->____saveFile($tableName, $readTable);
 		return true;
 	}
-	private function ___checkTableItem(array $arrData, array $column, array $ai){
+	public function ___checkTableItem(array $arrData, array $column, array $ai){ //sprawdza poprawność wszystkich dane dla komumn //private
 		core::setError();
 		$this->___log(['$arrData' => $arrData, '$column' => $column, '$ai' => $ai]);
 		$return = [];
@@ -455,7 +465,7 @@ return $this->db = new class(){
 		}
 		return $return;
 	}
-	private function ___checkTable(string $tableName){
+	public function ___checkTable(string $tableName){ //sprawdzenie poprawności tabeli			//private
 		core::setError();
 		$this->___log(['activeConnect' => $this->activeConnect]);
 		if($this->activeConnect === null)
@@ -464,13 +474,13 @@ return $this->db = new class(){
 			return core::setError(20, 'table is not already exists');
 		return true;
 	}
-	private function ___log($data, $title=''){
+	public function ___log($data, $title=''){ //wyświetlenie logu								//private
 		core::setError();
 		if($this->advencedLog === false)
 			return false;
 		core::$library->debug->print_r($data, false, 'fdbAdvInfo: '.$title);
 	}
-	private function ___columnDataExplode(string $data){
+	public function ___columnDataExplode(string $data){ //generowanie tabeli kolumny			//private
 		core::setError();
 		$return = ['name' => null, 'type' => null, 'length' => null, 'autoincrement' => null, 'data' => null];
 		$explode = core::$library->string->explode(' ', $data);
@@ -511,11 +521,17 @@ return $this->db = new class(){
 			$return['autoincrement'] = false;
 		return $return;
 	}
-	private function ___convertDataType(array $data, array $column){
+	public function ___convertDataType(array $data, array $column){								//private
 		core::setError();
 		foreach($column as $item){
 			switch($item['type']){
 				case 'string':
+				case 'text':
+					foreach($data as $id => $item2){
+						if(!isset($data[$id][$item['name']]))
+							return core::setError(21, 'column not found', 'name: '.$item['name']);
+						$data[$id][$item['name']] = strval($item2[$item['name']]);
+					}
 					break;
 				case 'integer':
 					foreach($data as $id => $item2){
@@ -535,7 +551,7 @@ return $this->db = new class(){
 		}
 		return $data;
 	}
-	private function ____saveFile(string $tableName, array $data){ 
+	public function ____saveFile(string $tableName, array $data){ 								//private
 		core::setError();
 		if($this->saveDBFile === false)
 			return false;
@@ -549,7 +565,7 @@ return $this->db = new class(){
 					.$data['data']; 
 		file_put_contents($this->connection[$this->activeConnect]['path'].$tableName.'.fdb', $writeFile);
 	}
-	private function ____readFile(string $tableName, string $type = 'all'){
+	public function ____readFile(string $tableName, string $type = 'all'){						//private
 		core::setError();
 		$readFile = file($this->connection[$this->activeConnect]['path'].$tableName.'.fdb');
 		$returnData = ['option' => null, 'column' => null, 'data' => null];
@@ -570,7 +586,7 @@ return $this->db = new class(){
 		}
 		return $returnData;
 	}
-	private function ____decrypt($string){
+	public function ____decrypt($string){														//private
 		$password = $this->connection[$this->activeConnect]['pass']; //pobranie hasła
 		return core::$library->crypt->decrypt($string, $password);
 	}
