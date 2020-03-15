@@ -1,6 +1,6 @@
 <?php
 return $this->string = new class(){ 
-	public $version = '1.5'; 
+	public $version = '1.5a'; 
 	public function between(string $string, string $start, string $end, int $offset=0){ 
 		core::setError();
 		if($offset < -1) return core::setError(1, 'offset error'); //jeżeli offset jest mniejsze niż -1
@@ -16,7 +16,7 @@ return $this->string = new class(){
 			if(!$multiple) break; //jeżęli pobranie tylko pierwszego elementu
 			$offset++;
 		}while(true);
-		if(!$multiple) return $return[0]; //zwracanie pierwszego elementu
+		if(!$multiple) return @$return[0]; //zwracanie pierwszego elementu
 		return $return; //zwracanie tablicy
 	}
 	public function strpos(string $string, string $searchString, int $offset = 0) : int{
