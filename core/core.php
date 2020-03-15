@@ -4,8 +4,8 @@
 class core{
 	public static $error = [-1, '', '', null];
 	public static $info = [
-		'version' => '0.2.11 Alpha',
-		'releaseDate' => '28.02.2020',
+		'version' => '0.2.12 Alpha',
+		'releaseDate' => '15.03.2020',
 		'frameworkPath' => null,
 		'reversion' => ''
 	];
@@ -18,6 +18,7 @@ class core{
 		'base' => 'core/base/',
 		'temp' => 'core/base/temp/',
 		'library' => 'core/library/',
+		'library_api' => 'core/library/api/',
 		'log' => 'core/base/log/'
 	];
 	public static $controller = [];
@@ -60,32 +61,23 @@ class core{
 		if(self::$debug['showError'])
 			error_reporting(E_ALL);
 		foreach(self::$path as $name => $value){
-			self::$path[$name] = str_replace('\\', "/", self::$info['frameworkPath'].$value);
+			self::$path[$name] = str_replace('/', "\\", self::$info['frameworkPath'].$value);
 			if(!file_exists(self::$path[$name]) and $option['autoCreatePath'] === true)
 				mkdir(self::$path[$name], 0700, true);
 		}
 		//debug
 		if(self::$debug['saveError']){
 			ini_set("log_errors", 1);
-			$errorPath = self::$path['log'].'php_error_'.date('Ym').'.log';
-			ini_set("error_log", $errorPath);
+			ini_set("error_log", self::$path['log'].'php_error_'.date('Ym').'.log');
 		}
 		//include library class
 		self::$library = include('library.php');
-		//zabezpieczenie przed zbyt dużym plikiem php_error
-		if(self::$debug['saveError']){
-			$errorPath = self::$path['log'].'php_error_'.date('Ym').'.log';
-			self::$library->file->protectLongFileSize($errorPath, 102400);
-		}
 		return true;
 	}
 	public static function setError(int $number=-1, string $name='', $description=''){
 		self::$error = [$number, $name, $description, $number>-1?debug_backtrace():null];
 		if(self::$debug['saveCoreError'] === true and $number > -1){
 			$path = self::$path['log'].'core_error_'.date('Ymd').'.log';
-			//Zabezpieczenie przed zbyt dużym plikiem > 100mb
-			core::$library->file->protectLongFileSize($path, 102400);
-			//generowanie danych do pliku
 			$date = date('Y_m_d h:m:s');
 			$data = '['.$date.'] ['.$number.'] ['.htmlspecialchars($name).'] ['.htmlspecialchars($description).'] ['.base64_encode(json_encode(self::$error[3])).']'.PHP_EOL;
 			file_put_contents($path, $data, FILE_APPEND);
