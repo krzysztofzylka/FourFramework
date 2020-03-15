@@ -1,6 +1,6 @@
 <?php
 return $this->network = new class(){ 
-	public $version = '1.7';
+	public $version = '1.8';
 	public $method = 0;
 	public function __construct(){ 
 		$this->_getMethod(); 
@@ -117,6 +117,89 @@ return $this->network = new class(){
 		if(isset($headers[$name])) 
 			return null; 
 		return $headers[$name]; 
+	}
+	public function getBrowserInfo() : array{
+		$userAgent = $_SERVER['HTTP_USER_AGENT'];
+		//platforma
+		$platform = 'Unknown';
+		if(preg_match('/linux/i', $userAgent)) $platform = 'Linux';
+		elseif(preg_match('/macintosh|mac os x/i', $userAgent)) $platform = 'Mac';
+		elseif (preg_match('/windows|win32/i', $userAgent)) $platform = 'Windows';
+		//przeglądarka
+		$browser = 'Unknown';
+		if(preg_match('/MSIE/i',$userAgent) && !preg_match('/Opera/i',$userAgent)) $browser = 'Internet Explorer';
+		elseif(preg_match('/Firefox/i',$userAgent)) $browser = 'Mozilla Firefox';
+		elseif(preg_match('/Vivaldi/i',$userAgent)) $browser = 'Vivaldi';
+		elseif(preg_match('/OPR/i',$userAgent)) $browser = 'Opera';
+		elseif(preg_match('/Opera/i',$userAgent)) $browser = 'Opera';
+		elseif(preg_match('/Chromium/i',$userAgent) && !preg_match('/Edge/i',$userAgent)) $browser = 'Chromium';
+		elseif(preg_match('/Chrome/i',$userAgent) && !preg_match('/Edge/i',$userAgent)) $browser = 'Google Chrome';
+		elseif(preg_match('/Safari/i',$userAgent) && !preg_match('/Edge/i',$userAgent)) $browser = 'Safari';
+		elseif(preg_match('/Netscape/i',$userAgent)) $browser = 'Netscape';
+		elseif(preg_match('/Edge/i',$userAgent)) $browser = 'Edge';
+		elseif(preg_match('/Trident/i',$userAgent)) $browser = 'Internet Explorer';
+		//wersja przeglądarki
+		$version = 'Unknown';
+		switch($browser){
+			case 'Internet Explorer':
+				preg_match('/(MSIE)+ ([0-9.]+)/m', $userAgent, $matches);
+				if(count($matches) === 3)
+					$version = $matches[2];
+				else{
+					preg_match('/(rv:)+([0-9.]+)/m', $userAgent, $matches);
+					if(count($matches) === 3)
+						$version = $matches[2];
+				}
+				break;
+			case 'Safari':
+				preg_match('/(Version)+\/([0-9.]+)/m', $userAgent, $matches);
+				if(count($matches) === 3)
+					$version = $matches[2];
+				break;
+			case 'Chromium':
+			case 'Google Chrome':
+				preg_match('/(Chrome)+\/([0-9.]+)/m', $userAgent, $matches);
+				if(count($matches) === 3)
+					$version = $matches[2];
+				break;
+			case 'Mozilla Firefox':
+				preg_match('/(Firefox)+\/([0-9.]+)/m', $userAgent, $matches);
+				if(count($matches) === 3)
+					$version = $matches[2];
+				break;
+			case 'Vivaldi':
+				preg_match('/(Vivaldi)+\/([0-9.]+)/m', $userAgent, $matches);
+				if(count($matches) === 3)
+					$version = $matches[2];
+				break;
+			case 'Opera':
+				preg_match('/(Version)+\/([0-9.]+)/m', $userAgent, $matches);
+				if(count($matches) === 3)
+					$version = $matches[2];
+				else{
+					preg_match('/(OPR)+\/([0-9.]+)/m', $userAgent, $matches);
+					if(count($matches) === 3)
+						$version = $matches[2];
+					else{
+						preg_match('/(Opera)+\/([0-9.]+)/m', $userAgent, $matches);
+						if(count($matches) === 3)
+							$version = $matches[2];
+					}
+				}
+				break;
+			case 'Edge':
+				preg_match('/(Edge)+\/([0-9.]+)/m', $userAgent, $matches);
+				if(count($matches) === 3)
+					$version = $matches[2];
+				break;
+		}
+		//zwrócone dane przez funkcje
+		return [
+			'userAgent' => $userAgent,
+			'browser' => $browser,
+			'version' => $version,
+			'platform' => $platform
+		];
 	}
 };
 ?>
