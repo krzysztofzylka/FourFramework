@@ -80,12 +80,13 @@ if(isset($_POST['submit'])){
 		<tbody>
 			<?php
 			$id = 0;
+			if(is_array($column)){
 			foreach($column as $item){
 				if(!is_array($item))
 					continue;
 				$value = '';
 				$disable = false;
-				if($ai['id']===$id){
+				if(core::$library->array->searchByKey($column, 'name', $ai['colName'])===$id){
 					$value = 'AUTOINCREMENT';
 					$disable = true;
 				}
@@ -112,6 +113,9 @@ if(isset($_POST['submit'])){
 					<td>".$form."</td>
 				</tr>";
 				$id++;
+			}
+			}else{
+				echo 'Błąd odczytu tabeli';
 			}
 			?>
 		</tbody>

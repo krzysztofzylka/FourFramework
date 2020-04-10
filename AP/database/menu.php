@@ -46,6 +46,23 @@ return [
 	],
 	[
 		'href' => '#',
+		'icon' => 'fas fa-server',
+		'name' => 'Serwer',
+		'menu' => [
+			[
+				'href' => '?page=server_phpinfo',
+				'icon' => 'fas fa-server',
+				'name' => 'PHPInfo',
+			],
+			[
+				'href' => '?page=server_varserver',
+				'icon' => 'fas fa-server',
+				'name' => '_SERVER',
+			]
+		]
+	],
+	[
+		'href' => '#',
 		'icon' => 'fas fa-user',
 		'name' => 'Użytkownik',
 		'menu' => [

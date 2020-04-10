@@ -6,7 +6,7 @@ core::init(); //inicjowanie rdzenia
 foreach(['controller', 'view', 'model'] as $name) //tworzenie ścieżek do folderów controller, view oraz model
 	core::$path[$name] = __DIR__.'/'.$name.'/';
 core::$debug['showCoreError'] = false; //ukrycie błędów rdzenia
-core::$library->global->write('wersja', '1.1'); //wersja adminpanelu
+core::$library->global->write('wersja', '1.2'); //wersja adminpanelu
 
 //łączenie z bazą danych
 $config = ['type' => 'sqlite', 'path' => 'database/adminpanel.sqlite3'];

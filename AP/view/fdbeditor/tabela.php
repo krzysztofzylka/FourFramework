@@ -4,6 +4,7 @@ if(!isset($_SESSION['fdbConnect']) or !isset($_GET['name']))
 $name = htmlspecialchars($_GET['name']);
 $column = core::$library->db->request('ADVENCED GET column FROM '.$name, core::$library->global->read('fdbConnect'));
 $ai = core::$library->db->request('ADVENCED GET autoincrement FROM '.$name, core::$library->global->read('fdbConnect'));
+// var_dump($ai);
 $column_name = [];
 ?>
 <div class='card-header'>
@@ -13,6 +14,18 @@ $column_name = [];
 		<a href="?page=fdbeditor&fdb=rekord&tabela=<?php echo $name ?>&type=dodaj"><button type="button" class="btn btn-tool" data-toggle="tooltip" data-placement="left" title="Dodaj rekord"><i class="fas fa-plus"></i></button></a>
 	</div>
 </div>
+<?php if(isset($_GET['script'])){
+$script = htmlspecialchars($_GET['script']) ?>
+<div class='card-body'>
+	<b>Wykonano skrypt</b><br />
+	<i><?php echo $script ?><br />
+	<b>Odpowiedź:</b>
+	<?php
+	$request = core::$library->db->request($script, core::$library->global->read('fdbConnect'));
+	var_dump($request);
+	?>
+</div>
+<?php } ?>
 <div class="card-body table-responsive p-0">
 	<table class="table table-hover table-sm">
 		<thead>
@@ -20,12 +33,13 @@ $column_name = [];
 				<?php
 				for($i=0; $i<=$column['count']-1; $i++){
 					$col = $column[$i];
+					// var_dump($col);
 					$width = -1;
 					if($col['type'] === 'boolean')
 						$width = 80;
-					if($ai['id']==$i)
+					if($ai['ai']==true)
 						$width = 80;
-					echo '<th style="'.($ai['id']==$i?'text-decoration: underline;':'').' '.($width<>-1?'width: '.$width.'px':'').'">'.$col['name'].'</th>';
+					echo '<th style="'.($ai['colName']==$col['name']?'text-decoration: underline;':'').' '.($width<>-1?'width: '.$width.'px':'').'">'.$col['name'].'</th>';
 					array_push($column_name, $col['name']);
 				}
 				?>
@@ -37,8 +51,18 @@ $column_name = [];
 			$read = core::$library->db->request('SELECT FROM '.$name);
 			foreach($read as $item){
 				$where = '';
-				if($ai['ai'] === true)
-					$where = '`'.$column[$ai['id']]['name'].'`=`'.$item[$column[$ai['id']]['name']].'`';
+				if($ai['ai'] === true){
+					$colID = core::$library->array->searchByKey($column, 'name', $ai['colName']); //id kolumny z autoodliczaniem
+					$where = '`'.$column[$colID]['name'].'`=`'.$item[$column[$colID]['name']].'`';
+				}else{
+					$i = 1;
+					foreach($item as $names=>$values){
+						$where .= '`'.$names.'`=`'.$values.'`';
+						if($i < count($item))
+							$where .= ' and ';
+						$i++;
+					}
+				}
 				echo '<tr>';
 				foreach($column_name as $columnName){
 					$search = core::$library->array->searchByKey($column, 'name', $columnName);
@@ -52,7 +76,7 @@ $column_name = [];
 				}
 				echo '<td>
 					<a class="disabled" href="'.($where===''?'#':'?page=fdbeditor&fdb=rekord&tabela='.$name.'&type=edytuj&where='.$where).'"><i class="fas fa-edit" data-toggle="tooltip" data-placement="left" title="Edytuj rekord"></i></a>
-					<i class="fas fa-minus-square" data-toggle="tooltip" data-placement="left" title="Usuń rekord"></i>
+					<a href="index.php?page=fdbeditor&fdb=tabela&name='.$name.'&script=DELETE FROM '.$name.' WHERE '.$where.'" onclick="return confirm(\'Czy na pewno chcesz usunąć ten rekord? Tego nie można cofnąć.\')"><i class="fas fa-minus-square" data-toggle="tooltip" data-placement="left" title="Usuń rekord"></i></a>
 				</td>
 				</tr>';
 			}

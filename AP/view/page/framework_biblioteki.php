@@ -15,13 +15,9 @@
 					</thead>
 					<tbody>
 						<?php
-						$scandir = scandir('../core/library/'); //scan library dir
-						foreach($scandir as $fname){ //file loop
-							if(core::$library->string->strpos($fname, '.php') == -1) //if file
-								continue;
-							$fname = str_replace('.php', '', $fname); //change name
+						foreach(core::$library->__list(['version' => true]) as $item){ //file loop
 							echo '<tr>
-								<td>'.$fname.'</td><td>'.core::$library->$fname->version.'</td>
+								<td>'.$item['name'].'</td><td>'.$item['version'].'</td>
 							</tr>';
 						}
 						?>

@@ -1,0 +1,12 @@
+1.3
+- [FDB Editor] Dodano usuwanie rekordów
+- [FDB Editor] Dodano opcję zaawansowanej edycji tabeli w JSON
+- [FDB Editor] Dodano stronę listy baz danych
+- [FDB Editor] Dodano informacje o błędzie odczytu rekordu
+- [FDB Editor] Poprawiono stronę podglądu tabeli
+- [FDB Editor] Poprawiono modyfikację rekordu
+- Poprawiono wyświetlanie bibliotek
+- Poprawiono zliczanie biblioteki
+- Poprawiono błąd wyświetlający pustą stronę zamiast debugu logów
+- Dodano podląd informacji o serwerze PHPINFO oraz $_SERVER
+- Zaktualizowano moduł account do wersji 1.3

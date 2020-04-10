@@ -36,7 +36,8 @@ $script = htmlspecialchars($_GET['script']) ?>
 						<td><a href="?page=fdbeditor&fdb=tabela&name='.$name.'">'.$name.'</a></td>
 						<td>'.core::$library->memory->formatBytes(filesize($path)).'</td>
 						<td>
-							<A href="?page=fdbeditor&fdb=tabele&script=REPAIR TABLE `'.$name.'`"><i class="fas fa-wrench disabled" data-toggle="tooltip" data-placement="left" title="Napraw tabelę"></i></a>
+							<a href="?page=fdbeditor&fdb=tabele&script=REPAIR TABLE `'.$name.'`"><i class="fas fa-wrench disabled" data-toggle="tooltip" data-placement="left" title="Napraw tabelę"></i></a>
+							<a href="?page=fdbeditor&fdb=advTableEditor&name='.$name.'" onclick="return confirm(\'Czy napewno chcesz przejść do zaawansowanej edycji tabeli, błędne wypełnienie tabeli może skutkować zepsuciem tabeli i uniemożliwienie jej odczytu.\');"><i class="fas fa-pen disabled" data-toggle="tooltip" data-placement="left" title="Zaawansowana edycja tabeli"></i></a>
 						</td>
 					</tr>';
 				}

@@ -16,6 +16,7 @@
 						<i class="fas fa-database"></i> Baza danych
 					</div>
 					<div class="card-body">
+						<a href="<?php echo isset($_SESSION['fdbConnect'])?'#':'?page=fdbeditor&fdb=dbList' ?>"><button type="button" class="btn btn-block btn-default btn-xs <?php echo !isset($_SESSION['fdbConnect'])?'':'disabled' ?>" style='margin-bottom: 5px;'>Lista baz danych</button></a>
 						<a href="<?php echo !isset($_SESSION['fdbConnect'])?'#':'?page=fdbeditor&fdb=script' ?>"><button type="button" style='margin-bottom: 5px;' class="btn btn-block btn-secondary btn-xs <?php echo isset($_SESSION['fdbConnect'])?'':'disabled' ?>"><i class="fas fa-scroll"></i> Wykonaj skrypt</button></a>
 						<a href="<?php echo isset($_SESSION['fdbConnect'])?'#':'?page=fdbeditor&fdb=utworz_baze' ?>"><button type="button" class="btn btn-block btn-primary btn-xs <?php echo isset($_SESSION['fdbConnect'])?'disabled':'' ?>" style='margin-bottom: 5px;'><i class="fas fa-plus"></i> Utwórz nową bazę danych</button></a>
 						<a href="<?php echo isset($_SESSION['fdbConnect'])?'#':'?page=fdbeditor&fdb=polacz' ?>"><button type="button" class="btn btn-block btn-default btn-xs <?php echo !isset($_SESSION['fdbConnect'])?'':'disabled' ?>" style='margin-bottom: 5px;'><i class="fas fa-plug"></i> Połącz z bazą danych</button></a>

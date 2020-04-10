@@ -1,5 +1,9 @@
 <?php
-$string = htmlspecialchars($_GET['debug']);
+$line = htmlspecialchars($_GET['debug']);
+$file = htmlspecialchars($_GET['debug_file']);
+$path = core::$path['log'].$file.'.log';
+$readLine = file($path)[$line];
+$debug = core::$library->string->between($readLine, '[', ']', 4);
 ?>
 <div class="content-header">
 	<div class="container-fluid">
@@ -7,11 +11,11 @@ $string = htmlspecialchars($_GET['debug']);
 	</div>
 </div>
 
-<div class="content-header">
-	<div class="container-fluid">
+<div class="content-body">
+	<div class="container-fluid table-responsive">
 		<div class="card" style='overflow: auto;'>
 		<?php
-		core::$library->debug->print_r(json_decode(base64_decode($string), true));
+		core::$library->debug->print_r(json_decode(base64_decode($debug), true));
 		?>
 		</div>
 	</div>

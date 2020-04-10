@@ -46,6 +46,7 @@ return new class(){ //create main class
 		if($check === false) //check password
 			return core::setError(2, 'password incorrect'); //return error 2
 		$_SESSION[$this->sessionName] = (int)$user['id']; //set session
+		$_SESSION[$this->sessionName.'_ipAddress'] = core::$library->network->getClientIP(); //get ip address for protect
 		return true; //return success
 	}
 	public function changePassword(string $login, string $password, string $newPassword){ //change password
@@ -67,16 +68,18 @@ return new class(){ //create main class
 			return false; //return false
 		elseif(!is_int($_SESSION[$this->sessionName])) //check int
 			return false; //return false
+		elseif($_SESSION[$this->sessionName.'_ipAddress'] <> core::$library->network->getClientIP()) //check IP address
+			return false; //return false
 		return true; //return success
 	}
 	public function logoutUser() : bool{ //logout
-		if($this->checkUser() === false) //check user
-			return core::setError(1, 'the user is not logged in'); //return error 1
-		unset($_SESSION[$this->sessionName]); //delete session
+		unset($_SESSION[$this->sessionName], $_SESSION[$this->sessionName.'_ipAddress']); //delete session
 		$this->userData = null; //delete userData
 		return true;
 	}
 	public function userGetData(){ //get user data
+		if(!$this->checkUser()) //if not loggin
+			return core::setError(1, 'uset not found');
 		$userID = (int)htmlspecialchars($_SESSION[$this->sessionName]); //protect user ID
 		$user = core::$library->database->conn->query("SELECT * FROM user WHERE id=".$userID); //get Data
 		$user = $user->fetch(PDO::FETCH_ASSOC); //fetch data

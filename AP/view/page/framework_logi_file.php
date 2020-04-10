@@ -37,7 +37,7 @@ if(!file_exists($path))
 						$opis = core::$library->string->between($item, '[', ']', 3);
 						$debug = core::$library->string->between($item, '[', ']', 4);
 						echo '<tr>
-							<td><a href="?page=framework_logi&debug='.$debug.'">'.$id.'</a></td>
+							<td><a href="?page=framework_logi&debug='.$id.'&debug_file='.$_GET['file'].'">'.$id.'</a></td>
 							<td>'.$date.'</td>
 							<td>'.$numer.'</td>
 							<td>'.$nazwa.'</td>

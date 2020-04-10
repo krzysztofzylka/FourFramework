@@ -51,9 +51,7 @@
 					</div>
 					<div class="card-body">
 						<?php
-						$scandir = scandir(core::$path['library']); //scan library dir
-						$scandir = array_diff($scandir, ['.', '..', '.htaccess', 'api']);
-						echo count($scandir);
+						echo count(core::$library->__list());
 						?>
 					</div>
 				</div>

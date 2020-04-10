@@ -21,6 +21,7 @@ if(isset($_POST['tabela_nazwa'])){
 		$_POST['column_ai'] = '';
 	for($i=0; $i<=100; $i++){
 		if(!isset($_POST['column'.$i.'_name'])) continue;
+		if($_POST['column'.$i.'_name'] === '') continue;
 		$length = '';
 		if($_POST['column'.$i.'_type'] <> 'text' and $_POST['column'.$i.'_type'] <> 'boolean')
 			$length = $_POST['column'.$i.'_char'];
@@ -29,6 +30,7 @@ if(isset($_POST['tabela_nazwa'])){
 		$column .= '`'.$_POST['column'.$i.'_name'].'` '.$_POST['column'.$i.'_type'].''.($length===''?'':'('.$length.')'.($_POST['column_ai']==='AI_'.$i?' autoincrement':''));
 	}
 	$script = "CREATE TABLE `".$_POST['tabela_nazwa']."` { ".$column." }";
+	// var_dump($script);
 	core::$library->db->request($script);
 	echo '<div class="card-body">';
 	if(core::$error[0] > -1)
