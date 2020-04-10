@@ -1,9 +1,9 @@
 <?php
 return $this->debug = new class(){ 
-	public $version = '1.3'; 
+	public $version = '1.3a'; 
 	public $consoleLog = True; 
 	private $memoryLastUsage = 0;
-	public function print_r($array, bool $var_type=false, string $title='ARRAY'){ 
+	public function print_r($array, bool $var_type=false, string $title='ARRAY'){
 		core::setError(); 
 		if(is_object($array)){ 
 			if(method_exists($array, '__debugInfo')) 
@@ -26,7 +26,7 @@ return $this->debug = new class(){
 						}
 					}
 					echo '</td><td>';
-					$this->print_r($v, $var_type); 
+					$this->print_r($v===NULL?'NULL':($v===true?'true':($v===false?'false':$v)), $var_type); 
 					echo "</td></tr>";
 			}
 			echo "</table>";
