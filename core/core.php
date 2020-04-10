@@ -4,8 +4,8 @@
 class core{
 	public static $error = [-1, '', '', null];
 	public static $info = [
-		'version' => '0.2.12 Alpha',
-		'releaseDate' => '15.03.2020',
+		'version' => '0.2.13 Alpha',
+		'releaseDate' => '02.04.2020',
 		'frameworkPath' => null,
 		'reversion' => ''
 	];
@@ -41,10 +41,15 @@ class core{
 			self::$loadMultipleModule = boolval($option['multipleModule']);
 		if(!isset($option['moveToHttps']))
 			$option['moveToHttps'] = false;
+		if(!isset($option['enableLocalhostHTTPS']))
+			$option['enableLocalhostHTTPS'] = false;
 		//zabezpieczenie przenoszące na https jeżeli strona została odpalona na http
 		if($option['moveToHttps']){
 			if(@($_SERVER["HTTPS"] != 'on'))
-				header('location: https://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']);
+				if($option['enableLocalhostHTTPS'] === true)
+					header('location: https://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']);
+				elseif($option['enableLocalhostHTTPS'] === false and !($_SERVER['SERVER_NAME']=='localhost' or $_SERVER['SERVER_NAME']=='127.0.0.1'))
+					header('location: https://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']);
 		}
 		//generowanie ścieżki reversion
 		$inc = get_included_files();
@@ -61,7 +66,7 @@ class core{
 		if(self::$debug['showError'])
 			error_reporting(E_ALL);
 		foreach(self::$path as $name => $value){
-			self::$path[$name] = str_replace('/', "\\", self::$info['frameworkPath'].$value);
+			self::$path[$name] = $frameworkPath.$value;
 			if(!file_exists(self::$path[$name]) and $option['autoCreatePath'] === true)
 				mkdir(self::$path[$name], 0700, true);
 		}
