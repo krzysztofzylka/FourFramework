@@ -1,6 +1,6 @@
 <?php
 return $this->file = new class(){ 
-	public $version = '1.3'; 
+	public $version = '1.4'; 
 	public function fileCount(string $path){ 
 		core::setError();
 		if(!file_exists($path))
@@ -74,6 +74,22 @@ return $this->file = new class(){
 			$count++;
 		}
 		return false;
+	}
+	public function writeToLine(string $path, string $value, int $line = 0){
+		core::setError();
+		if(!file_exists($path)) core::setError(1, 'file not found', $path); //jeżeli plik nie istnieje
+		$readFile = file($path); //odczytanie pliku do tablicy
+		$readFile[$line] = $value; //podmiana lini
+		file_put_contents($path, implode('', $readFile)); //zapis do pliku
+		return true;
+	}
+	public function deleteLine(string $path, int $line = 0){
+		core::setError();
+		if(!file_exists($path)) core::setError(1, 'file not found', $path); //jeżeli plik nie istnieje
+		$readFile = file($path); //odczytanie pliku do tablicy
+		unset($readFile[$line]); //usunięcie lini z tablicy
+		file_put_contents($path, implode('', $readFile)); //zapis do pliku
+		return true;
 	}
 }
 ?>
