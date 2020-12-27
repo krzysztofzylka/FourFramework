@@ -1,16 +1,12 @@
 <?php
 return $this->array = new class(){ 
-	public $version = '1.1a'; 
+	public $version = '1.1b'; 
 	public function trim($array){
 		core::setError();
 		if(!is_array($array))
 			return core::setError(1, 'input is not an array');
-		foreach($array as $name => $item){
-			if(is_array($item))
-				$array[$name] = $this->trim($item);
-			else
-				$array[$name] = trim($item);
-		}
+		foreach($array as $name => $item)
+			$array[$name] = is_array($item)?$this->trim($item):trim($item);
 		return $array;
 	}
 	public function searchByKey($array, $keyName, $keyValue=-1){
