@@ -28,6 +28,7 @@ $this->connect = function(string $dbName, string $dbPassword = null){
 		'path' => $dbPath, //ścieżka do bazy
 		'pass' => $dbPass //hasło do bazy
 	];
+	$this->conn = $uniqueID; //ustalenie ostatniego połączenia
 	return $uniqueID; //zwrócenie identyfikatora połączenia
 	// var_dump($dbName, $dbPassword, $dbPath, $dbPassPath, $dbPass, $uniqueID, $this->connection[$uniqueID]);
 };

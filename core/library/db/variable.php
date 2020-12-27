@@ -1,8 +1,9 @@
 <?php
 //dla użytkownika
-$this->version = '1.2.0'; //wersja rozszerzenia
+$this->version = '1.2.0a'; //wersja rozszerzenia
 $this->tableVersion = '1.2'; //wersja bazy danych
 $this->lastInsertID = null; //ID ostatniego dodanego elementu
+$this->conn = null; //ostatnie poprawne połączenie
 
 //dla skryptów
 $this->basePath = core::$path['base'].'db/'; //ścieżka do folderu z bazami danych
