@@ -1,6 +1,6 @@
 <?php
 return $this->string = new class(){ 
-	public $version = '1.5a'; 
+	public $version = '1.6'; 
 	public function between(string $string, string $start, string $end, int $offset=0){ 
 		core::setError();
 		if($offset < -1) return core::setError(1, 'offset error'); //jeżeli offset jest mniejsze niż -1
@@ -34,8 +34,7 @@ return $this->string = new class(){
 				if($generateString == $searchString){ 
 					if($offset == 0) 
 						return $i; 
-					else 
-						$offset--; 
+					$offset--; 
 				}
 			}
 		}
@@ -57,11 +56,8 @@ return $this->string = new class(){
 		return $return; 
 	}
 	public function clean(string $string) : string{ 
-		core::setError(); 
-		$string = trim($string);
-		$string = strip_tags($string); 
-		$string = addslashes($string); 
-		return $string; 
+		core::setError();
+		return addslashes(strip_tags(trim($string)));
 	}
 	public function explode(string $delim, string $string, int $limit = -1, array $option = []) : array{
 		core::setError();
@@ -71,7 +67,6 @@ return $this->string = new class(){
 		$return = [];
 		$findString = '';
 		$skip = false;
-		$skipChars = ['`', '"', '\''];
 		$skipChar = null;
 		$skipDeactive = false;
 		for($i=0; $i<strlen($string); $i++){
@@ -123,12 +118,22 @@ return $this->string = new class(){
 		core::setError();
 		$count = 0;
 		while(true){
-			$strpos = $this->strpos($string, $search, $count);
-			if($strpos == -1)
+			if($this->strpos($string, $search, $count) == -1)
 				break;
 			$count++;
 		}
 		return $count;
+	}
+	public function convertString(string $name){
+		core::setError(); 
+		$name = str_replace('{date}', date('Y-m-d H:i:s'), $name);
+		$name = str_replace('{year}', date('Y'), $name);
+		$name = str_replace('{month}', date('m'), $name);
+		$name = str_replace('{day}', date('d'), $name);
+		$name = str_replace('{hour}', date('H'), $name);
+		$name = str_replace('{min}', date('i'), $name);
+		$name = str_replace('{sec}', date('s'), $name);
+		return $name;
 	}
 };
 ?>
