@@ -1,43 +1,48 @@
 <?php
 return $this->log = new class(){
-	public $version = '1.0a'; 
-	private $path; 
-	private $fileName = '{year}_{month}_{day}.log'; 
-	public $writeData = '[{date}] {text}'; 
-	public function __construct(){ 
-		$this->path = core::$path['log']; 
-		if(!file_exists($this->path)) 
-			mkdir($this->path, 0700, true); 
-		$this->fileName = $this->_convertName($this->fileName); 
-	}
-	public function setLogPath(string $path) : void{ 
-		core::setError(); 
-		$this->path = $path; 
-		return;
+	public $version = '1.1';
+	public $writeData = '[{date}] {text}';
+	private $fileName = '{year}_{month}_{day}.log';
+	private $logPath = null;
+	public function __construct(){
+		core::setError();
+		$this->logPath = core::$path['log'];
+		if(!file_exists($this->logPath))
+			mkdir($this->logPath, 0700, true);
+		$this->setLogName($this->fileName);
 	}
 	public function setLogName(string $name) : void{
 		core::setError();
-		$this->fileName = $this->_convertName($name);
+		$this->fileName = core::$library->string->convertString($name);
 		return;
 	}
-	public function _convertName(string $name) : string{ 
-		core::setError(); 
-		$name = str_replace('{year}', date('Y'), $name); 
-		$name = str_replace('{month}', date('m'), $name); 
-		$name = str_replace('{day}', date('d'), $name); 
-		$name = str_replace('{hour}', date('H'), $name); 
-		$name = str_replace('{min}', date('i'), $name); 
-		$name = str_replace('{sec}', date('s'), $name); 
-		return $name; 
+	public function write(string $text, string $writeData = null, string $fileName = null) : bool{
+		core::setError();
+		$writeData = $writeData??$this->writeData;
+		$fileName = $fileName??$this->fileName;
+		$write = str_replace('{date}', date('Y-m-d H:i:s'), $this->writeData);
+		$write = str_replace('{text}', $text, $write);
+		return file_put_contents($this->logPath.$fileName, $write.PHP_EOL, FILE_APPEND)===false?false:true;
 	}
-	public function write(string $text) : bool{ 
-		core::setError(); 
-		$write = str_replace('{date}', date('Y-m-d H:i:s'), $this->writeData); 
-		$write = str_replace('{text}', $text, $write); 
-		$return = file_put_contents($this->path.$this->fileName, $write.PHP_EOL, FILE_APPEND); 
-		if($return === false)
-			return false; 
-		return true; 
+	public function logList($sort = 'fileDateTime', $sortType = 'DESC') : array{
+		core::setError();
+		$return = [];
+		$scandir = array_diff(scandir($this->logPath), ['.', '..']);
+		foreach($scandir as $fileName){
+			if(core::$library->string->strpos($fileName, '.log') == -1)
+				continue;
+			$return[] = [
+				'name' => substr($fileName, 0, strlen($fileName)-4),
+				'fileName' => $fileName,
+				'path' => $this->logPath.$fileName,
+				'size' => filesize($this->logPath.$fileName),
+				'fileTime' => filemtime($this->logPath.$fileName),
+				'fileDateTime' => date("Y-m-d H:i:s", filemtime($this->logPath.$fileName))
+			];
+		}
+		if($sort <> false)
+			$return = core::$library->array->sort2D($return, $sort, $sortType);
+		return $return;
 	}
 }
 ?>
