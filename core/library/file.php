@@ -1,6 +1,6 @@
 <?php
 return $this->file = new class(){ 
-	public $version = '1.4'; 
+	public $version = '1.5'; 
 	public function fileCount(string $path){ 
 		core::setError();
 		if(!file_exists($path))
@@ -61,13 +61,13 @@ return $this->file = new class(){
 			return core::setError(1, 'File not found');
 		if(filesize($path) < $maxFileSize) return false;
 		return false;
-		$pathInfo = pathinfo($path); //pobranie informacji o ścieżce
-		$count = 1; //zmianna z licznikiem (dodatek _<int> do pliku)
-		while(true){ //pętla wyszukiwania pliku
-			$newPath = $pathInfo['dirname'].'/'.$pathInfo['filename'].'_'.$count.'.'.$pathInfo['extension']; //generowanie nowej ścieżki
+		$pathInfo = pathinfo($path);
+		$count = 1;
+		while(true){
+			$newPath = $pathInfo['dirname'].'/'.$pathInfo['filename'].'_'.$count.'.'.$pathInfo['extension'];
 			if(!file_exists($newPath)){
-				rename($path, $newPath); //zmiana nazwy pliku
-				if($createEmptyFile) //jeżeli funkcja ma tworzyć nowy pusty plik
+				rename($path, $newPath);
+				if($createEmptyFile)
 					file_put_contents($path, '');
 				return true;
 			}
@@ -77,19 +77,26 @@ return $this->file = new class(){
 	}
 	public function writeToLine(string $path, string $value, int $line = 0){
 		core::setError();
-		if(!file_exists($path)) core::setError(1, 'file not found', $path); //jeżeli plik nie istnieje
-		$readFile = file($path); //odczytanie pliku do tablicy
-		$readFile[$line] = $value; //podmiana lini
-		file_put_contents($path, implode('', $readFile)); //zapis do pliku
+		if(!file_exists($path)) core::setError(1, 'file not found', $path);
+		$readFile = file($path);
+		$readFile[$line] = $value;
+		file_put_contents($path, implode('', $readFile));
 		return true;
 	}
 	public function deleteLine(string $path, int $line = 0){
 		core::setError();
-		if(!file_exists($path)) core::setError(1, 'file not found', $path); //jeżeli plik nie istnieje
-		$readFile = file($path); //odczytanie pliku do tablicy
-		unset($readFile[$line]); //usunięcie lini z tablicy
-		file_put_contents($path, implode('', $readFile)); //zapis do pliku
+		if(!file_exists($path)) core::setError(1, 'file not found', $path);
+		$readFile = file($path);
+		unset($readFile[$line]);
+		file_put_contents($path, implode('', $readFile));
 		return true;
+	}
+	public function repairPath(string $path){
+		core::setError();
+		$path = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $path);
+		while(strpos($path, DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR) <> false)
+			$path = str_replace(DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, $path);
+		return $path;
 	}
 }
 ?>
