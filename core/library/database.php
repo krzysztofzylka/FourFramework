@@ -1,6 +1,6 @@
 <?php
 return $this->database = new class(){ 
-	public $version = '1.2'; 
+	public $version = '1.3'; 
 	public $conn; 
 	public $isConnect = false; 
 	public $connError = true; 
@@ -51,7 +51,7 @@ return $this->database = new class(){
 		core::setError(); 
 		if(!$this->isConnect)
 			return core::setError(1, 'connection error'); 
-		$prep = $this->conn->prepare($sql);
+		$prep = $this->prepare($sql);
 		$prep->execute();
 		$data = $prep->fetch(PDO::FETCH_ASSOC);
 		return $data;
@@ -61,7 +61,7 @@ return $this->database = new class(){
 		if(!$this->isConnect)
 			return core::setError(1, 'connection error');
 		$where = $sWhere<>null?(' WHERE '.$sWhere):'';
-		$prep = $this->conn->prepare('SELECT count(*) as count FROM '.$sTable.''.$where);
+		$prep = $this->prepare('SELECT count(*) as count FROM '.$sTable.''.$where);
 		$prep->execute();
 		$data = $prep->fetch(PDO::FETCH_ASSOC);
 		return $data['count'];
@@ -72,6 +72,28 @@ return $this->database = new class(){
 			if(!isset($config[$name])) 
 				return $name; 
 		return true; 
+	}
+	public function setConn(object $connObject) : bool{
+		core::setError();
+		if(!is_object($connObject))
+			return core::setError(1, 'conn is not object');
+		$this->isConnect = true;
+		$this->conn = $connObject;
+	}
+	public function prepare(string $query){
+		core::setError();
+		if(!$this->isConnect)
+			return core::setError(1, 'connection error');
+		return $this->conn->prepare($query);
+	}
+	public function prepareSingleFunc(string $query, array $bindParam){
+		core::setError();
+		if(!$this->isConnect)
+			return core::setError(1, 'connection error');
+		$prep = $this->prepare($query);
+		foreach($bindParam as $item)
+			$prep->bindParam($item[0], $item[1]);
+		return $prep->execute();
 	}
 }
 ?>
