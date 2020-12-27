@@ -2,10 +2,11 @@
 //by Krzysztof Żyłka
 //programista.vxm.pl/fourframework
 class core{
-	public static $error = [-1, '', '', null];
+	public static $isError = false;
+	public static $error = [-1, '', '', null]; //0 - numer, 1-nazwa, 2-opis, 3-wywołanie funkcji debug_backtrace
 	public static $info = [
-		'version' => '0.2.13 Alpha',
-		'releaseDate' => '02.04.2020',
+		'version' => '0.3.1 Alpha',
+		'releaseDate' => '27.12.2020',
 		'frameworkPath' => null,
 		'reversion' => ''
 	];
@@ -26,68 +27,77 @@ class core{
 	public static $module = [];
 	public static $module_add = [];
 	public static $library = [];
-	public static $debug = [
-		'showError' => True,
-		'saveError' => True,
-		'showCoreError' => True,
-		'saveCoreError' => True,
+	public static $initialize = false;
+	public static $option = [
+		'autoCreatePath' => true,
+		'multipleModule' => false,
+		'enableLocalhostHTTPS' => false,
+		'moveToHttps' => false,
+		'localPath' => false,
+		'localIgnored' => ['library', 'library_api', 'module', 'core'],
+		'localPathReversion' => '',
+		'protectViewName' => true,
+		'protectControllerName' => true,
+		'protectModelName' => true,
+		'showError' => true,
+		'saveError' => true,
+		'showCoreError' => true,
+		'saveCoreError' => true,
 	];
-	private static $loadMultipleModule = false;
+	
 	public static function init(array $option = []){
 		self::setError();
-		if(!isset($option['autoCreatePath']))
-			$option['autoCreatePath'] = true;
-		if(isset($option['multipleModule']))
-			self::$loadMultipleModule = boolval($option['multipleModule']);
-		if(!isset($option['moveToHttps']))
-			$option['moveToHttps'] = false;
-		if(!isset($option['enableLocalhostHTTPS']))
-			$option['enableLocalhostHTTPS'] = false;
-		//zabezpieczenie przenoszące na https jeżeli strona została odpalona na http
-		if($option['moveToHttps']){
-			if(@($_SERVER["HTTPS"] != 'on'))
-				if($option['enableLocalhostHTTPS'] === true)
-					header('location: https://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']);
-				elseif($option['enableLocalhostHTTPS'] === false and !($_SERVER['SERVER_NAME']=='localhost' or $_SERVER['SERVER_NAME']=='127.0.0.1'))
-					header('location: https://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']);
-		}
+		self::$initialize = true;
+		
+		//loading option
+		foreach($option as $name => $value)
+			if(isset(self::$option[$name]))
+				self::$option[$name] = $option[$name];
+
+		//zabezpieczenie przed działaniem na https
+		if(isset($option['moveToHttps']) and boolval($option['moveToHttps']) == true)
+			self::__protectHTTPS($option['enableLocalhostHTTPS']);
+
 		//generowanie ścieżki reversion
-		$inc = get_included_files();
-		$first = str_replace('\\', '/', $inc[0]); //pobranie scieżki pierwszego wczytanego pliku
-		$last = str_replace('core/core.php', '', str_replace('\\', '/', $inc[count($inc)-1])); //pobranie scieżki include (rdzeń) oraz usunięcie nazwy oraz folderu rdzenia
-		$string = str_replace($last, '', $first);
-		$repeatCounter = count(explode("/", $string))-1;
-		self::$info['reversion'] = str_repeat('../', $repeatCounter);
-		//generate fourframework path
-		$frameworkPath = __DIR__.'/';
-		$frameworkPath = substr($frameworkPath, 0, strlen($frameworkPath)-5);
-		self::$info['frameworkPath'] = $frameworkPath;
-		//error
-		if(self::$debug['showError'])
-			error_reporting(E_ALL);
+		$debugBacktrace = debug_backtrace();
+		self::$info['reversion'] = self::__createReversion(pathinfo($debugBacktrace[count($debugBacktrace)-1]['file'])['dirname'], __DIR__);
+		
+		//generowanie ścieżki dla rdzenia
+		self::$info['frameworkPath'] = dirname(__DIR__).DIRECTORY_SEPARATOR;
+		
+		//wyświetlanie błędów PHP
+		if(self::$option['showError']) error_reporting(E_ALL);
+		
+		//pętla tworząca ścieżki dla zmiennej self::$path
 		foreach(self::$path as $name => $value){
-			self::$path[$name] = $frameworkPath.$value;
-			if(!file_exists(self::$path[$name]) and $option['autoCreatePath'] === true)
+			self::$path[$name] = ((self::$option['localPath']===true and array_search($name, self::$option['localLibrary'])===false)?self::$option['localPathReversion']:self::$info['reversion']).$value; //tworznie ścieżki dla zmiennej $path
+			self::$path[$name] = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, self::$path[$name]);
+			if(!is_dir(self::$path[$name]) and $option['autoCreatePath'] === true)
 				mkdir(self::$path[$name], 0700, true);
 		}
+		
 		//debug
-		if(self::$debug['saveError']){
+		if(self::$option['saveError']){
 			ini_set("log_errors", 1);
 			ini_set("error_log", self::$path['log'].'php_error_'.date('Ym').'.log');
 		}
+		
 		//include library class
 		self::$library = include('library.php');
 		return true;
 	}
 	public static function setError(int $number=-1, string $name='', $description=''){
+		self::$isError = $number<>-1?true:false;
 		self::$error = [$number, $name, $description, $number>-1?debug_backtrace():null];
-		if(self::$debug['saveCoreError'] === true and $number > -1){
+		if(self::$option['saveCoreError'] === true and $number > -1){
 			$path = self::$path['log'].'core_error_'.date('Ymd').'.log';
 			$date = date('Y_m_d h:m:s');
+			if(is_array($description))
+				$description = json_encode($description);
 			$data = '['.$date.'] ['.$number.'] ['.htmlspecialchars($name).'] ['.htmlspecialchars($description).'] ['.base64_encode(json_encode(self::$error[3])).']'.PHP_EOL;
 			file_put_contents($path, $data, FILE_APPEND);
 		}
-		if(self::$debug['showCoreError'] === true and $number > -1){
+		if(self::$option['showCoreError'] === true and $number > -1){
 			echo '<b>Core error:</b> ('.$number.') [<i>'.$name.'</i>] ';
 			if(is_array($description))
 				print_r($description);
@@ -97,7 +107,7 @@ class core{
 	}
 	public static function loadView(string $name){
 		self::setError();
-		$name = htmlspecialchars(basename($name));
+		if(self::$option['protectViewName']) $name = htmlspecialchars(basename($name));
 		$path = self::$path['view'].$name.'.php';
 		if(!file_exists($path))
 			return self::setError(1, 'file not exists', 'file not exists in path: ('.$path.')');
@@ -105,7 +115,7 @@ class core{
 	}
 	public static function loadController(string $name){
 		self::setError();
-		$name = htmlspecialchars(basename($name));
+		if(self::$option['protectControllerName']) $name = htmlspecialchars(basename($name));
 		if(in_array($name, array_keys(self::$controller)))
 			return self::setError(3, 'the class has already been loaded', '');
 		$path = self::$path['controller'].$name.'.php';
@@ -119,7 +129,7 @@ class core{
 	}
 	public static function loadModel(string $name){
 		self::setError();
-		$name = htmlspecialchars(basename($name));
+		if(self::$option['protectModelName']) $name = htmlspecialchars(basename($name));
 		if(in_array($name, array_keys(self::$model)))
 			return self::setError(3, 'the class has already been loaded', '');
 		$path = self::$path['model'].$name.'.php';
@@ -134,16 +144,18 @@ class core{
 	public static function loadModule(string $name){
 		self::setError();
 		$name = htmlspecialchars(basename($name));
-		if(in_array($name, array_keys(self::$module)) and self::$loadMultipleModule === false)
+		if(in_array($name, array_keys(self::$module)) and self::$option['multipleModule'] === false)
 			return self::setError(1, 'the class has already been loaded', '');
-		$path = self::$path['module'].$name.'/';
+		$path = self::$path['module'].$name.DIRECTORY_SEPARATOR;
 		if(!file_exists($path.'config.php'))
 			return self::setError(2, 'config file config.php not found', '');
 		$arrayName = $name;
 		$config = include($path.'config.php');
+		if(!is_array($config))
+			return self::setError(3, 'config file config.php error', 'the data returned is not a table');
 		$config['name'] = $name;
 		$config['path'] = $path;
-		if(in_array($name, array_keys(self::$module)) and self::$loadMultipleModule === true){
+		if(in_array($name, array_keys(self::$module)) and self::$option['multipleModule'] === true){
 			$i = 2;
 			while(true){
 				$arrayName = $name.'_k'.$i;
@@ -153,15 +165,12 @@ class core{
 			}
 		}
 		self::$module_add[$arrayName]['config'] = $config;
-		if(!is_array($config))
-			return self::setError(3, 'config file config.php error', 'the data returned is not a table');
 		if(isset($config['include']) and is_array($config['include']))
 			foreach($config['include'] as $name)
 				include($path.$name);
 		if(isset($config['moduleFile']) and !file_exists($path.$config['moduleFile']))
 			return self::setError(4, 'module file not found', $path.$config['moduleFile']);
-		else
-			self::$module[$arrayName] = include($path.$config['moduleFile']);
+		self::$module[$arrayName] = include($path.$config['moduleFile']);
 		return self::$module[$arrayName];
 	}
 	public static function debug(bool $show = false) : array{
@@ -170,13 +179,13 @@ class core{
 			'core' => [
 				'info' => self::$info,
 				'path' => self::$path,
-				'debug' => self::$debug
+				'option' => self::$option
 			],
 			'library' => is_object(self::$library)?self::$library->__list:false,
 			'module' => [
 				'list' => implode(', ', array_keys(self::$module)),
 				'config' => self::$module_add,
-			],
+			]
 		];
 		if($show)
 			if(is_object(self::$library))
@@ -184,6 +193,31 @@ class core{
 			else
 				print_r($return);
 		return $return;
+	}
+	private static function __protectHTTPS(bool $enableLocalhostHTTPS){
+		self::setError();
+		$httpsOn = !isset($_SERVER["HTTPS"])?false:($_SERVER["HTTPS"]==='on'?true:false);
+		$localhost = $_SERVER['SERVER_NAME']==='localhost'?true:($_SERVER['SERVER_NAME']==='127.0.0.1'?true:false);
+		$httpsURL = 'https://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+		if($httpsOn === false and ($localhost === false or $enableLocalhostHTTPS === true))
+			header('location: '.$httpsURL);
+	}
+	private static function __createReversion(string $scriptPath, string $corePath){
+		self::setError();
+		$initFilePathExplode = explode(DIRECTORY_SEPARATOR, str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $scriptPath));
+		$scriptPath = explode(DIRECTORY_SEPARATOR, str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $corePath));
+		foreach($initFilePathExplode as $id => $pathName)
+			if($pathName === $scriptPath[$id])
+				unset($scriptPath[$id], $initFilePathExplode[$id]);
+			else
+				break;
+		unset($scriptPath[array_keys($scriptPath)[count($scriptPath)-1]]);
+		$reversion = str_repeat('..'.DIRECTORY_SEPARATOR, count($initFilePathExplode)).implode(DIRECTORY_SEPARATOR, $scriptPath).DIRECTORY_SEPARATOR;
+		if($reversion[0] === DIRECTORY_SEPARATOR)
+			$reversion = substr($reversion, 1, strlen($reversion));
+		while(strpos($reversion, DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR) <> false)
+			$reversion = str_replace(DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, $reversion);
+		return $reversion;
 	}
 }
 ?>
