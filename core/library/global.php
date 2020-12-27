@@ -1,14 +1,13 @@
 <?php
 return $this->global = new class(){ 
-	public $version = '1.1'; 
-	private $__globalVar = []; 
+	public $version = '1.1a'; 
+	public $__globalVar = []; 
 	public $__globalList = []; 
 	public function read(string $name){ 
 		core::setError(); 
 		if(isset($this->__globalVar[$name])) 
 			return $this->__globalVar[$name]; 
-		else
-			return null; 
+		return null; 
 	}
 	public function write(string $name, $data) : void{ 
 		core::setError(); 
