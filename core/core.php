@@ -5,8 +5,8 @@ class core{
 	public static $isError = false;
 	public static $error = [-1, '', '', null]; //0 - numer, 1-nazwa, 2-opis, 3-wywołanie funkcji debug_backtrace
 	public static $info = [
-		'version' => '0.3.1 Alpha',
-		'releaseDate' => '27.12.2020',
+		'version' => '0.3.1a Alpha',
+		'releaseDate' => '28.12.2020',
 		'frameworkPath' => null,
 		'reversion' => ''
 	];
@@ -53,26 +53,26 @@ class core{
 		foreach($option as $name => $value)
 			if(isset(self::$option[$name]))
 				self::$option[$name] = $option[$name];
+		
+		//displaying php errors
+		if(self::$option['showError']) error_reporting(E_ALL);
 
-		//zabezpieczenie przed działaniem na https
+		//https protect
 		if(isset($option['moveToHttps']) and boolval($option['moveToHttps']) == true)
 			self::__protectHTTPS($option['enableLocalhostHTTPS']);
 
-		//generowanie ścieżki reversion
+		//generating reversion path
 		$debugBacktrace = debug_backtrace();
 		self::$info['reversion'] = self::__createReversion(pathinfo($debugBacktrace[count($debugBacktrace)-1]['file'])['dirname'], __DIR__);
 		
-		//generowanie ścieżki dla rdzenia
+		//generating the path to the core
 		self::$info['frameworkPath'] = dirname(__DIR__).DIRECTORY_SEPARATOR;
 		
-		//wyświetlanie błędów PHP
-		if(self::$option['showError']) error_reporting(E_ALL);
-		
-		//pętla tworząca ścieżki dla zmiennej self::$path
+		//generating dir
 		foreach(self::$path as $name => $value){
 			self::$path[$name] = ((self::$option['localPath']===true and array_search($name, self::$option['localLibrary'])===false)?self::$option['localPathReversion']:self::$info['reversion']).$value; //tworznie ścieżki dla zmiennej $path
 			self::$path[$name] = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, self::$path[$name]);
-			if(!is_dir(self::$path[$name]) and $option['autoCreatePath'] === true)
+			if(!is_dir(self::$path[$name]) and self::$option['autoCreatePath'] === true)
 				mkdir(self::$path[$name], 0700, true);
 		}
 		
