@@ -1,6 +1,6 @@
 <?php
 return $this->debug = new class(){ 
-	public $version = '1.3a'; 
+	public $version = '1.4'; 
 	public $consoleLog = True; 
 	private $memoryLastUsage = 0;
 	public function print_r($array, bool $var_type=false, string $title='ARRAY'){
@@ -9,7 +9,7 @@ return $this->debug = new class(){
 			if(method_exists($array, '__debugInfo')) 
 				$array = $array->__debugInfo(); 
 			else 
-				return core::setError(1, 'this element is not an array'); 
+				$array = (array) $array;
 		}
 		if(is_array($array)){ 
 			echo '<table border=1 cellspacing=0 cellpadding=3 width=100%>';
@@ -36,7 +36,7 @@ return $this->debug = new class(){
 	}
 	public function getOS() : int{ 
 		core::setError();
-		Switch(true) {
+		Switch(true){
             case stristr(PHP_OS, 'DAR'): return 2; 
             case stristr(PHP_OS, 'WIN'): return 3; 
             case stristr(PHP_OS, 'LINUX'): 4; 
