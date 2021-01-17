@@ -5,7 +5,7 @@ class core{
 	public static $isError = false;
 	public static $error = [-1, '', '', null]; //0 - numer, 1-nazwa, 2-opis, 3-wywołanie funkcji debug_backtrace
 	public static $info = [
-		'version' => '0.3.1a Alpha',
+		'version' => '0.3.1b Alpha',
 		'releaseDate' => '28.12.2020',
 		'frameworkPath' => null,
 		'reversion' => ''
@@ -148,11 +148,11 @@ class core{
 			return self::setError(1, 'the class has already been loaded', '');
 		$path = self::$path['module'].$name.DIRECTORY_SEPARATOR;
 		if(!file_exists($path.'config.php'))
-			return self::setError(2, 'config file config.php not found', '');
+			return self::setError(2, 'config file not found', '');
 		$arrayName = $name;
 		$config = include($path.'config.php');
 		if(!is_array($config))
-			return self::setError(3, 'config file config.php error', 'the data returned is not a table');
+			return self::setError(3, 'config file error', 'the data returned is not a table');
 		$config['name'] = $name;
 		$config['path'] = $path;
 		if(in_array($name, array_keys(self::$module)) and self::$option['multipleModule'] === true){
