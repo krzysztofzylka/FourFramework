@@ -5,8 +5,8 @@ class core{
 	public static $isError = false;
 	public static $error = [-1, '', '', null]; //0 - numer, 1-nazwa, 2-opis, 3-wywołanie funkcji debug_backtrace
 	public static $info = [
-		'version' => '0.3.1b Alpha',
-		'releaseDate' => '28.12.2020',
+		'version' => '0.3.1c Alpha',
+		'releaseDate' => '19.01.2021',
 		'frameworkPath' => null,
 		'reversion' => ''
 	];
@@ -19,7 +19,7 @@ class core{
 		'base' => 'core/base/',
 		'temp' => 'core/base/temp/',
 		'library' => 'core/library/',
-		'library_api' => 'core/library/api/',
+		'library_api' => 'core/library/API/',
 		'log' => 'core/base/log/'
 	];
 	public static $controller = [];
@@ -70,7 +70,7 @@ class core{
 		
 		//generating dir
 		foreach(self::$path as $name => $value){
-			self::$path[$name] = ((self::$option['localPath']===true and array_search($name, self::$option['localLibrary'])===false)?self::$option['localPathReversion']:self::$info['reversion']).$value; //tworznie ścieżki dla zmiennej $path
+			self::$path[$name] = ((self::$option['localPath']===true and array_search($name, self::$option['localIgnored'])===false)?self::$option['localPathReversion']:self::$info['reversion']).$value; //tworznie ścieżki dla zmiennej $path
 			self::$path[$name] = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, self::$path[$name]);
 			if(!is_dir(self::$path[$name]) and self::$option['autoCreatePath'] === true)
 				mkdir(self::$path[$name], 0700, true);
