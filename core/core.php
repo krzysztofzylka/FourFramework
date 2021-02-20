@@ -5,8 +5,8 @@ class core{
 	public static $isError = false;
 	public static $error = [-1, '', '', null]; //0 - numer, 1-nazwa, 2-opis, 3-wywołanie funkcji debug_backtrace
 	public static $info = [
-		'version' => '0.3.1c Alpha',
-		'releaseDate' => '19.01.2021',
+		'version' => '0.3.2 Alpha',
+		'releaseDate' => '22.01.2021',
 		'frameworkPath' => null,
 		'reversion' => ''
 	];
@@ -127,11 +127,16 @@ class core{
 		self::$controller[$name] = $includeClass;
 		return $includeClass;
 	}
-	public static function loadModel(string $name){
+	public static function loadModel($name){
 		self::setError();
+		if(is_array($name)){
+			foreach($name as $modelName)
+				self::loadModel($modelName);
+			return;
+		}
 		if(self::$option['protectModelName']) $name = htmlspecialchars(basename($name));
 		if(in_array($name, array_keys(self::$model)))
-			return self::setError(3, 'the class has already been loaded', '');
+			return self::$model[$name];
 		$path = self::$path['model'].$name.'.php';
 		if(!file_exists($path))
 			return self::setError(1, 'file not exists', 'file not exists in path: ('.$path.')');
@@ -145,33 +150,36 @@ class core{
 		self::setError();
 		$name = htmlspecialchars(basename($name));
 		if(in_array($name, array_keys(self::$module)) and self::$option['multipleModule'] === false)
-			return self::setError(1, 'the class has already been loaded', '');
+			return self::setError(1, 'The class has already been loaded', '');
 		$path = self::$path['module'].$name.DIRECTORY_SEPARATOR;
 		if(!file_exists($path.'config.php'))
-			return self::setError(2, 'config file not found', '');
-		$arrayName = $name;
+			return self::setError(2, 'Config file not found', '');
 		$config = include($path.'config.php');
 		if(!is_array($config))
-			return self::setError(3, 'config file error', 'the data returned is not a table');
-		$config['name'] = $name;
-		$config['path'] = $path;
+			return self::setError(3, 'Config file error', 'The data returned is not a table');
+		$config = array_merge($config, [
+			'name' => $name,
+			'path' => $path
+		]);
+		$moduleArrayName = $name;
 		if(in_array($name, array_keys(self::$module)) and self::$option['multipleModule'] === true){
 			$i = 2;
 			while(true){
-				$arrayName = $name.'_k'.$i;
-				if(!isset(self::$module[$arrayName]))
+				$moduleArrayName = $name.'_k'.$i;
+				if(!isset(self::$module[$moduleArrayName]))
 					break;
 				$i++;
 			}
 		}
-		self::$module_add[$arrayName]['config'] = $config;
+		self::$module_add[$moduleArrayName]['config'] = $config;
 		if(isset($config['include']) and is_array($config['include']))
 			foreach($config['include'] as $name)
 				include($path.$name);
 		if(isset($config['moduleFile']) and !file_exists($path.$config['moduleFile']))
 			return self::setError(4, 'module file not found', $path.$config['moduleFile']);
-		self::$module[$arrayName] = include($path.$config['moduleFile']);
-		return self::$module[$arrayName];
+		$GLOBALS['module'] = $name;
+		$GLOBALS['module_config'] = $config;
+		return (self::$module[$moduleArrayName] = include($path.$config['moduleFile']));
 	}
 	public static function debug(bool $show = false) : array{
 		self::setError();
@@ -185,7 +193,8 @@ class core{
 			'module' => [
 				'list' => implode(', ', array_keys(self::$module)),
 				'config' => self::$module_add,
-			]
+			],
+			'model' => array_keys(self::$model),
 		];
 		if($show)
 			if(is_object(self::$library))
