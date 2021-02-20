@@ -1,6 +1,6 @@
 <?php
 return $this->string = new class(){ 
-	public $version = '1.6'; 
+	public $version = '1.6a'; 
 	public function between(string $string, string $start, string $end, int $offset=0){ 
 		core::setError();
 		if($offset < -1) return core::setError(1, 'offset error'); //jeżeli offset jest mniejsze niż -1
@@ -9,7 +9,7 @@ return $this->string = new class(){
 		$multiple = $offset===-1?true:false;
 		if($multiple) $offset = 0;
 		do{
-			$strpos1 = $this->strpos($string, $start, $offset*($adding===1?2:1))+1; 
+			$strpos1 = $this->strpos($string, $start, $offset*($adding===1?2:1))+strlen($start); 
 			$strpos2 = $this->strpos($string, $end, $adding+(($adding===1?2:1)*$offset));
 			if($strpos1 < 0 or $strpos2 < 0) break; //jeżeli nie znaleziono
 			array_push($return, substr($string, $strpos1, $strpos2-$strpos1));
