@@ -1,6 +1,6 @@
 <?php
 return $this->crypt = new class(){ 
-	public $version = '1.3'; 
+	public $version = '1.3a'; 
 	private $method = 'AES-256-CBC'; 
 	public $salt = '0123456789012345'; 
 	public $hashSalt = 'FourFramework2020!+#';
@@ -8,13 +8,13 @@ return $this->crypt = new class(){
 	public $hashAlgorithm = ['md5', 'sha256', 'pbkdf2', 'sha512', 'crc32', 'ripemd256', 'snefru', 'gost', 'md5SALT', 'otherFunc']; 
 	public function crypt(string $string, $hash=null) : string{
 		core::setError();
-		if(!@function_exists(openssl_encrypt)) 
+		if(!@function_exists("openssl_encrypt")) 
 			die('Error use function crypt (library crypt), you must run ssl module in server'); 
 		return base64_encode(openssl_encrypt($string, $this->method, $hash, 0, $this->salt));
 	}
 	public function decrypt(string $string, $hash=null) : string{
 		core::setError(); 
-		if(!@function_exists(openssl_encrypt)) 
+		if(!@function_exists("openssl_encrypt")) 
 			die('Error use function decrypt (library crypt), you must run ssl module in server'); 
 		return openssl_decrypt(base64_decode($string), $this->method, $hash, 0, $this->salt); 
 	}
