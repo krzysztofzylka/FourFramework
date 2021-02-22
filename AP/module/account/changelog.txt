@@ -1,4 +1,0 @@
-1.3
-- Dodano sprawdzanie czy użytkownik nie zmienił adresu IP (zabezpieczenie przed ukradnięciem sesji)
-- Z funkcji wylogowania (logoutUser) usunięto sprawdzenie czy użytkownik jest zalogowany
-- Dodano do funkcji userGetData sprawdzenie czy sesje istnieją (użytkownik jest zalogowany)
