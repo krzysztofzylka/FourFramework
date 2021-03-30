@@ -5,8 +5,8 @@ class core{
 	public static $isError = false;
 	public static $error = [-1, '', '', null]; //0 - numer, 1-nazwa, 2-opis, 3-wywołanie funkcji debug_backtrace
 	public static $info = [
-		'version' => '0.3.2 Alpha',
-		'releaseDate' => '22.01.2021',
+		'version' => '0.3.4 Alpha',
+		'releaseDate' => '30.03.2021',
 		'frameworkPath' => null,
 		'reversion' => ''
 	];
@@ -108,7 +108,7 @@ class core{
 	public static function loadView(string $name){
 		self::setError();
 		if(self::$option['protectViewName']) $name = htmlspecialchars(basename($name));
-		$path = self::$path['view'].$name.'.php';
+		$path = self::$path['view'].str_replace('.', DIRECTORY_SEPARATOR, $name).'.php';
 		if(!file_exists($path))
 			return self::setError(1, 'file not exists', 'file not exists in path: ('.$path.')');
 		return include($path);
@@ -118,7 +118,7 @@ class core{
 		if(self::$option['protectControllerName']) $name = htmlspecialchars(basename($name));
 		if(in_array($name, array_keys(self::$controller)))
 			return self::setError(3, 'the class has already been loaded', '');
-		$path = self::$path['controller'].$name.'.php';
+		$path = self::$path['controller'].str_replace('.', DIRECTORY_SEPARATOR, $name).'.php';
 		if(!file_exists($path))
 			return self::setError(1, 'file not exists', 'file not exists in path: ('.$path.')');
 		$includeClass = include($path);
@@ -137,7 +137,7 @@ class core{
 		if(self::$option['protectModelName']) $name = htmlspecialchars(basename($name));
 		if(in_array($name, array_keys(self::$model)))
 			return self::$model[$name];
-		$path = self::$path['model'].$name.'.php';
+		$path = self::$path['model'].str_replace('.', DIRECTORY_SEPARATOR, $name).'.php';
 		if(!file_exists($path))
 			return self::setError(1, 'file not exists', 'file not exists in path: ('.$path.')');
 		$includeClass = include($path);
@@ -179,7 +179,9 @@ class core{
 			return self::setError(4, 'module file not found', $path.$config['moduleFile']);
 		$GLOBALS['module'] = $name;
 		$GLOBALS['module_config'] = $config;
-		return (self::$module[$moduleArrayName] = include($path.$config['moduleFile']));
+		$moduleClass = (self::$module[$moduleArrayName] = include($path.$config['moduleFile']));
+		unset($GLOBALS['module_config'], $GLOBALS['module']);
+		return $moduleClass;
 	}
 	public static function debug(bool $show = false) : array{
 		self::setError();
