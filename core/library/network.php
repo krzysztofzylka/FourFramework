@@ -1,68 +1,71 @@
 <?php
 return $this->network = new class(){ 
-	public $version = '1.9';
+	public $version = '1.10';
 	public $method = 0;
-	public function __construct(){ 
+
+	public function __construct(){
 		core::setError();
-		$this->_getMethod(); 
+
+		$this->_getMethod();
 	}
 	private function _getMethod() : void{ 
-		core::setError(); 
-		if(function_exists('curl_version')) 
-			$this->method = 1; 
-		elseif(function_exists('file_get_contents')) 
-			$this->method = 2; 
-	}
-	public function get(string $url, array $option = []){
 		core::setError();
-		if(!isset($option['userAgent']))
-			$option['userAgent'] = 'FourFramework ('.core::$info['version'].'/Library:'.$this->version.')';
-		if(!isset($option['timeout']))
-			$option['timeout'] = 1000;
-		if(!isset($option['ignoreHttpCode']))
-			$option['ignoreHttpCode'] = false;
-		if(!isset($option['JSONData']))
-			$option['JSONData'] = false;
-		if(!isset($option['JSONAssoc']))
-			$option['JSONAssoc'] = true;
-		if(!isset($option['saveToFile']))
-			$option['saveToFile'] = false;
+
+		if (function_exists('curl_version')) {
+			$this->method = 1;
+		} elseif (function_exists('file_get_contents')) {
+			$this->method = 2;
+		}
+	}
+	public function get(string $url, array $option = []) {
+		core::setError();
+
+		$option = $this->_getDefaultOptionForGet($option);
+		
 		switch($this->method){
-			case 1: //curl
+			case 1:
 				$curl = curl_init();
-				$opt = [ //opt
+				$opt = [
 					CURLOPT_RETURNTRANSFER => true,
 					CURLOPT_URL => $url,
 					CURLOPT_TIMEOUT => $option['timeout'],
 					CURLOPT_USERAGENT => $option['userAgent']
 				];
-				if($option['saveToFile'] <> false){ //download
-					$fp = fopen($option['saveToFile'], 'w'); 
-					$opt[CURLOPT_FILE] = $fp; //set opt
+
+				if ($option['saveToFile']) {
+					$fp = fopen($option['saveToFile'], 'w');
+					$opt[CURLOPT_FILE] = $fp;
 				}
-				curl_setopt_array($curl, $opt); //set array opt
+
+				curl_setopt_array($curl, $opt);
 				$getData = curl_exec($curl);
 				$httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-				if($httpCode < 200 and $httpcode > 200) //httpcode
-					if($option['ignoreHttpCode'] === false)
+
+				if ($httpCode < 200 and $httpcode > 200) {
+					if (!$option['ignoreHttpCode']) {
 						return core::setError(2, 'error http code', 'Http Code: '.$httpCode);
-				if(curl_errno($curl)){
-					if($option['saveToFile'] <> false){ //download
+					}
+				}
+
+				if (curl_errno($curl)) {
+					if ($option['saveToFile']) {
 						fclose($fp);
 						unlink($option['saveToFile']);
 					}
 					return core::setError(3, 'error download data', curl_error($curl));
 				}
-				if($option['saveToFile'] <> false){ //download
+
+				if ($option['saveToFile']) {
 					fclose($fp);
 					return true;
-				}elseif($option['JSONData'] === true) //json
+				} elseif($option['JSONData'] === true) {
 					return json_decode($getData, $option['JSONAssoc']);
-				else //other
+				} else {
 					return $getData;
+				}
 				break;
 			default: //other
-				if($option['saveToFile'] <> false){
+				if($option['saveToFile']){
 					file_put_contents($option['saveToFile'], fopen($url, 'r'));
 					return true;
 				}
@@ -74,47 +77,68 @@ return $this->network = new class(){
 		}
 		return false;
 	}
-	public function getCurrentPageURL(array $option = []) : string{ 
+	public function getCurrentPageURL(array $option = []) : string {
 		core::setError();
-		if(!isset($option['request_uri']))
+
+		if (!isset($option['request_uri'])) {
 			$option['request_uri'] = true;
-		if(!isset($option['dirOnly']))
+		}
+
+		if (!isset($option['dirOnly'])) {
 			$option['dirOnly'] = false;
-		$url = $_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['HTTP_HOST']; //<http/https>://{host}:{port}
-		if($option['request_uri'] === false)
-			return $url.'/'; //request_uri
-		$url .= $_SERVER['REQUEST_URI']; //<dir>/<dir>/<...>/<file>
-		if($option['dirOnly'])
-			return $url = str_replace(basename($url), '', $url); //dirOnly
+		}
+
+		$url = $_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['HTTP_HOST'];
+
+		if ($option['request_uri'] === false) {
+			return $url.'/';
+		}
+
+		$url .= $_SERVER['REQUEST_URI'];
+
+		if ($option['dirOnly']) {
+			return $url = str_replace(basename($url), '', $url);
+		}
+
 		return $url;
 	}
-	public function getClientIP() : string{
+	public function getClientIP() : string {
 		core::setError();
-		if(!empty($_SERVER['HTTP_CLIENT_IP']))
+
+		if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
 			return $_SERVER['HTTP_CLIENT_IP'];
-		elseif(!empty($_SERVER['HTTP_X_FORWARDED_FOR']))
+		} elseif(!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
 			return $_SERVER['HTTP_X_FORWARDED_FOR'];
-		else
+		} else  {
 			return $_SERVER['REMOTE_ADDR'];
+		}
 	}
-	public function ping(string $url) : int{ 
-		core::setError(); 
-		$starttime = microtime(true); 
-		$socket = @fsockopen($url, 80, $errno, $errstr, 10); 
-		$stoptime = microtime(true); 
-		if(!$socket) return -1;
+	public function ping(string $url) : int {
+		core::setError();
+
+		$starttime = microtime(true);
+		$socket = @fsockopen($url, 80, $errno, $errstr, 10);
+		$stoptime = microtime(true);
+
+		if (!$socket) {
+			return -1;
+		}
+
 		fclose($socket);
+		
 		return floor(($stoptime - $starttime) * 1000);
 	}
 	public function getHeader(string $name){
 		core::setError();
-		$headers = apache_request_headers(); 
-		return isset($headers[$name])?null:$headers[$name]; 
+
+		$headers = apache_request_headers();
+
+		return isset($headers[$name])?null:$headers[$name];
 	}
-	public function getBrowserInfo() : array{
+	public function getBrowserInfo() : array {
 		core::setError();
+
 		$userAgent = $_SERVER['HTTP_USER_AGENT'];
-		//platforma
 		$platform = 'Unknown';
         $platformList = [
             'Android' => 'Android',
@@ -124,12 +148,14 @@ return $this->network = new class(){
             'windows|win32' => 'Windows',
             'Mobile' => 'Mobile'
         ];
-        foreach($platformList as $name => $value)
-            if(preg_match('/'.$name.'/i', $userAgent)){
+
+        foreach ($platformList as $name => $value) {
+            if (preg_match('/'.$name.'/i', $userAgent)) {
                 $platform = $value;
                 break;
             }
-		//przeglądarka oraz wersja
+		}
+		
 		$browser = 'Unknown';
         $version = 'Unknown';
         $browserList = [
@@ -158,26 +184,60 @@ return $this->network = new class(){
             ['NetSurf', 'NetSurf', ['NetSurf\/']],
             ['bot|crawl|slurp|spider|mediapartners', 'BOT', ['Version\/', 'Googlebot\/']],
             //['', '', ['\/']],
-        ]; //Nazwa, Nazwa zwracana, Tekst wyszukiwany dla wersji
-        foreach($browserList as $data)
-            if(preg_match('/'.$data[0].'/i',$userAgent)){
+        ];
+
+        foreach ($browserList as $data) {
+            if (preg_match('/'.$data[0].'/i',$userAgent)) {
                 $browser = $data[1];
-                foreach($data[2] as $search){
+
+                foreach ($data[2] as $search) {
                     preg_match('/('.$search.')+([0-9.]+)/m', $userAgent, $matches);
-                    if(count($matches) === 3){
+
+                    if (count($matches) === 3) {
                         $version = $matches[2];
                         break;
                     }
                 }
+
                 break;
             }
-		//zwrócone dane przez funkcje
+		}
+
 		return [
 			'userAgent' => $userAgent,
 			'browser' => $browser,
 			'version' => $version,
 			'platform' => $platform
 		];
+	}
+	private function _getDefaultOptionForGet($option) : array{
+		core::setError();
+
+		if (!isset($option['userAgent'])) {
+			$option['userAgent'] = 'FourFramework ('.core::$info['version'].'/Library:'.$this->version.')';
+		}
+
+		if (!isset($option['timeout'])) {
+			$option['timeout'] = 1000;
+		}
+
+		if (!isset($option['ignoreHttpCode'])) {
+			$option['ignoreHttpCode'] = false;
+		}
+
+		if (!isset($option['JSONData'])) {
+			$option['JSONData'] = false;
+		}
+		
+		if (!isset($option['JSONAssoc'])) {
+			$option['JSONAssoc'] = true;
+		}
+		
+		if(!isset($option['saveToFile'])) {
+			$option['saveToFile'] = false;
+		}
+		
+		return $option;
 	}
 };
 ?>
