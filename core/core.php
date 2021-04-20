@@ -10,8 +10,8 @@ class core{
 		'debug_backTrace' => null
 	];
 	public static $info = [
-		'version' => '0.4.0 Alpha',
-		'releaseDate' => '07.04.2021',
+		'version' => '0.4.1 Alpha',
+		'releaseDate' => '09.04.2021',
 		'frameworkPath' => null,
 		'reversion' => ''
 	];
@@ -25,7 +25,8 @@ class core{
 		'temp' => 'core/base/temp/',
 		'library' => 'core/library/',
 		'library_api' => 'core/library/API/',
-		'log' => 'core/base/log/'
+		'log' => 'core/base/log/',
+		'configuration' => 'core/configuration/'
 	];
 	public static $controller;
 	public static $model;
@@ -52,12 +53,14 @@ class core{
 		
 		foreach ($options as $optionKey => $option) {
 			if(isset(self::$option[$optionKey])){
-				self::$option[$optionKey] = $option[$optionKey];
+				self::$option[$optionKey] = $option;
 			}
 		}
 
 		if (self::$option['showError']) {
 			error_reporting(E_ALL);
+		} else {
+			error_reporting(0);
 		}
 
 		if (isset($option['moveToHttps']) && boolval($option['moveToHttps']) == true){
@@ -72,8 +75,8 @@ class core{
 		foreach (self::$path as $name => $value) {
 			self::$path[$name] = ((self::$option['localPath']===true and array_search($name, self::$option['localIgnored'])===false)?self::$option['localPathReversion']:self::$info['reversion']).$value; //tworznie ścieżki dla zmiennej $path
 			self::$path[$name] = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, self::$path[$name]);
-			
-			if(!is_dir(self::$path[$name]) && self::$option['autoCreatePath'] === true){
+
+			if(!file_exists(self::$path[$name]) && self::$option['autoCreatePath'] === true){
 				mkdir(self::$path[$name], 0700, true);
 			}
 		}
@@ -142,7 +145,7 @@ class core{
 			return self::setError(2, 'the class is incorrect', 'the class does not return an object');
 		}
 
-		self::$controller->{$name} = $includeClass;
+		self::$controller->{str_replace('.', '__', $name)} = $includeClass;
 		self::$controller->_list[] = $name;
 		self::$controller->_lastLoadController = $name;
 
@@ -154,9 +157,10 @@ class core{
 		if (!isset($option['returnOnly'])) {
 			$option['returnOnly'] = false;
 		}
-
-		if (!$option['returnOnly'] and in_array($modelName, array_keys(self::$model->_list))) {
-			return self::$model->$modelName;
+		
+		if (!$option['returnOnly'] and in_array($modelName, self::$model->_list)
+		) {
+			return self::$model->{$modelName};
 		}
 
 		$modelPath = self::$path['model'].str_replace('.', DIRECTORY_SEPARATOR, $modelName).'.php';
@@ -172,7 +176,7 @@ class core{
 		}
 
 		if (!$option['returnOnly']) {
-			self::$model->$modelName = $modelClass;
+			self::$model->{str_replace('.', '__', $modelName)} = $modelClass;
 			self::$model->_list[] = $modelName;
 		}
 
@@ -251,7 +255,7 @@ class core{
 				'path' => self::$path,
 				'option' => self::$option
 			],
-			'library' => is_object(self::$library)?self::$library->__list:false,
+			'library' => self::$library,
 			'controller' => self::$controller,
 			'module' => self::$module,
 			'model' => self::$model
@@ -309,7 +313,7 @@ class core{
 		return $reversion;
 	}
 	private static function _writeCoreErrorLog() : void{
-		if(!self::$isError and self::$option['saveCoreError']){
+		if(!self::$isError or self::$option['saveCoreError']){
 			return;
 		}
 
@@ -323,7 +327,7 @@ class core{
 		return;
 	}
 	private static function _showCoreErrorInHTML() : void{
-		if(self::$option['showCoreError'] === true and !core::$isError){
+		if(self::$option['showCoreError'] === true or !core::$isError){
 			return;
 		}
 
